@@ -60,11 +60,15 @@ export function makeFloorLabel(
 }
 
 export function flyToBuilding(viewer: Cesium.Viewer, building: Building, duration = 2) {
+  // Ground elevation in Bengaluru is ~815m, fly to 815m + 380m = 1195m to stay above ground!
+  const terrainHeight = viewer.scene.globe.getHeight(Cesium.Cartographic.fromDegrees(building.center.lon, building.center.lat)) ?? 815;
+  const targetHeight = terrainHeight + 350;
+
   viewer.camera.flyTo({
-    destination: Cesium.Cartesian3.fromDegrees(building.center.lon, building.center.lat, 130),
+    destination: Cesium.Cartesian3.fromDegrees(building.center.lon, building.center.lat, targetHeight),
     orientation: {
       heading: Cesium.Math.toRadians(35),
-      pitch: Cesium.Math.toRadians(-28),
+      pitch: Cesium.Math.toRadians(-35),
       roll: 0,
     },
     duration,
@@ -78,13 +82,15 @@ export function flyToFloor(
   explodeFactor: number,
   duration = 1.5
 ) {
+  const terrainHeight = viewer.scene.globe.getHeight(Cesium.Cartographic.fromDegrees(building.center.lon, building.center.lat)) ?? 815;
   const { zMax } = computeExplodedZ(floor, explodeFactor);
-  const targetZ = Math.max(zMax + 30, 45);
+  const targetZ = terrainHeight + zMax + 120;
+
   viewer.camera.flyTo({
     destination: Cesium.Cartesian3.fromDegrees(building.center.lon, building.center.lat, targetZ),
     orientation: {
       heading: Cesium.Math.toRadians(35),
-      pitch: Cesium.Math.toRadians(-22),
+      pitch: Cesium.Math.toRadians(-30),
       roll: 0,
     },
     duration,
