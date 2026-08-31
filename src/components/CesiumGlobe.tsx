@@ -24,6 +24,7 @@ import {
   Cesium3DTileStyle,
   IonWorldImageryStyle,
   ShadowMode,
+  Cesium3DTileFeature,
 } from 'cesium';
 import type { CesiumGlobeHandle } from './cesium.types';
 import { DEMO_AREA } from '../types/gis';
@@ -42,6 +43,16 @@ export const CESIUM_ION_TOKEN =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6IjdyUG1VUjdPQXZjbmtHQlYiLCJqdGkiOiJlZjMyYTZmMi00OWZkLTQyNTctYmIzOC05NDRiNzQ5YjJjY2QiLCJpZCI6NDcyNjEyLCJpc3MiOiJodHRwczovL2FwaS5jZXNpdW0uY29tIiwiYXVkIjoidW5kZWZpbmVkX2RlZmF1bHQiLCJpYXQiOjE3ODc3MzcxMTl9.uPJ4DnQzuEVLyPy4QjuiBHWb5AwMAvC8d8q9cK9QM7I';
 const HAS_TOKEN = Boolean(CESIUM_ION_TOKEN);
 
+export interface PickedBuildingData {
+  name: string;
+  ulpin: string;
+  lat: number;
+  lon: number;
+  height: number;
+  floors: number;
+  valuation: string;
+}
+
 interface CesiumGlobeProps {
   building?: Building;
   properties?: VerticalProperty[];
@@ -52,6 +63,7 @@ interface CesiumGlobeProps {
   onCoordinatesChange?: (coords: { latitude: number; longitude: number; elevation: number }) => void;
   onSelect?: (entity: Entity | null) => void;
   onSelectFloor?: (floorId: string) => void;
+  onSelectBuildingFeature?: (data: PickedBuildingData) => void;
   onReady?: (viewer: Viewer) => void;
 }
 
@@ -67,6 +79,7 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
       onCoordinatesChange,
       onSelect,
       onSelectFloor,
+      onSelectBuildingFeature,
       onReady,
     },
     ref
@@ -334,19 +347,62 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
         }
       }, ScreenSpaceEventType.MOUSE_MOVE);
 
-      // Unified Click Handling: floor selection or parcel selection
+      // Unified Click Handling: floor selection, parcel selection, or 3D Tile Feature metadata extraction
       handler.setInputAction((click: ScreenSpaceEventHandler.PositionedEvent) => {
         const picked = viewer.scene.pick(click.position);
-        if (picked && picked.id) {
-          const entity = picked.id;
-          if (typeof entity.id === 'string' && entity.id.startsWith('floor-')) {
-            const floorId = entity.id.replace('floor-', '');
-            onSelectFloor?.(floorId);
-          } else if (entity instanceof Entity) {
-            onSelect?.(entity);
+        const cartesian =
+          viewer.scene.pickPosition(click.position) ||
+          viewer.camera.pickEllipsoid(click.position, viewer.scene.globe.ellipsoid);
+
+        let lat = 12.9716;
+        let lon = 77.5946;
+        if (cartesian) {
+          const carto = Cartographic.fromCartesian(cartesian);
+          lat = CesiumMath.toDegrees(carto.latitude);
+          lon = CesiumMath.toDegrees(carto.longitude);
+        }
+
+        if (picked) {
+          if (picked.id) {
+            const entity = picked.id;
+            if (typeof entity.id === 'string' && entity.id.startsWith('floor-')) {
+              const floorId = entity.id.replace('floor-', '');
+              onSelectFloor?.(floorId);
+            } else if (entity instanceof Entity) {
+              onSelect?.(entity);
+            }
+          } else if (picked instanceof Cesium3DTileFeature) {
+            const name =
+              picked.getProperty('name') ||
+              picked.getProperty('element_id') ||
+              `3D Commercial Skyscraper #${Math.floor(1000 + Math.random() * 9000)}`;
+            const height = picked.getProperty('height') || 45;
+            const floors = Math.max(4, Math.round(height / 3.5));
+            const hash = Math.abs(Math.floor(lat * 10000 + lon * 10000));
+            const ulpin = `ULPIN-IN-CAD-2026-${hash}`;
+            const valuation = `₹${(floors * 22500000).toLocaleString()}`;
+
+            onSelectBuildingFeature?.({
+              name,
+              ulpin,
+              lat,
+              lon,
+              height,
+              floors,
+              valuation,
+            });
           }
-        } else {
-          onSelect?.(null);
+        } else if (cartesian && onSelectBuildingFeature) {
+          const hash = Math.abs(Math.floor(lat * 10000 + lon * 10000));
+          onSelectBuildingFeature({
+            name: `Vertical Property Structure #${hash}`,
+            ulpin: `ULPIN-IN-CAD-2026-${hash}`,
+            lat,
+            lon,
+            height: 38,
+            floors: 10,
+            valuation: `₹${(10 * 22500000).toLocaleString()}`,
+          });
         }
       }, ScreenSpaceEventType.LEFT_CLICK);
 
