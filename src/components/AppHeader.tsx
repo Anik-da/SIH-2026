@@ -10,6 +10,7 @@ import {
   User as UserIcon,
   BarChart3,
   Search,
+  Home,
 } from 'lucide-react';
 import type { UserRole, ExplodeState } from '../types/cadastral';
 import type { User } from '../firebase';
@@ -29,6 +30,7 @@ interface Props {
   onOpenAnalytics: () => void;
   onOpenSearch: () => void;
   onOpenAuth: () => void;
+  onGoToLanding: () => void;
 }
 
 export default function AppHeader({
@@ -46,14 +48,19 @@ export default function AppHeader({
   onOpenAnalytics,
   onOpenSearch,
   onOpenAuth,
+  onGoToLanding,
 }: Props) {
   return (
     <header className="pointer-events-auto flex flex-wrap items-center justify-between border-b border-slate-800 bg-slate-900/95 px-5 py-2.5 shadow-lg backdrop-blur-xl">
-      {/* Brand Title */}
+      {/* Brand Title with Home Button */}
       <div className="flex items-center gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 shadow-md shadow-cyan-500/20 ring-1 ring-white/20">
+        <button
+          onClick={onGoToLanding}
+          title="Go to Landing Page"
+          className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 shadow-md shadow-cyan-500/20 ring-1 ring-white/20 transition-transform hover:scale-105"
+        >
           <Globe2 className="h-5 w-5 text-white" />
-        </div>
+        </button>
         <div className="leading-tight">
           <div className="flex items-center gap-2">
             <h1 className="text-sm font-black tracking-wide text-white">VOLU-CAD 3D</h1>
@@ -67,6 +74,14 @@ export default function AppHeader({
 
       {/* Quick Action Navigation Bar */}
       <div className="flex items-center gap-2">
+        <button
+          onClick={onGoToLanding}
+          className="flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800/80 px-3 py-1.5 text-xs font-semibold text-slate-300 transition-all hover:bg-slate-700"
+        >
+          <Home className="h-4 w-4 text-cyan-400" />
+          Landing Page
+        </button>
+
         <button
           onClick={onOpenSearch}
           className="flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800/80 px-3 py-1.5 text-xs font-semibold text-cyan-300 transition-all hover:bg-slate-700 active:scale-95"
@@ -163,7 +178,7 @@ export default function AppHeader({
           ) : (
             <UserIcon className="h-4 w-4 text-cyan-400" />
           )}
-          <span>{authUser ? authUser.displayName || authUser.email?.split('@')[0] : 'Officer Sign In'}</span>
+          <span>{authUser ? authUser.displayName || authUser.email?.split('@')[0] : 'Officer Account'}</span>
         </button>
       </div>
     </header>

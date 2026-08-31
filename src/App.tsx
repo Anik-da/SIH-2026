@@ -29,6 +29,9 @@ import { VolumetricAnalyticsModal } from './components/cadastral/VolumetricAnaly
 import { GeoSearchModal } from './components/cadastral/GeoSearchModal';
 import { AuthModal } from './components/auth/AuthModal';
 
+import { LandingPage } from './components/landing/LandingPage';
+import { LoginPage } from './components/landing/LoginPage';
+
 import { DEFAULT_LAYERS, DEMO_AREA } from './types/gis';
 import type { Coordinates, LayerConfig, SelectionInfo } from './types/gis';
 import type { UserRole, ExplodeState, ValidationConflict, AuditLogEntry } from './types/cadastral';
@@ -42,6 +45,9 @@ function App() {
   const measureHandlerRef = useRef<ScreenSpaceEventHandler | null>(null);
   const measureEntityRef = useRef<Entity | null>(null);
   const measurePointsRef = useRef<Cartesian3[]>([]);
+
+  // Navigation View State ('landing' | 'login' | 'app')
+  const [viewMode, setViewMode] = useState<'landing' | 'login' | 'app'>('landing');
 
   // Base GIS State
   const [coordinates, setCoordinates] = useState<Coordinates | null>(null);
@@ -290,8 +296,31 @@ function App() {
 
   const activeConflictCount = conflicts.filter((c) => !c.resolved).length;
 
+  // Render Landing Page View
+  if (viewMode === 'landing') {
+    return (
+      <LandingPage
+        user={authUser}
+        onLaunchApp={() => setViewMode('app')}
+        onOpenLogin={() => setViewMode('login')}
+      />
+    );
+  }
+
+  // Render Full Login View
+  if (viewMode === 'login') {
+    return (
+      <LoginPage
+        user={authUser}
+        onBackToLanding={() => setViewMode('landing')}
+        onLaunchApp={() => setViewMode('app')}
+      />
+    );
+  }
+
+  // Render Main 3D Cadastral GIS Platform ('app')
   return (
-    <div className="flex h-screen w-screen flex-col overflow-hidden bg-slate-950 text-slate-100">
+    <div className="flex h-screen w-screen flex-col overflow-hidden bg-slate-950 text-slate-100 font-sans">
       {/* Integrated App Header */}
       <AppHeader
         userRole={userRole}
@@ -308,6 +337,7 @@ function App() {
         onOpenAnalytics={() => setIsAnalyticsOpen(true)}
         onOpenSearch={() => setIsSearchOpen(true)}
         onOpenAuth={() => setIsAuthOpen(true)}
+        onGoToLanding={() => setViewMode('landing')}
       />
 
       {/* Main 3D GIS & Cadastral Area */}
