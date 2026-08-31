@@ -436,78 +436,11 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
       );
       toRemove.forEach((e) => viewer.entities.remove(e));
 
-      // 1. Parcel 2D Ground Footprint Outline & Cadastral Land Numbers (Matching CAD Image)
-      const parcelPositions = footprintToCartesian(building.footprint, 0);
-      viewer.entities.add({
-        id: 'parcel-outline',
-        polygon: {
-          hierarchy: new PolygonHierarchy(parcelPositions),
-          material: Color.fromCssColorString('#f8fafc').withAlpha(0.25),
-          outline: true,
-          outlineColor: Color.fromCssColorString('#38bdf8'),
-          outlineWidth: 2,
-        },
-      });
+      // Remove all artificial building blocks and stacked floor slices unless Explode 3D Floors is explicitly active
+      if (explodeState !== 'exploded') return;
 
-      // Cadastral Plot Ground Numbers (e.g. "21", "17" from reference image)
-      const centerLon = building.center.lon;
-      const centerLat = building.center.lat;
-
-      viewer.entities.add({
-        id: 'cadastral-number-21',
-        position: Cartesian3.fromDegrees(centerLon - 0.0003, centerLat - 0.0003, 0.5),
-        label: new LabelGraphics({
-          text: '21',
-          font: 'bold 20px Inter, sans-serif',
-          fillColor: Color.fromCssColorString('#334155'),
-          style: LabelStyle.FILL,
-          horizontalOrigin: HorizontalOrigin.CENTER,
-          verticalOrigin: VerticalOrigin.CENTER,
-        }),
-      });
-
-      viewer.entities.add({
-        id: 'cadastral-number-17',
-        position: Cartesian3.fromDegrees(centerLon + 0.0004, centerLat + 0.0003, 0.5),
-        label: new LabelGraphics({
-          text: '17',
-          font: 'bold 20px Inter, sans-serif',
-          fillColor: Color.fromCssColorString('#334155'),
-          style: LabelStyle.FILL,
-          horizontalOrigin: HorizontalOrigin.CENTER,
-          verticalOrigin: VerticalOrigin.CENTER,
-        }),
-      });
-
-      // 2. Solid Architectural 3D BIM Building Model (When Collapsed)
-      const explodeFactor = explodeState === 'exploded' ? 1 : 0;
-      if (explodeFactor === 0) {
-        // High-detail architectural BIM solid mass
-        viewer.entities.add({
-          id: 'solid-bim-building',
-          polygon: {
-            hierarchy: new PolygonHierarchy(footprintToCartesian(building.footprint, 0)),
-            extrudedHeight: 28,
-            material: Color.fromCssColorString('#94a3b8').withAlpha(0.92),
-            outline: true,
-            outlineColor: Color.fromCssColorString('#475569'),
-            shadows: ShadowMode.ENABLED,
-          },
-        });
-
-        // Rooftop Solar Array / Penthouse Structure (Matching Image)
-        viewer.entities.add({
-          id: 'solid-bim-rooftop-solar',
-          polygon: {
-            hierarchy: new PolygonHierarchy(footprintToCartesian(building.footprint, 28)),
-            extrudedHeight: 31,
-            material: Color.fromCssColorString('#0284c7').withAlpha(0.95),
-            outline: true,
-            outlineColor: Color.fromCssColorString('#0369a1'),
-            shadows: ShadowMode.ENABLED,
-          },
-        });
-      }
+      // 3D Floor Extruded Volumes (Rendered ONLY when user explicitly toggles Explode 3D Floors)
+      const explodeFactor = 1;
 
       building.floors.forEach((floor: Floor) => {
         const prop = properties.find((p) => p.floorId === floor.id);
