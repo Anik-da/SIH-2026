@@ -368,6 +368,19 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
             if (typeof entity.id === 'string' && entity.id.startsWith('floor-')) {
               const floorId = entity.id.replace('floor-', '');
               onSelectFloor?.(floorId);
+            } else if (typeof entity.id === 'string' && (entity.id.includes('solid-bim') || entity.id.includes('building') || entity.id.includes('parcel'))) {
+              onSelectBuildingFeature?.({
+                name: building?.name || 'B1-A Commercial Skyscraper',
+                ulpin: building?.ulpin || 'ULPIN-IN-MH-2026-89421',
+                lat: building?.center.lat || lat,
+                lon: building?.center.lon || lon,
+                height: 33,
+                floors: building?.floors.length || 8,
+                valuation: '₹1,28,35,000',
+              });
+              if (entity instanceof Entity) {
+                onSelect?.(entity);
+              }
             } else if (entity instanceof Entity) {
               onSelect?.(entity);
             }
@@ -436,8 +449,54 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
       );
       toRemove.forEach((e) => viewer.entities.remove(e));
 
-      // Remove all artificial building blocks and stacked floor slices unless Explode 3D Floors is explicitly active
-      if (explodeState !== 'exploded') return;
+      // 1. Parcel 2D Ground Footprint Outline
+      const parcelPositions = footprintToCartesian(building.footprint, 0);
+      viewer.entities.add({
+        id: 'parcel-outline',
+        polygon: {
+          hierarchy: new PolygonHierarchy(parcelPositions),
+          material: Color.fromCssColorString('#0284c7').withAlpha(0.15),
+          outline: true,
+          outlineColor: Color.fromCssColorString('#38bdf8'),
+          outlineWidth: 2,
+        },
+      });
+
+      // 2. High-Detail 3D Architectural Building Model (When Collapsed)
+      if (explodeState !== 'exploded') {
+        const isSelected = selectedFloorId !== null;
+        
+        // Main Architectural 3D BIM Mass (Matching White/Monochrome Style in Image 2)
+        viewer.entities.add({
+          id: 'solid-bim-building',
+          polygon: {
+            hierarchy: new PolygonHierarchy(footprintToCartesian(building.footprint, 0)),
+            extrudedHeight: 28,
+            material: Color.fromCssColorString('#f8fafc').withAlpha(0.95),
+            outline: true,
+            outlineColor: isSelected
+              ? Color.fromCssColorString('#06b6d4')
+              : Color.fromCssColorString('#64748b'),
+            outlineWidth: isSelected ? 3 : 1.5,
+            shadows: ShadowMode.ENABLED,
+          },
+        });
+
+        // Architectural Penthouse / Rooftop Volume Structure (Image 2 detail)
+        viewer.entities.add({
+          id: 'solid-bim-rooftop',
+          polygon: {
+            hierarchy: new PolygonHierarchy(footprintToCartesian(building.footprint, 28)),
+            extrudedHeight: 33,
+            material: Color.fromCssColorString('#e2e8f0').withAlpha(0.95),
+            outline: true,
+            outlineColor: Color.fromCssColorString('#0284c7'),
+            outlineWidth: 2,
+            shadows: ShadowMode.ENABLED,
+          },
+        });
+        return;
+      }
 
       // 3D Floor Extruded Volumes (Rendered ONLY when user explicitly toggles Explode 3D Floors)
       const explodeFactor = 1;
