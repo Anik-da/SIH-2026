@@ -280,7 +280,7 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
           viewer.scene.fog.enabled = true;
 
           // Prevent camera from going under terrain/inside globe
-          viewer.scene.screenSpaceCameraController.minimumZoomDistance = 35;
+          viewer.scene.screenSpaceCameraController.minimumZoomDistance = 75;
           viewer.scene.globe.depthTestAgainstTerrain = true;
 
           // Initialize camera high above terrain level (1250m = 815m ground + 435m overhead pitch distance)

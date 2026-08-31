@@ -60,14 +60,14 @@ export function makeFloorLabel(
 }
 
 export function flyToBuilding(viewer: Cesium.Viewer, building: Building, duration = 2) {
-  const centerCartesian = Cesium.Cartesian3.fromDegrees(building.center.lon, building.center.lat, 18);
-  const boundingSphere = new Cesium.BoundingSphere(centerCartesian, 25);
+  const centerCartesian = Cesium.Cartesian3.fromDegrees(building.center.lon, building.center.lat, 25);
+  const boundingSphere = new Cesium.BoundingSphere(centerCartesian, 35);
 
   viewer.camera.flyToBoundingSphere(boundingSphere, {
     offset: new Cesium.HeadingPitchRange(
       Cesium.Math.toRadians(35),
-      Cesium.Math.toRadians(-25),
-      95 // 95 meters range so the 3D building fills the screen cleanly!
+      Cesium.Math.toRadians(-28),
+      240 // 240m viewing range so the 3D building and surrounding area are clearly visible!
     ),
     duration,
   });
@@ -82,13 +82,13 @@ export function flyToFloor(
 ) {
   const { zMax } = computeExplodedZ(floor, explodeFactor);
   const centerCartesian = Cesium.Cartesian3.fromDegrees(building.center.lon, building.center.lat, zMax);
-  const boundingSphere = new Cesium.BoundingSphere(centerCartesian, 15);
+  const boundingSphere = new Cesium.BoundingSphere(centerCartesian, 25);
 
   viewer.camera.flyToBoundingSphere(boundingSphere, {
     offset: new Cesium.HeadingPitchRange(
       Cesium.Math.toRadians(35),
-      Cesium.Math.toRadians(-20),
-      65 // Close-up 65m range for floor level inspection!
+      Cesium.Math.toRadians(-25),
+      140 // 140m comfortable viewing range for floor level inspection!
     ),
     duration,
   });
