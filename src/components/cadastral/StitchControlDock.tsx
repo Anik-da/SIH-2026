@@ -21,6 +21,7 @@ interface Props {
   onToggleUnderground: () => void;
   onToggleUtilities: () => void;
   onOpenAnalytics: () => void;
+  onOpenBlueprint: () => void;
 }
 
 export const StitchControlDock: React.FC<Props> = ({
@@ -31,9 +32,18 @@ export const StitchControlDock: React.FC<Props> = ({
   onToggleUnderground,
   onToggleUtilities,
   onOpenAnalytics,
+  onOpenBlueprint,
 }) => {
   return (
     <div className="pointer-events-auto flex items-center gap-2 rounded-2xl border border-cyan-500/30 bg-slate-950/80 p-2 shadow-2xl backdrop-blur-2xl ring-1 ring-white/10">
+      {/* 2D CAD Blueprint Converter Button */}
+      <button
+        onClick={onOpenBlueprint}
+        className="flex items-center gap-2 rounded-xl border border-cyan-500/40 bg-cyan-500/10 px-3 py-2 text-xs font-bold text-cyan-300 transition-all hover:bg-cyan-500/20 active:scale-95"
+      >
+        <Sparkles className="h-4 w-4 text-cyan-400" />
+        <span>2D CAD → 3D BIM Converter</span>
+      </button>
       {/* 3D Explode Button */}
       <button
         onClick={onToggleExplode}
