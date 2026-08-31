@@ -43,6 +43,7 @@ interface CesiumGlobeProps {
   selectedFloorId?: string | null;
   explodeState?: ExplodeState;
   showUnderground?: boolean;
+  showUtilities?: boolean;
   onCoordinatesChange?: (coords: { latitude: number; longitude: number; elevation: number }) => void;
   onSelect?: (entity: Entity | null) => void;
   onSelectFloor?: (floorId: string) => void;
@@ -57,6 +58,7 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
       selectedFloorId,
       explodeState = 'collapsed',
       showUnderground = true,
+      showUtilities = true,
       onCoordinatesChange,
       onSelect,
       onSelectFloor,
@@ -253,9 +255,9 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
       const viewer = viewerRef.current;
       if (!viewer || !building) return;
 
-      // Remove existing custom 3D floor entities
+      // Remove existing custom 3D floor entities & utility pipes
       const toRemove = viewer.entities.values.filter(
-        (e) => e.id.startsWith('floor-') || e.id.startsWith('parcel-outline')
+        (e) => e.id.startsWith('floor-') || e.id.startsWith('parcel-outline') || e.id.startsWith('utility-')
       );
       toRemove.forEach((e) => viewer.entities.remove(e));
 
@@ -319,7 +321,52 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
           `${floor.label}\n${prop.vpid}`
         );
       });
-    }, [building, properties, explodeState, selectedFloorId, showUnderground]);
+
+        // 3. Sub-surface Utility Infrastructure Lines ($Z < 0$)
+        if (showUtilities && showUnderground) {
+          const centerLon = building.center.lon;
+          const centerLat = building.center.lat;
+
+          // Water Main (Cyan, -5m)
+          viewer.entities.add({
+            id: 'utility-water',
+            polyline: {
+              positions: Cartesian3.fromDegreesArrayHeights([
+                centerLon - 0.001, centerLat - 0.0005, -5,
+                centerLon + 0.001, centerLat + 0.0005, -5,
+              ]),
+              width: 5,
+              material: Color.fromCssColorString('#06b6d4'),
+            },
+          });
+
+          // Electric Cable Grid (Amber, -10m)
+          viewer.entities.add({
+            id: 'utility-electric',
+            polyline: {
+              positions: Cartesian3.fromDegreesArrayHeights([
+                centerLon - 0.0008, centerLat + 0.0008, -10,
+                centerLon + 0.0008, centerLat - 0.0008, -10,
+              ]),
+              width: 4,
+              material: Color.fromCssColorString('#f59e0b'),
+            },
+          });
+
+          // Fiber Optic Transit Line (Purple, -15m)
+          viewer.entities.add({
+            id: 'utility-fiber',
+            polyline: {
+              positions: Cartesian3.fromDegreesArrayHeights([
+                centerLon - 0.0012, centerLat, -15,
+                centerLon + 0.0012, centerLat, -15,
+              ]),
+              width: 4,
+              material: Color.fromCssColorString('#a855f7'),
+            },
+          });
+        }
+      }, [building, properties, explodeState, selectedFloorId, showUnderground, showUtilities]);
 
     // Handle Sub-surface Ground Translucency (Underground Mode)
     useEffect(() => {
