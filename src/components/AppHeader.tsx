@@ -8,6 +8,8 @@ import {
   UserCheck,
   Layers3,
   User as UserIcon,
+  BarChart3,
+  Search,
 } from 'lucide-react';
 import type { UserRole, ExplodeState } from '../types/cadastral';
 import type { User } from '../firebase';
@@ -24,6 +26,8 @@ interface Props {
   onOpenValidation: () => void;
   onOpenEmergency: () => void;
   onOpenAudit: () => void;
+  onOpenAnalytics: () => void;
+  onOpenSearch: () => void;
   onOpenAuth: () => void;
 }
 
@@ -39,6 +43,8 @@ export default function AppHeader({
   onOpenValidation,
   onOpenEmergency,
   onOpenAudit,
+  onOpenAnalytics,
+  onOpenSearch,
   onOpenAuth,
 }: Props) {
   return (
@@ -62,6 +68,14 @@ export default function AppHeader({
       {/* Quick Action Navigation Bar */}
       <div className="flex items-center gap-2">
         <button
+          onClick={onOpenSearch}
+          className="flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800/80 px-3 py-1.5 text-xs font-semibold text-cyan-300 transition-all hover:bg-slate-700 active:scale-95"
+        >
+          <Search className="h-4 w-4 text-cyan-400" />
+          Search ULPIN / VPID
+        </button>
+
+        <button
           onClick={onToggleExplode}
           className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition-all active:scale-95 ${
             explodeState === 'exploded'
@@ -83,6 +97,14 @@ export default function AppHeader({
         >
           <Layers className="h-4 w-4" />
           Underground Mode
+        </button>
+
+        <button
+          onClick={onOpenAnalytics}
+          className="flex items-center gap-1.5 rounded-xl border border-cyan-500/30 bg-cyan-500/10 px-3 py-1.5 text-xs font-semibold text-cyan-300 transition-all hover:bg-cyan-500/20 active:scale-95"
+        >
+          <BarChart3 className="h-4 w-4 text-cyan-400" />
+          3D Analytics
         </button>
 
         <button
@@ -132,7 +154,6 @@ export default function AppHeader({
           </select>
         </div>
 
-        {/* Firebase Authentication Profile Button */}
         <button
           onClick={onOpenAuth}
           className="flex items-center gap-2 rounded-xl border border-cyan-500/30 bg-cyan-500/10 px-3 py-1.5 text-xs font-semibold text-cyan-300 transition-all hover:bg-cyan-500/20 active:scale-95"
