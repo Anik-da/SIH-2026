@@ -25,6 +25,8 @@ import { TopologyValidationModal } from './components/cadastral/TopologyValidati
 import { PropertyPassportModal } from './components/cadastral/PropertyPassportModal';
 import { EmergencyPlanningModal } from './components/cadastral/EmergencyPlanningModal';
 import { AuditLogDrawer } from './components/cadastral/AuditLogDrawer';
+import { VolumetricAnalyticsModal } from './components/cadastral/VolumetricAnalyticsModal';
+import { GeoSearchModal } from './components/cadastral/GeoSearchModal';
 import { AuthModal } from './components/auth/AuthModal';
 
 import { DEFAULT_LAYERS, DEMO_AREA } from './types/gis';
@@ -61,13 +63,14 @@ function App() {
   const [isEmergencyOpen, setIsEmergencyOpen] = useState(false);
   const [isAuditOpen, setIsAuditOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [isAnalyticsOpen, setIsAnalyticsOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const [authUser, setAuthUser] = useState<User | null>(null);
 
   const [conflicts, setConflicts] = useState<ValidationConflict[]>(demoConflicts);
   const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>(demoAuditLogs);
 
-  // Subscribe to Firebase Auth State Changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setAuthUser(user);
@@ -86,7 +89,6 @@ function App() {
     setCoordinates(coords);
   }, []);
 
-  // Floor Selection handler
   const handleSelectFloor = useCallback((floorId: string) => {
     setSelectedFloorId(floorId);
     const viewer = viewerRef.current;
@@ -96,7 +98,6 @@ function App() {
     }
   }, [explodeState]);
 
-  // Parcel / Entity Selection handler
   const handleSelectEntity = useCallback((entity: Entity | null) => {
     if (!entity) {
       setSelection(null);
@@ -127,7 +128,6 @@ function App() {
     }
   }, []);
 
-  // ── Toolbar actions ────────────────────────────────────────────────────
   const handleHome = useCallback(() => globeRef.current?.goHome(), []);
   const handleZoomIn = useCallback(() => globeRef.current?.zoomIn(), []);
   const handleZoomOut = useCallback(() => globeRef.current?.zoomOut(), []);
@@ -159,7 +159,6 @@ function App() {
     setExplodeState('collapsed');
   }, []);
 
-  // ── Layer toggling ──────────────────────────────────────────────────────
   const handleToggleLayer = useCallback((id: string) => {
     setLayers((prev) => {
       const updated = prev.map((l) =>
@@ -306,6 +305,8 @@ function App() {
         onOpenValidation={() => setIsValidationOpen(true)}
         onOpenEmergency={() => setIsEmergencyOpen(true)}
         onOpenAudit={() => setIsAuditOpen(true)}
+        onOpenAnalytics={() => setIsAnalyticsOpen(true)}
+        onOpenSearch={() => setIsSearchOpen(true)}
         onOpenAuth={() => setIsAuthOpen(true)}
       />
 
@@ -392,6 +393,20 @@ function App() {
         isOpen={isAuthOpen}
         user={authUser}
         onClose={() => setIsAuthOpen(false)}
+      />
+
+      <GeoSearchModal
+        isOpen={isSearchOpen}
+        properties={demoProperties}
+        onSelectProperty={handleSelectFloor}
+        onClose={() => setIsSearchOpen(false)}
+      />
+
+      <VolumetricAnalyticsModal
+        isOpen={isAnalyticsOpen}
+        building={demoBuilding}
+        properties={demoProperties}
+        onClose={() => setIsAnalyticsOpen(false)}
       />
 
       <TopologyValidationModal

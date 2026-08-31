@@ -32,7 +32,9 @@ import {
 } from '../utils/cesium3dHelpers';
 import { STATUS_COLORS, SELECTED_COLOR, UNDERGROUND_COLOR, PARCEL_COLOR } from '../data/colors';
 
-export const CESIUM_ION_TOKEN = import.meta.env.VITE_CESIUM_ION_TOKEN as string | undefined;
+export const CESIUM_ION_TOKEN =
+  (import.meta.env.VITE_CESIUM_ION_TOKEN as string | undefined) ||
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6IjdyUG1VUjdPQXZjbmtHQlYiLCJqdGkiOiJlZjMyYTZmMi00OWZkLTQyNTctYmIzOC05NDRiNzQ5YjJjY2QiLCJpZCI6NDcyNjEyLCJpc3MiOiJodHRwczovL2FwaS5jZXNpdW0uY29tIiwiYXVkIjoidW5kZWZpbmVkX2RlZmF1bHQiLCJpYXQiOjE3ODc3MzcxMTl9.uPJ4DnQzuEVLyPy4QjuiBHWb5AwMAvC8d8q9cK9QM7I';
 const HAS_TOKEN = Boolean(CESIUM_ION_TOKEN);
 
 interface CesiumGlobeProps {
