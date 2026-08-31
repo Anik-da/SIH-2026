@@ -379,30 +379,7 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
         },
       });
 
-      // 3D Floating Building Tower Badge (Matching Smart Park Image 1)
-      const centerCartesian = Cartesian3.fromDegrees(
-        building.center.lon,
-        building.center.lat,
-        36 // High-rise top elevation
-      );
-
-      viewer.entities.add({
-        id: 'building-pin-b1a',
-        position: centerCartesian,
-        label: new LabelGraphics({
-          text: ` B1-A TOWER `,
-          font: 'bold 12px Inter, sans-serif',
-          fillColor: Color.fromCssColorString('#0f172a'),
-          style: LabelStyle.FILL,
-          showBackground: true,
-          backgroundColor: Color.fromCssColorString('#38bdf8'),
-          backgroundPadding: new Cartesian3(10, 6, 0) as unknown as undefined,
-          verticalOrigin: VerticalOrigin.BOTTOM,
-          horizontalOrigin: HorizontalOrigin.CENTER,
-        }),
-      });
-
-      // 2. 3D Floor Extruded Volumes
+      // 2. 3D Floor Extruded Volumes (Rendered cleanly when active)
       const explodeFactor = explodeState === 'exploded' ? 1 : 0;
 
       building.floors.forEach((floor: Floor) => {
