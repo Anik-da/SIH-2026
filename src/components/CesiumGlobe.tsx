@@ -486,50 +486,6 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
           },
         });
 
-        // 3. Render Dense 5x5 Urban 3D Building Grid for 100% Neighborhood Coverage
-        const LAT_M = 111320;
-        const LON_M = 111320 * Math.cos((building.center.lat * Math.PI) / 180);
-
-        for (let dx = -2; dx <= 2; dx++) {
-          for (let dy = -2; dy <= 2; dy++) {
-            if (dx === 0 && dy === 0) continue; // Skip main central building
-
-            const cLat = building.center.lat + dy * 0.00035;
-            const cLon = building.center.lon + dx * 0.00035;
-            const width = 20 + Math.abs((dx * 7 + dy * 11) % 12);
-            const depth = 18 + Math.abs((dx * 13 + dy * 5) % 10);
-            const height = 15 + Math.abs((dx * 17 + dy * 23) % 25);
-
-            const hw = width / (2 * LON_M);
-            const hd = depth / (2 * LAT_M);
-
-            const polyFootprint: [number, number][] = [
-              [cLon - hw, cLat - hd],
-              [cLon + hw, cLat - hd],
-              [cLon + hw, cLat + hd],
-              [cLon - hw, cLat + hd],
-            ];
-
-            viewer.entities.add({
-              id: `building-grid-${dx}-${dy}`,
-              polygon: {
-                hierarchy: new PolygonHierarchy(footprintToCartesian(polyFootprint, 0)),
-                height: 0,
-                extrudedHeight: height,
-                heightReference: HeightReference.CLAMP_TO_GROUND,
-                extrudedHeightReference: HeightReference.RELATIVE_TO_GROUND,
-                material: Color.fromCssColorString(
-                  (dx + dy) % 2 === 0 ? '#cbd5e1' : '#94a3b8'
-                ).withAlpha(0.85),
-                outline: true,
-                outlineColor: Color.fromCssColorString('#475569'),
-                outlineWidth: 1,
-                shadows: ShadowMode.ENABLED,
-              },
-            });
-          }
-        }
-
         return;
       }
 
