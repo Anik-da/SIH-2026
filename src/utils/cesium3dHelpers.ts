@@ -60,17 +60,15 @@ export function makeFloorLabel(
 }
 
 export function flyToBuilding(viewer: Cesium.Viewer, building: Building, duration = 2) {
-  // Ground elevation in Bengaluru is ~815m, fly to 815m + 380m = 1195m to stay above ground!
-  const terrainHeight = viewer.scene.globe.getHeight(Cesium.Cartographic.fromDegrees(building.center.lon, building.center.lat)) ?? 815;
-  const targetHeight = terrainHeight + 350;
+  const centerCartesian = Cesium.Cartesian3.fromDegrees(building.center.lon, building.center.lat, 18);
+  const boundingSphere = new Cesium.BoundingSphere(centerCartesian, 25);
 
-  viewer.camera.flyTo({
-    destination: Cesium.Cartesian3.fromDegrees(building.center.lon, building.center.lat, targetHeight),
-    orientation: {
-      heading: Cesium.Math.toRadians(35),
-      pitch: Cesium.Math.toRadians(-35),
-      roll: 0,
-    },
+  viewer.camera.flyToBoundingSphere(boundingSphere, {
+    offset: new Cesium.HeadingPitchRange(
+      Cesium.Math.toRadians(35),
+      Cesium.Math.toRadians(-25),
+      95 // 95 meters range so the 3D building fills the screen cleanly!
+    ),
     duration,
   });
 }
@@ -82,17 +80,16 @@ export function flyToFloor(
   explodeFactor: number,
   duration = 1.5
 ) {
-  const terrainHeight = viewer.scene.globe.getHeight(Cesium.Cartographic.fromDegrees(building.center.lon, building.center.lat)) ?? 815;
   const { zMax } = computeExplodedZ(floor, explodeFactor);
-  const targetZ = terrainHeight + zMax + 120;
+  const centerCartesian = Cesium.Cartesian3.fromDegrees(building.center.lon, building.center.lat, zMax);
+  const boundingSphere = new Cesium.BoundingSphere(centerCartesian, 15);
 
-  viewer.camera.flyTo({
-    destination: Cesium.Cartesian3.fromDegrees(building.center.lon, building.center.lat, targetZ),
-    orientation: {
-      heading: Cesium.Math.toRadians(35),
-      pitch: Cesium.Math.toRadians(-30),
-      roll: 0,
-    },
+  viewer.camera.flyToBoundingSphere(boundingSphere, {
+    offset: new Cesium.HeadingPitchRange(
+      Cesium.Math.toRadians(35),
+      Cesium.Math.toRadians(-20),
+      65 // Close-up 65m range for floor level inspection!
+    ),
     duration,
   });
 }
