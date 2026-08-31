@@ -5,23 +5,26 @@ import {
   Flame,
   History,
   Layers,
-  Eye,
   UserCheck,
   Layers3,
+  User as UserIcon,
 } from 'lucide-react';
 import type { UserRole, ExplodeState } from '../types/cadastral';
+import type { User } from '../firebase';
 
 interface Props {
   userRole: UserRole;
   explodeState: ExplodeState;
   showUnderground: boolean;
   activeConflictCount: number;
+  authUser: User | null;
   onRoleChange: (role: UserRole) => void;
   onToggleExplode: () => void;
   onToggleUnderground: () => void;
   onOpenValidation: () => void;
   onOpenEmergency: () => void;
   onOpenAudit: () => void;
+  onOpenAuth: () => void;
 }
 
 export default function AppHeader({
@@ -29,12 +32,14 @@ export default function AppHeader({
   explodeState,
   showUnderground,
   activeConflictCount,
+  authUser,
   onRoleChange,
   onToggleExplode,
   onToggleUnderground,
   onOpenValidation,
   onOpenEmergency,
   onOpenAudit,
+  onOpenAuth,
 }: Props) {
   return (
     <header className="pointer-events-auto flex flex-wrap items-center justify-between border-b border-slate-800 bg-slate-900/95 px-5 py-2.5 shadow-lg backdrop-blur-xl">
@@ -110,8 +115,8 @@ export default function AppHeader({
         </button>
       </div>
 
-      {/* Role Switcher */}
-      <div className="flex items-center gap-2">
+      {/* Role Switcher & Auth Profile Button */}
+      <div className="flex items-center gap-3">
         <div className="flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800/80 px-2.5 py-1 text-xs">
           <UserCheck className="h-3.5 w-3.5 text-cyan-400" />
           <span className="text-[10px] text-slate-400">ROLE:</span>
@@ -126,6 +131,19 @@ export default function AppHeader({
             <option value="VIEWER" className="bg-slate-900 text-white">VIEWER (PUBLIC)</option>
           </select>
         </div>
+
+        {/* Firebase Authentication Profile Button */}
+        <button
+          onClick={onOpenAuth}
+          className="flex items-center gap-2 rounded-xl border border-cyan-500/30 bg-cyan-500/10 px-3 py-1.5 text-xs font-semibold text-cyan-300 transition-all hover:bg-cyan-500/20 active:scale-95"
+        >
+          {authUser?.photoURL ? (
+            <img src={authUser.photoURL} alt="Avatar" className="h-5 w-5 rounded-full border border-cyan-400" />
+          ) : (
+            <UserIcon className="h-4 w-4 text-cyan-400" />
+          )}
+          <span>{authUser ? authUser.displayName || authUser.email?.split('@')[0] : 'Officer Sign In'}</span>
+        </button>
       </div>
     </header>
   );
