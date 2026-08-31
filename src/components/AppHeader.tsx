@@ -33,6 +33,7 @@ interface Props {
   onGoToLanding: () => void;
   onOpenPropertyPresentation: () => void;
   onOpenZoning: () => void;
+  onOpenPagesDrawer: () => void;
 }
 
 export default function AppHeader({
@@ -53,6 +54,7 @@ export default function AppHeader({
   onGoToLanding,
   onOpenPropertyPresentation,
   onOpenZoning,
+  onOpenPagesDrawer,
 }: Props) {
   return (
     <header className="pointer-events-auto flex flex-wrap items-center justify-between border-b border-slate-800 bg-slate-900/95 px-5 py-2.5 shadow-lg backdrop-blur-xl">
@@ -78,6 +80,14 @@ export default function AppHeader({
 
       {/* Quick Action Navigation Bar */}
       <div className="flex items-center gap-2">
+        <button
+          onClick={onOpenPagesDrawer}
+          className="flex items-center gap-1.5 rounded-xl border border-cyan-500/40 bg-cyan-500/15 px-3.5 py-1.5 text-xs font-bold text-cyan-300 shadow-md shadow-cyan-500/20 transition-all hover:bg-cyan-500/25 active:scale-95"
+        >
+          <Layers className="h-4 w-4 text-cyan-400" />
+          All Pages &amp; Modules
+        </button>
+
         <button
           onClick={onGoToLanding}
           className="flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800/80 px-3 py-1.5 text-xs font-semibold text-slate-300 transition-all hover:bg-slate-700"

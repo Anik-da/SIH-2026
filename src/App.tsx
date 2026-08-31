@@ -32,6 +32,7 @@ import { SmartCityHUD } from './components/cadastral/SmartCityHUD';
 import { BlueprintConverterModal } from './components/cadastral/BlueprintConverterModal';
 import { PropertyPresentationModal } from './components/cadastral/PropertyPresentationModal';
 import { ZoningDashboardModal } from './components/cadastral/ZoningDashboardModal';
+import { StitchNavigationDrawer, PageId } from './components/navigation/StitchNavigationDrawer';
 import { AuthModal } from './components/auth/AuthModal';
 
 import { LandingPage } from './components/landing/LandingPage';
@@ -80,8 +81,64 @@ function App() {
   const [isBlueprintOpen, setIsBlueprintOpen] = useState(false);
   const [isPropertyPresentationOpen, setIsPropertyPresentationOpen] = useState(false);
   const [isZoningOpen, setIsZoningOpen] = useState(false);
+  const [isPagesDrawerOpen, setIsPagesDrawerOpen] = useState(false);
 
   const [authUser, setAuthUser] = useState<User | null>(null);
+
+  const handleSelectPage = (pageId: PageId) => {
+    switch (pageId) {
+      case 'landing':
+        setViewMode('landing');
+        break;
+      case 'login':
+        setViewMode('login');
+        break;
+      case 'globe':
+        setViewMode('app');
+        break;
+      case 'search':
+        setViewMode('app');
+        setIsSearchOpen(true);
+        break;
+      case 'analytics':
+        setViewMode('app');
+        setIsAnalyticsOpen(true);
+        break;
+      case 'validation':
+        setViewMode('app');
+        setIsValidationOpen(true);
+        break;
+      case 'passport':
+        setViewMode('app');
+        setIsPassportOpen(true);
+        break;
+      case 'emergency':
+        setViewMode('app');
+        setIsEmergencyOpen(true);
+        break;
+      case 'audit':
+        setViewMode('app');
+        setIsAuditOpen(true);
+        break;
+      case 'blueprint':
+        setViewMode('app');
+        setIsBlueprintOpen(true);
+        break;
+      case 'presentation':
+        setViewMode('app');
+        setIsPropertyPresentationOpen(true);
+        break;
+      case 'zoning':
+        setViewMode('app');
+        setIsZoningOpen(true);
+        break;
+      case 'utilities':
+        setViewMode('app');
+        setShowUnderground(true);
+        setShowUtilities(true);
+        break;
+    }
+  };
 
   const [conflicts, setConflicts] = useState<ValidationConflict[]>(demoConflicts);
   const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>(demoAuditLogs);
@@ -349,6 +406,7 @@ function App() {
         onGoToLanding={() => setViewMode('landing')}
         onOpenPropertyPresentation={() => setIsPropertyPresentationOpen(true)}
         onOpenZoning={() => setIsZoningOpen(true)}
+        onOpenPagesDrawer={() => setIsPagesDrawerOpen(true)}
       />
 
       {/* Main 3D GIS & Cadastral Area */}
@@ -511,6 +569,13 @@ function App() {
         logs={auditLogs}
         currentRole={userRole}
         onClose={() => setIsAuditOpen(false)}
+      />
+
+      <StitchNavigationDrawer
+        isOpen={isPagesDrawerOpen}
+        activePage="globe"
+        onClose={() => setIsPagesDrawerOpen(false)}
+        onSelectPage={handleSelectPage}
       />
     </div>
   );
