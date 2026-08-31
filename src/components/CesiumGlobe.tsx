@@ -455,7 +455,10 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
           id: 'solid-bim-building',
           polygon: {
             hierarchy: new PolygonHierarchy(footprintToCartesian(building.footprint, 0)),
+            height: 0,
             extrudedHeight: 28,
+            heightReference: HeightReference.CLAMP_TO_GROUND,
+            extrudedHeightReference: HeightReference.RELATIVE_TO_GROUND,
             material: Color.fromCssColorString('#f8fafc').withAlpha(0.95),
             outline: true,
             outlineColor: isSelected
@@ -470,8 +473,11 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
         viewer.entities.add({
           id: 'solid-bim-rooftop',
           polygon: {
-            hierarchy: new PolygonHierarchy(footprintToCartesian(building.footprint, 28)),
+            hierarchy: new PolygonHierarchy(footprintToCartesian(building.footprint, 0)),
+            height: 28,
             extrudedHeight: 33,
+            heightReference: HeightReference.RELATIVE_TO_GROUND,
+            extrudedHeightReference: HeightReference.RELATIVE_TO_GROUND,
             material: Color.fromCssColorString('#e2e8f0').withAlpha(0.95),
             outline: true,
             outlineColor: Color.fromCssColorString('#0284c7'),
@@ -508,7 +514,10 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
               id: `building-grid-${dx}-${dy}`,
               polygon: {
                 hierarchy: new PolygonHierarchy(footprintToCartesian(polyFootprint, 0)),
+                height: 0,
                 extrudedHeight: height,
+                heightReference: HeightReference.CLAMP_TO_GROUND,
+                extrudedHeightReference: HeightReference.RELATIVE_TO_GROUND,
                 material: Color.fromCssColorString(
                   (dx + dy) % 2 === 0 ? '#cbd5e1' : '#94a3b8'
                 ).withAlpha(0.85),
