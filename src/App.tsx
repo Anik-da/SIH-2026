@@ -27,6 +27,7 @@ import { EmergencyPlanningModal } from './components/cadastral/EmergencyPlanning
 import { AuditLogDrawer } from './components/cadastral/AuditLogDrawer';
 import { VolumetricAnalyticsModal } from './components/cadastral/VolumetricAnalyticsModal';
 import { GeoSearchModal } from './components/cadastral/GeoSearchModal';
+import { StitchControlDock } from './components/cadastral/StitchControlDock';
 import { AuthModal } from './components/auth/AuthModal';
 
 import { LandingPage } from './components/landing/LandingPage';
@@ -62,6 +63,7 @@ function App() {
   const [selectedFloorId, setSelectedFloorId] = useState<string | null>('B-001-F3');
   const [explodeState, setExplodeState] = useState<ExplodeState>('collapsed');
   const [showUnderground, setShowUnderground] = useState(true);
+  const [showUtilities, setShowUtilities] = useState(true);
 
   // Modals & Drawers State
   const [isValidationOpen, setIsValidationOpen] = useState(false);
@@ -349,11 +351,25 @@ function App() {
           selectedFloorId={selectedFloorId}
           explodeState={explodeState}
           showUnderground={showUnderground}
+          showUtilities={showUtilities}
           onCoordinatesChange={handleCoordinates}
           onSelect={handleSelectEntity}
           onSelectFloor={handleSelectFloor}
           onReady={handleReady}
         />
+
+        {/* Top-Center Floating Glassmorphic Stitch Command Dock */}
+        <div className="absolute top-4 left-1/2 z-20 -translate-x-1/2">
+          <StitchControlDock
+            explodeState={explodeState}
+            showUnderground={showUnderground}
+            showUtilities={showUtilities}
+            onToggleExplode={() => setExplodeState((prev) => (prev === 'exploded' ? 'collapsed' : 'exploded'))}
+            onToggleUnderground={() => setShowUnderground((prev) => !prev)}
+            onToggleUtilities={() => setShowUtilities((prev) => !prev)}
+            onOpenAnalytics={() => setIsAnalyticsOpen(true)}
+          />
+        </div>
 
         {/* Left side: Toolbar */}
         <div className="absolute left-4 top-4 z-10">
