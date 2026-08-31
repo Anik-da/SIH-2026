@@ -55,7 +55,6 @@ export function makeFloorLabel(
       showBackground: true,
       backgroundColor: new Cesium.Color(0.06, 0.09, 0.16, 0.88),
       backgroundPadding: new Cesium.Cartesian2(8, 5),
-      disableDepthTestDistance: Number.POSITIVE_INFINITY,
     },
   });
 }
