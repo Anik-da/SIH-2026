@@ -19,7 +19,7 @@ export const VerticalFloorSlider: React.FC<Props> = ({
     .filter((f) => showUnderground || !f.isUnderground);
 
   return (
-    <div className="pointer-events-auto absolute left-4 top-[310px] z-20 flex flex-col items-center gap-1.5 rounded-2xl border border-slate-800 bg-slate-900/85 p-2 shadow-xl backdrop-blur-md">
+    <div className="pointer-events-auto absolute left-20 top-4 z-20 flex flex-col items-center gap-1.5 rounded-2xl border border-slate-800 bg-slate-900/85 p-2 shadow-xl backdrop-blur-md">
       <div className="px-2 py-1 text-center text-[10px] font-bold tracking-wider text-slate-400">
         FLOORS
       </div>
