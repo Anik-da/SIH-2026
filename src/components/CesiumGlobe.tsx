@@ -19,6 +19,7 @@ import {
   VerticalOrigin,
   createWorldTerrainAsync,
   createWorldImageryAsync,
+  createOsmBuildingsAsync,
   IonWorldImageryStyle,
 } from 'cesium';
 import type { CesiumGlobeHandle } from './cesium.types';
@@ -29,6 +30,7 @@ import {
   computeExplodedZ,
   makeFloorLabel,
   colorFromRgba,
+  flyToBuilding,
 } from '../utils/cesium3dHelpers';
 import { STATUS_COLORS, SELECTED_COLOR, UNDERGROUND_COLOR, PARCEL_COLOR } from '../data/colors';
 
@@ -185,9 +187,22 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
             })
             .catch((err) => console.error('Failed to load world imagery', err));
 
+          createOsmBuildingsAsync()
+            .then((buildings) => {
+              if (!viewer.isDestroyed()) {
+                viewer.scene.primitives.add(buildings);
+              }
+            })
+            .catch((err) => console.error('Failed to load OSM buildings', err));
+
           viewer.scene.globe.enableLighting = true;
           if (viewer.scene.skyAtmosphere) viewer.scene.skyAtmosphere.show = true;
           viewer.scene.fog.enabled = true;
+
+          // Auto fly to 3D perspective pitch on load
+          if (building) {
+            flyToBuilding(viewer, building, 2.5);
+          }
         } catch {
           setDemoMode(true);
           viewer = createDemoViewer(containerRef.current);

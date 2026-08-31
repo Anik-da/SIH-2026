@@ -31,6 +31,7 @@ interface Props {
 }
 
 export const RealFinderHUD: React.FC<Props> = ({ onSelectFloor }) => {
+  const [isVisible, setIsVisible] = useState(true);
   const [activeTab, setActiveTab] = useState<'realfinder' | '51world'>('realfinder');
   const [selectedLegend, setSelectedLegend] = useState<string[]>(['Police Stations', 'School', 'Hospital', 'Office']);
 
@@ -40,23 +41,36 @@ export const RealFinderHUD: React.FC<Props> = ({ onSelectFloor }) => {
     );
   };
 
+  if (!isVisible) {
+    return (
+      <div className="pointer-events-none absolute top-4 left-64 z-20 font-sans">
+        <button
+          onClick={() => setIsVisible(true)}
+          className="pointer-events-auto flex items-center gap-2 rounded-xl border border-cyan-500/40 bg-slate-950/90 px-3.5 py-1.5 text-xs font-bold text-cyan-300 shadow-xl backdrop-blur-xl hover:bg-cyan-500/20"
+        >
+          <Sparkles className="h-4 w-4 text-cyan-400" />
+          Show RealFinder HUD Overlays
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="pointer-events-none absolute inset-0 z-20 overflow-hidden font-sans selection:bg-cyan-500 selection:text-slate-950">
       {/* Top 51WORLD Header Toolbar */}
-      <div className="pointer-events-auto absolute top-3 left-4 right-4 flex items-center justify-between rounded-2xl border border-cyan-500/30 bg-slate-950/85 px-5 py-2.5 shadow-2xl backdrop-blur-2xl ring-1 ring-white/10">
+      <div className="pointer-events-auto absolute top-3 left-16 right-16 flex items-center justify-between rounded-2xl border border-cyan-500/30 bg-slate-950/90 px-4 py-2 shadow-2xl backdrop-blur-2xl ring-1 ring-white/10">
         {/* Left Logo & Navigation */}
-        <div className="flex items-center gap-4">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-cyan-500 to-purple-600 font-black text-white shadow-lg">
+        <div className="flex items-center gap-3">
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-tr from-cyan-500 to-purple-600 font-black text-white shadow-lg">
             51
           </div>
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-xs font-black tracking-wide text-white uppercase">RealFinder 3D & Smart City Twin</h2>
-              <span className="rounded bg-cyan-500/20 px-2 py-0.5 text-[9px] font-bold text-cyan-300 border border-cyan-500/40">
+              <span className="rounded bg-cyan-500/20 px-1.5 py-0.5 text-[9px] font-bold text-cyan-300 border border-cyan-500/40">
                 LIVE CANVAS
               </span>
             </div>
-            <p className="text-[10px] text-slate-400">Urban Spatial Matrix · Residence Valley 3 (8th Stage)</p>
           </div>
         </div>
 
@@ -84,13 +98,19 @@ export const RealFinderHUD: React.FC<Props> = ({ onSelectFloor }) => {
           </button>
         </div>
 
-        {/* Right Time/Weather Widget */}
+        {/* Right Controls & Hide Button */}
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-900/90 px-3 py-1 text-xs">
-            <CloudSun className="h-4 w-4 text-amber-400" />
+          <div className="hidden md:flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-900/90 px-3 py-1 text-xs">
+            <CloudSun className="h-3.5 w-3.5 text-amber-400" />
             <span className="font-bold text-white">26°C Sunny</span>
-            <span className="text-[10px] text-slate-400">TIME: 09:14</span>
           </div>
+
+          <button
+            onClick={() => setIsVisible(false)}
+            className="rounded-xl border border-slate-800 bg-slate-900 px-2.5 py-1 text-xs font-bold text-slate-400 hover:text-white"
+          >
+            Hide HUD
+          </button>
         </div>
       </div>
 
@@ -98,7 +118,7 @@ export const RealFinderHUD: React.FC<Props> = ({ onSelectFloor }) => {
       {activeTab === 'realfinder' && (
         <>
           {/* Left Column Overlays */}
-          <div className="pointer-events-auto absolute top-20 left-4 w-96 space-y-4 max-h-[calc(100vh-100px)] overflow-y-auto pr-1">
+          <div className="pointer-events-auto absolute top-16 left-20 w-80 space-y-3 max-h-[calc(100vh-120px)] overflow-y-auto pr-1">
             {/* 3D Property Presentation Inspector Card */}
             <div className="rounded-2xl border border-cyan-500/30 bg-slate-950/90 p-4 shadow-2xl backdrop-blur-2xl ring-1 ring-white/10">
               <div className="flex items-center justify-between">
@@ -188,7 +208,7 @@ export const RealFinderHUD: React.FC<Props> = ({ onSelectFloor }) => {
           </div>
 
           {/* Right Column Overlays */}
-          <div className="pointer-events-auto absolute top-20 right-4 w-72 space-y-4">
+          <div className="pointer-events-auto absolute top-16 right-20 w-72 space-y-3">
             {/* POI Legend Filter */}
             <div className="rounded-2xl border border-slate-800 bg-slate-950/90 p-4 shadow-2xl backdrop-blur-2xl">
               <h4 className="text-xs font-bold text-white mb-2 flex items-center gap-1.5">
