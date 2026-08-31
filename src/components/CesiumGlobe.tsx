@@ -315,7 +315,6 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
           backgroundPadding: new Cartesian3(10, 6, 0) as unknown as undefined,
           verticalOrigin: VerticalOrigin.BOTTOM,
           horizontalOrigin: HorizontalOrigin.CENTER,
-          disableDepthTestDistance: Number.POSITIVE_INFINITY,
         }),
       });
 
@@ -358,14 +357,14 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
           },
         });
 
-        // Only render individual floor labels when explodeState is 'exploded' to prevent text overlap in collapsed mode!
-        if (explodeState === 'exploded') {
+        // Only render floor label for the SELECTED floor in exploded view to prevent text overlap
+        if (explodeState === 'exploded' && isSelected) {
           makeFloorLabel(
             viewer,
             building,
             floor,
             explodeFactor,
-            `${floor.label}\n${prop.vpid}`
+            `${floor.label} (${prop.vpid})`
           );
         }
       });
