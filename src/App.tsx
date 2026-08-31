@@ -30,6 +30,8 @@ import { GeoSearchModal } from './components/cadastral/GeoSearchModal';
 import { StitchControlDock } from './components/cadastral/StitchControlDock';
 import { SmartCityHUD } from './components/cadastral/SmartCityHUD';
 import { BlueprintConverterModal } from './components/cadastral/BlueprintConverterModal';
+import { PropertyPresentationModal } from './components/cadastral/PropertyPresentationModal';
+import { ZoningDashboardModal } from './components/cadastral/ZoningDashboardModal';
 import { AuthModal } from './components/auth/AuthModal';
 
 import { LandingPage } from './components/landing/LandingPage';
@@ -76,6 +78,8 @@ function App() {
   const [isAnalyticsOpen, setIsAnalyticsOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isBlueprintOpen, setIsBlueprintOpen] = useState(false);
+  const [isPropertyPresentationOpen, setIsPropertyPresentationOpen] = useState(false);
+  const [isZoningOpen, setIsZoningOpen] = useState(false);
 
   const [authUser, setAuthUser] = useState<User | null>(null);
 
@@ -343,6 +347,8 @@ function App() {
         onOpenSearch={() => setIsSearchOpen(true)}
         onOpenAuth={() => setIsAuthOpen(true)}
         onGoToLanding={() => setViewMode('landing')}
+        onOpenPropertyPresentation={() => setIsPropertyPresentationOpen(true)}
+        onOpenZoning={() => setIsZoningOpen(true)}
       />
 
       {/* Main 3D GIS & Cadastral Area */}
@@ -448,6 +454,16 @@ function App() {
       <BlueprintConverterModal
         isOpen={isBlueprintOpen}
         onClose={() => setIsBlueprintOpen(false)}
+      />
+
+      <PropertyPresentationModal
+        isOpen={isPropertyPresentationOpen}
+        onClose={() => setIsPropertyPresentationOpen(false)}
+      />
+
+      <ZoningDashboardModal
+        isOpen={isZoningOpen}
+        onClose={() => setIsZoningOpen(false)}
       />
 
       {/* Modals & Drawers */}

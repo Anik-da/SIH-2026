@@ -21,52 +21,52 @@ interface Props {
 }
 
 export const SmartCityHUD: React.FC<Props> = ({ onOpenAnalytics, onOpenValidation }) => {
-  const [collapsed, setCollapsed] = useState(false);
-  const [weatherMode, setWeatherMode] = useState<'day' | 'night' | 'rain'>('night');
+  const [collapsed, setCollapsed] = useState(true);
 
   return (
-    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 p-4 font-sans selection:bg-cyan-500 selection:text-slate-950">
-      {/* Top Banner Telemetry Bar (Floating beneath header) */}
-      <div className="pointer-events-auto absolute -top-[calc(100vh-140px)] left-4 right-4 flex items-center justify-between rounded-2xl border border-cyan-500/30 bg-slate-950/85 px-5 py-2.5 shadow-2xl backdrop-blur-2xl ring-1 ring-white/10">
+    <div className="pointer-events-none absolute inset-x-0 bottom-16 z-20 px-4 font-sans selection:bg-cyan-500 selection:text-slate-950">
+      {/* Top Banner Telemetry Bar */}
+      <div className="pointer-events-auto absolute -top-[calc(100vh-145px)] left-4 right-4 flex items-center justify-between rounded-2xl border border-cyan-500/30 bg-slate-950/90 px-4 py-2 shadow-2xl backdrop-blur-2xl ring-1 ring-white/10">
         {/* Left metrics */}
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <span className="flex h-3 w-3 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="flex h-2.5 w-2.5 rounded-full bg-emerald-400 animate-pulse" />
             <span className="text-xs font-black tracking-wider text-white">SMART CITY DIGITAL TWIN</span>
             <span className="rounded-md border border-cyan-500/40 bg-cyan-500/10 px-2 py-0.5 text-[10px] font-bold text-cyan-300">
               LIVE TELEMETRY
             </span>
           </div>
 
-          <div className="hidden items-center gap-6 md:flex border-l border-slate-800 pl-6">
+          <div className="hidden items-center gap-4 lg:flex border-l border-slate-800 pl-4 text-xs">
             <div>
-              <span className="text-[10px] text-slate-400 font-semibold uppercase">Building Occupancy</span>
-              <p className="text-xs font-black text-cyan-400">88.4% <span className="text-[10px] font-normal text-emerald-400">↑ +3.2%</span></p>
+              <span className="text-[10px] text-slate-400 uppercase">Occupancy: </span>
+              <span className="font-bold text-cyan-400">88.4%</span>
             </div>
             <div>
-              <span className="text-[10px] text-slate-400 font-semibold uppercase">Spatial Safety Index</span>
-              <p className="text-xs font-black text-emerald-400">99.2% <span className="text-[10px] text-slate-400">Compliant</span></p>
+              <span className="text-[10px] text-slate-400 uppercase">Safety: </span>
+              <span className="font-bold text-emerald-400">99.2%</span>
             </div>
             <div>
-              <span className="text-[10px] text-slate-400 font-semibold uppercase">Active ULPIN Parcels</span>
-              <p className="text-xs font-black text-purple-400">14,587 Registered</p>
+              <span className="text-[10px] text-slate-400 uppercase">ULPIN Parcels: </span>
+              <span className="font-bold text-purple-400">14,587</span>
             </div>
           </div>
         </div>
 
-        {/* Right Environment & Control Bar */}
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-900/90 px-3 py-1 text-xs">
-            <CloudSun className="h-4 w-4 text-amber-400" />
+        {/* Right Environment & Dashboard Toggle */}
+        <div className="flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-900 px-2.5 py-1 text-xs">
+            <CloudSun className="h-3.5 w-3.5 text-amber-400" />
             <span className="font-bold text-white">25°C Clear</span>
-            <span className="text-[10px] text-slate-400">14:25 IST</span>
           </div>
 
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-800 bg-slate-900 text-slate-300 hover:text-white"
+            className="flex items-center gap-2 rounded-xl border border-cyan-500/40 bg-cyan-500/15 px-3 py-1.5 text-xs font-bold text-cyan-300 shadow-md hover:bg-cyan-500/25"
           >
-            {collapsed ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            <TrendingUp className="h-3.5 w-3.5" />
+            <span>{collapsed ? 'Show Dashboard Analytics' : 'Hide Dashboard Analytics'}</span>
+            {collapsed ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
           </button>
         </div>
       </div>
