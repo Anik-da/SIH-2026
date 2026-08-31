@@ -83,7 +83,7 @@ const ownersByFloor: Record<number, string> = {
   0: 'NEXUS Retail Ventures Ltd.',
   1: 'Apex Commercial Properties',
   2: 'Vertex Tech Solutions',
-  3: 'SIH Innovation Labs',
+  3: 'VOLU Innovation Labs',
   4: 'Rajesh & Sunita Sharma',
   5: 'Ananya Deshmukh',
 };

@@ -537,10 +537,10 @@ function App() {
           )}
         </div>
 
-        {/* Bottom-right: SIH Disclaimer */}
+        {/* Bottom-right: System Info */}
         <div className="pointer-events-none absolute bottom-4 right-4 z-10 max-w-xs text-right">
           <p className="text-[10px] text-slate-500">
-            SIH26011 — VOLU-CAD 3D Vertical Cadastre System.
+            VOLU-CAD 3D Vertical Cadastre System.
             <br />
             Study area: {DEMO_AREA.name}
           </p>

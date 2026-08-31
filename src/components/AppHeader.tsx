@@ -75,9 +75,6 @@ export default function AppHeader({
         <div className="leading-tight">
           <div className="flex items-center gap-2">
             <h1 className="text-sm font-black tracking-wide text-white">VOLU-CAD 3D</h1>
-            <span className="rounded-md border border-cyan-500/30 bg-cyan-500/10 px-2 py-0.5 text-[10px] font-bold text-cyan-300">
-              SIH26011
-            </span>
           </div>
           <p className="text-[10px] text-slate-400">3D ULPIN &amp; Vertical Property Mapping Platform</p>
         </div>
