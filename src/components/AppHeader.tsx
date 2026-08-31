@@ -11,6 +11,7 @@ import {
   BarChart3,
   Search,
   Home,
+  Sparkles,
 } from 'lucide-react';
 import type { UserRole, ExplodeState } from '../types/cadastral';
 import type { User } from '../firebase';
@@ -34,6 +35,8 @@ interface Props {
   onOpenPropertyPresentation: () => void;
   onOpenZoning: () => void;
   onOpenPagesDrawer: () => void;
+  showRealFinderHud: boolean;
+  onToggleRealFinderHud: () => void;
 }
 
 export default function AppHeader({
@@ -55,6 +58,8 @@ export default function AppHeader({
   onOpenPropertyPresentation,
   onOpenZoning,
   onOpenPagesDrawer,
+  showRealFinderHud,
+  onToggleRealFinderHud,
 }: Props) {
   return (
     <header className="pointer-events-auto flex flex-wrap items-center justify-between border-b border-slate-800 bg-slate-900/95 px-5 py-2.5 shadow-lg backdrop-blur-xl">
@@ -134,6 +139,18 @@ export default function AppHeader({
         >
           <Home className="h-4 w-4 text-emerald-400" />
           Real Estate 3D Presentation
+        </button>
+
+        <button
+          onClick={onToggleRealFinderHud}
+          className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold transition-all active:scale-95 ${
+            showRealFinderHud
+              ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300 shadow-md shadow-cyan-500/20'
+              : 'border-slate-700 bg-slate-800/80 text-slate-400 hover:bg-slate-700'
+          }`}
+        >
+          <Sparkles className="h-4 w-4 text-cyan-400" />
+          51WORLD / RealFinder HUD Overlay
         </button>
 
         <button

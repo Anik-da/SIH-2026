@@ -83,6 +83,7 @@ function App() {
   const [isPropertyPresentationOpen, setIsPropertyPresentationOpen] = useState(false);
   const [isZoningOpen, setIsZoningOpen] = useState(false);
   const [isPagesDrawerOpen, setIsPagesDrawerOpen] = useState(false);
+  const [showRealFinderHud, setShowRealFinderHud] = useState(false);
 
   const [authUser, setAuthUser] = useState<User | null>(null);
 
@@ -408,6 +409,8 @@ function App() {
         onOpenPropertyPresentation={() => setIsPropertyPresentationOpen(true)}
         onOpenZoning={() => setIsZoningOpen(true)}
         onOpenPagesDrawer={() => setIsPagesDrawerOpen(true)}
+        showRealFinderHud={showRealFinderHud}
+        onToggleRealFinderHud={() => setShowRealFinderHud((prev) => !prev)}
       />
 
       {/* Main 3D GIS & Cadastral Area */}
@@ -426,70 +429,78 @@ function App() {
           onReady={handleReady}
         />
 
-        {/* Top-Center Floating Glassmorphic Stitch Command Dock */}
-        <div className="absolute top-4 left-1/2 z-20 -translate-x-1/2">
-          <StitchControlDock
-            explodeState={explodeState}
-            showUnderground={showUnderground}
-            showUtilities={showUtilities}
-            onToggleExplode={() => setExplodeState((prev) => (prev === 'exploded' ? 'collapsed' : 'exploded'))}
-            onToggleUnderground={() => setShowUnderground((prev) => !prev)}
-            onToggleUtilities={() => setShowUtilities((prev) => !prev)}
-            onOpenAnalytics={() => setIsAnalyticsOpen(true)}
-            onOpenBlueprint={() => setIsBlueprintOpen(true)}
+        {showRealFinderHud ? (
+          /* RealFinder & 51WORLD Live 3D Overlay HUD (Mutually Exclusive for ZERO overlap) */
+          <RealFinderHUD
+            onSelectFloor={handleSelectFloor}
+            onClose={() => setShowRealFinderHud(false)}
           />
-        </div>
+        ) : (
+          /* Standard 3D CAD & GIS Platform Toolbars */
+          <>
+            {/* Top-Center Floating Glassmorphic Stitch Command Dock */}
+            <div className="absolute top-4 left-1/2 z-20 -translate-x-1/2">
+              <StitchControlDock
+                explodeState={explodeState}
+                showUnderground={showUnderground}
+                showUtilities={showUtilities}
+                onToggleExplode={() => setExplodeState((prev) => (prev === 'exploded' ? 'collapsed' : 'exploded'))}
+                onToggleUnderground={() => setShowUnderground((prev) => !prev)}
+                onToggleUtilities={() => setShowUtilities((prev) => !prev)}
+                onOpenAnalytics={() => setIsAnalyticsOpen(true)}
+                onOpenBlueprint={() => setIsBlueprintOpen(true)}
+              />
+            </div>
 
-        {/* RealFinder & 51WORLD Live 3D Overlay HUD */}
-        <RealFinderHUD onSelectFloor={handleSelectFloor} />
+            {/* Smart City Digital Twin Telemetry & Analytics HUD */}
+            <SmartCityHUD
+              onOpenAnalytics={() => setIsAnalyticsOpen(true)}
+              onOpenValidation={() => setIsValidationOpen(true)}
+            />
 
-        {/* Smart City Digital Twin Telemetry & Analytics HUD */}
-        <SmartCityHUD
-          onOpenAnalytics={() => setIsAnalyticsOpen(true)}
-          onOpenValidation={() => setIsValidationOpen(true)}
-        />
+            {/* Left side: Toolbar */}
+            <div className="absolute left-4 top-4 z-10">
+              <MapToolbar
+                onHome={handleHome}
+                onZoomIn={handleZoomIn}
+                onZoomOut={handleZoomOut}
+                onResetNorth={handleResetNorth}
+                onToggleFullscreen={handleFullscreen}
+                is3D={is3D}
+                onToggle2D3D={handleToggle2D3D}
+                isMeasuring={isMeasuring}
+                onToggleMeasure={handleToggleMeasure}
+              />
+            </div>
 
-        {/* Left side: Toolbar */}
-        <div className="absolute left-4 top-4 z-10">
-          <MapToolbar
-            onHome={handleHome}
-            onZoomIn={handleZoomIn}
-            onZoomOut={handleZoomOut}
-            onResetNorth={handleResetNorth}
-            onToggleFullscreen={handleFullscreen}
-            is3D={is3D}
-            onToggle2D3D={handleToggle2D3D}
-            isMeasuring={isMeasuring}
-            onToggleMeasure={handleToggleMeasure}
-          />
-        </div>
+            {/* Left side: Vertical Floor Selector */}
+            <VerticalFloorSlider
+              floors={demoBuilding.floors}
+              selectedFloorId={selectedFloorId}
+              showUnderground={showUnderground}
+              onSelect={handleSelectFloor}
+            />
 
-        {/* Left side: Vertical Floor Selector */}
-        <VerticalFloorSlider
-          floors={demoBuilding.floors}
-          selectedFloorId={selectedFloorId}
-          showUnderground={showUnderground}
-          onSelect={handleSelectFloor}
-        />
+            {/* Right side: Layer Manager + Selection */}
+            <div className="absolute right-4 top-4 z-10 flex flex-col gap-3">
+              <LayerManager layers={layers} onToggle={handleToggleLayer} />
+              <SelectionManager selection={selection} onClear={handleClearSelection} />
+            </div>
 
-        {/* Right side: Layer Manager + Selection */}
-        <div className="absolute right-4 top-4 z-10 flex flex-col gap-3">
-          <LayerManager layers={layers} onToggle={handleToggleLayer} />
-          <SelectionManager selection={selection} onClear={handleClearSelection} />
-        </div>
+            {/* Right side: Vertical Property Details Panel */}
+            <VerticalPropertyPanel
+              property={selectedProperty}
+              onClose={() => setSelectedFloorId(null)}
+              onRunValidation={() => setIsValidationOpen(true)}
+              onOpenPassport={() => setIsPassportOpen(true)}
+            />
 
-        {/* Right side: Vertical Property Details Panel */}
-        <VerticalPropertyPanel
-          property={selectedProperty}
-          onClose={() => setSelectedFloorId(null)}
-          onRunValidation={() => setIsValidationOpen(true)}
-          onOpenPassport={() => setIsPassportOpen(true)}
-        />
-
-        {/* Bottom-left: Legend */}
-        <div className="absolute bottom-4 left-4 z-10">
-          <MapLegend />
-        </div>
+            {/* Bottom-left: Legend */}
+            <div className="absolute bottom-4 left-4 z-10">
+              <MapLegend />
+            </div>
+          </>
+        )}
 
         {/* Bottom-center: Camera Controls + Coordinates */}
         <div className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 flex-col items-center gap-3">
