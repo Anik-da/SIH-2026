@@ -32,6 +32,7 @@ import { SmartCityHUD } from './components/cadastral/SmartCityHUD';
 import { BlueprintConverterModal } from './components/cadastral/BlueprintConverterModal';
 import { PropertyPresentationModal } from './components/cadastral/PropertyPresentationModal';
 import { ZoningDashboardModal } from './components/cadastral/ZoningDashboardModal';
+import { RealFinderHUD } from './components/cadastral/RealFinderHUD';
 import { StitchNavigationDrawer, PageId } from './components/navigation/StitchNavigationDrawer';
 import { AuthModal } from './components/auth/AuthModal';
 
@@ -438,6 +439,9 @@ function App() {
             onOpenBlueprint={() => setIsBlueprintOpen(true)}
           />
         </div>
+
+        {/* RealFinder & 51WORLD Live 3D Overlay HUD */}
+        <RealFinderHUD onSelectFloor={handleSelectFloor} />
 
         {/* Smart City Digital Twin Telemetry & Analytics HUD */}
         <SmartCityHUD
