@@ -31,6 +31,8 @@ interface Props {
   onOpenSearch: () => void;
   onOpenAuth: () => void;
   onGoToLanding: () => void;
+  onOpenPropertyPresentation: () => void;
+  onOpenZoning: () => void;
 }
 
 export default function AppHeader({
@@ -49,6 +51,8 @@ export default function AppHeader({
   onOpenSearch,
   onOpenAuth,
   onGoToLanding,
+  onOpenPropertyPresentation,
+  onOpenZoning,
 }: Props) {
   return (
     <header className="pointer-events-auto flex flex-wrap items-center justify-between border-b border-slate-800 bg-slate-900/95 px-5 py-2.5 shadow-lg backdrop-blur-xl">
@@ -112,6 +116,22 @@ export default function AppHeader({
         >
           <Layers className="h-4 w-4" />
           Underground Mode
+        </button>
+
+        <button
+          onClick={onOpenPropertyPresentation}
+          className="flex items-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-300 transition-all hover:bg-emerald-500/20 active:scale-95"
+        >
+          <Home className="h-4 w-4 text-emerald-400" />
+          Real Estate 3D Presentation
+        </button>
+
+        <button
+          onClick={onOpenZoning}
+          className="flex items-center gap-1.5 rounded-xl border border-purple-500/30 bg-purple-500/10 px-3 py-1.5 text-xs font-semibold text-purple-300 transition-all hover:bg-purple-500/20 active:scale-95"
+        >
+          <Globe2 className="h-4 w-4 text-purple-400" />
+          Land Use & Zoning
         </button>
 
         <button

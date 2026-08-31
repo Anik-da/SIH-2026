@@ -258,11 +258,12 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
       // Remove existing custom 3D floor entities, labels, pins & utility pipes
       const toRemove = viewer.entities.values.filter(
         (e) =>
-          e.id.startsWith('floor-') ||
-          e.id.startsWith('label-') ||
-          e.id.startsWith('building-pin-') ||
-          e.id.startsWith('parcel-outline') ||
-          e.id.startsWith('utility-')
+          typeof e.id === 'string' &&
+          (e.id.includes('floor') ||
+            e.id.includes('label') ||
+            e.id.includes('building-pin') ||
+            e.id.includes('parcel') ||
+            e.id.includes('utility'))
       );
       toRemove.forEach((e) => viewer.entities.remove(e));
 
@@ -342,9 +343,8 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
           },
         });
 
-        // Render label if exploded or if this floor is currently selected
-        const shouldShowLabel = explodeState === 'exploded' || isSelected;
-        if (shouldShowLabel) {
+        // Only render individual floor labels when explodeState is 'exploded' to prevent text overlap in collapsed mode!
+        if (explodeState === 'exploded') {
           makeFloorLabel(
             viewer,
             building,
