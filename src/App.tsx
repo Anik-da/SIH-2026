@@ -28,6 +28,8 @@ import { AuditLogDrawer } from './components/cadastral/AuditLogDrawer';
 import { VolumetricAnalyticsModal } from './components/cadastral/VolumetricAnalyticsModal';
 import { GeoSearchModal } from './components/cadastral/GeoSearchModal';
 import { StitchControlDock } from './components/cadastral/StitchControlDock';
+import { SmartCityHUD } from './components/cadastral/SmartCityHUD';
+import { BlueprintConverterModal } from './components/cadastral/BlueprintConverterModal';
 import { AuthModal } from './components/auth/AuthModal';
 
 import { LandingPage } from './components/landing/LandingPage';
@@ -73,6 +75,7 @@ function App() {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isAnalyticsOpen, setIsAnalyticsOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isBlueprintOpen, setIsBlueprintOpen] = useState(false);
 
   const [authUser, setAuthUser] = useState<User | null>(null);
 
@@ -368,8 +371,15 @@ function App() {
             onToggleUnderground={() => setShowUnderground((prev) => !prev)}
             onToggleUtilities={() => setShowUtilities((prev) => !prev)}
             onOpenAnalytics={() => setIsAnalyticsOpen(true)}
+            onOpenBlueprint={() => setIsBlueprintOpen(true)}
           />
         </div>
+
+        {/* Smart City Digital Twin Telemetry & Analytics HUD */}
+        <SmartCityHUD
+          onOpenAnalytics={() => setIsAnalyticsOpen(true)}
+          onOpenValidation={() => setIsValidationOpen(true)}
+        />
 
         {/* Left side: Toolbar */}
         <div className="absolute left-4 top-4 z-10">
@@ -433,6 +443,12 @@ function App() {
           </p>
         </div>
       </div>
+
+      {/* Modals & Drawers */}
+      <BlueprintConverterModal
+        isOpen={isBlueprintOpen}
+        onClose={() => setIsBlueprintOpen(false)}
+      />
 
       {/* Modals & Drawers */}
       <AuthModal

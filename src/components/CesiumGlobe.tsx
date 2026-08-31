@@ -261,7 +261,7 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
       );
       toRemove.forEach((e) => viewer.entities.remove(e));
 
-      // 1. Parcel 2D Ground Footprint Outline
+      // 1. Parcel 2D Ground Footprint Outline & 3D Pin Label
       const parcelPositions = footprintToCartesian(building.footprint, 0);
       viewer.entities.add({
         id: 'parcel-outline',
@@ -272,6 +272,30 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
           outlineColor: Color.fromCssColorString('#38bdf8'),
           outlineWidth: 2,
         },
+      });
+
+      // 3D Floating Building Tower Badge (Matching Smart Park Image 1)
+      const centerCartesian = Cartesian3.fromDegrees(
+        building.center.lon,
+        building.center.lat,
+        36 // High-rise top elevation
+      );
+
+      viewer.entities.add({
+        id: 'building-pin-b1a',
+        position: centerCartesian,
+        label: new LabelGraphics({
+          text: ` B1-A TOWER `,
+          font: 'bold 12px Inter, sans-serif',
+          fillColor: Color.fromCssColorString('#0f172a'),
+          style: LabelStyle.FILL,
+          showBackground: true,
+          backgroundColor: Color.fromCssColorString('#38bdf8'),
+          backgroundPadding: new Cartesian3(10, 6, 0) as unknown as undefined,
+          verticalOrigin: VerticalOrigin.BOTTOM,
+          horizontalOrigin: HorizontalOrigin.CENTER,
+          disableDepthTestDistance: Number.POSITIVE_INFINITY,
+        }),
       });
 
       // 2. 3D Floor Extruded Volumes
