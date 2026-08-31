@@ -574,6 +574,7 @@ function App() {
         isOpen={isSearchOpen}
         properties={demoProperties}
         onSelectProperty={handleSelectFloor}
+        onSelectLocation={(lat, lon, height) => globeRef.current?.flyToLocation(lat, lon, height)}
         onClose={() => setIsSearchOpen(false)}
       />
 
