@@ -420,13 +420,14 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
       const viewer = viewerRef.current;
       if (!viewer || !building) return;
 
-      // Remove existing custom 3D floor entities, labels, pins & utility pipes
+      // Remove existing custom 3D floor entities, labels, pins, buildings & utility pipes
       const toRemove = viewer.entities.values.filter(
         (e) =>
           typeof e.id === 'string' &&
           (e.id.includes('floor') ||
             e.id.includes('label') ||
-            e.id.includes('building-pin') ||
+            e.id.includes('building') ||
+            e.id.includes('solid-bim') ||
             e.id.includes('parcel') ||
             e.id.includes('utility'))
       );
