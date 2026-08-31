@@ -507,7 +507,11 @@ function App() {
 
         {/* Bottom-center: Camera Controls + Coordinates */}
         <div className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 flex-col items-center gap-3">
-          <CameraControls onGoToDemo={handleGoToDemo} onResetView={handleResetView} />
+          <CameraControls
+            onGoToDemo={handleGoToDemo}
+            onResetView={handleResetView}
+            onSelectLocation={(lat, lon, height) => globeRef.current?.flyToLocation(lat, lon, height)}
+          />
           <CoordinateDisplay coordinates={coordinates} />
           {isMeasuring && (
             <div className="pointer-events-auto rounded-lg border border-cyan-500/40 bg-cyan-500/15 px-4 py-2 text-xs font-medium text-cyan-200 backdrop-blur-md">

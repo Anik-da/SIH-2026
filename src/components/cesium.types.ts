@@ -12,6 +12,7 @@ export interface CesiumGlobeHandle {
   rotateLeft: () => void;
   rotateRight: () => void;
   tiltView: () => void;
+  flyToLocation: (lat: number, lon: number, height?: number) => void;
 }
 
 export type { Viewer, Entity };

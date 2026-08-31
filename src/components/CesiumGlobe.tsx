@@ -175,6 +175,19 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
           },
         });
       },
+      flyToLocation: (lat: number, lon: number, height = 1200) => {
+        const viewer = viewerRef.current;
+        if (!viewer) return;
+        viewer.camera.flyTo({
+          destination: Cartesian3.fromDegrees(lon, lat, height),
+          orientation: {
+            heading: CesiumMath.toRadians(35),
+            pitch: CesiumMath.toRadians(-35),
+            roll: 0,
+          },
+          duration: 2.5,
+        });
+      },
     }));
 
     // Viewer Initialization
