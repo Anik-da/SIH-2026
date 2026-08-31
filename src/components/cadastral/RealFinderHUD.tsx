@@ -28,9 +28,10 @@ import {
 
 interface Props {
   onSelectFloor?: (floorId: string) => void;
+  onClose?: () => void;
 }
 
-export const RealFinderHUD: React.FC<Props> = ({ onSelectFloor }) => {
+export const RealFinderHUD: React.FC<Props> = ({ onSelectFloor, onClose }) => {
   const [isVisible, setIsVisible] = useState(true);
   const [activeTab, setActiveTab] = useState<'realfinder' | '51world'>('realfinder');
   const [selectedLegend, setSelectedLegend] = useState<string[]>(['Police Stations', 'School', 'Hospital', 'Office']);
@@ -106,7 +107,10 @@ export const RealFinderHUD: React.FC<Props> = ({ onSelectFloor }) => {
           </div>
 
           <button
-            onClick={() => setIsVisible(false)}
+            onClick={() => {
+              setIsVisible(false);
+              onClose?.();
+            }}
             className="rounded-xl border border-slate-800 bg-slate-900 px-2.5 py-1 text-xs font-bold text-slate-400 hover:text-white"
           >
             Hide HUD
