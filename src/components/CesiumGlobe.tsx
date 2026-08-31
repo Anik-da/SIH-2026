@@ -243,7 +243,25 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
             })
             .catch((err) => console.error('Failed to load world imagery', err));
 
-          // 1. Try Google Photorealistic 3D Tileset for Shanghai/Global realistic 3D mesh
+          // Load OpenStreetMap 3D Buildings for worldwide 3D building coverage (including India)
+          createOsmBuildingsAsync()
+            .then((buildings) => {
+              if (!viewer.isDestroyed()) {
+                buildings.style = new Cesium3DTileStyle({
+                  color: {
+                    conditions: [
+                      ["${feature['building']} === 'commercial'", "color('#38bdf8', 0.9)"],
+                      ["${feature['building']} === 'residential'", "color('#818cf8', 0.9)"],
+                      ["true", "color('#f8fafc', 0.9)"],
+                    ],
+                  },
+                });
+                viewer.scene.primitives.add(buildings);
+              }
+            })
+            .catch((err) => console.error('Failed to load OSM buildings', err));
+
+          // Load Google Photorealistic 3D Tileset if supported
           if (typeof createGooglePhotorealistic3DTileset === 'function') {
             createGooglePhotorealistic3DTileset()
               .then((googleTiles) => {
@@ -251,42 +269,7 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
                   viewer.scene.primitives.add(googleTiles);
                 }
               })
-              .catch(() => {
-                // Fallback to OSM 3D Buildings with high-fidelity glass/cyan styling
-                createOsmBuildingsAsync()
-                  .then((buildings) => {
-                    if (!viewer.isDestroyed()) {
-                      buildings.style = new Cesium3DTileStyle({
-                        color: {
-                          conditions: [
-                            ["${feature['building']} === 'commercial'", "color('#38bdf8', 0.85)"],
-                            ["${feature['building']} === 'residential'", "color('#818cf8', 0.85)"],
-                            ["true", "color('#0ea5e9', 0.8)"],
-                          ],
-                        },
-                      });
-                      viewer.scene.primitives.add(buildings);
-                    }
-                  })
-                  .catch((err) => console.error('Failed to load OSM buildings', err));
-              });
-          } else {
-            createOsmBuildingsAsync()
-              .then((buildings) => {
-                if (!viewer.isDestroyed()) {
-                  buildings.style = new Cesium3DTileStyle({
-                    color: {
-                      conditions: [
-                        ["${feature['building']} === 'commercial'", "color('#38bdf8', 0.85)"],
-                        ["${feature['building']} === 'residential'", "color('#818cf8', 0.85)"],
-                        ["true", "color('#0ea5e9', 0.8)"],
-                      ],
-                    },
-                  });
-                  viewer.scene.primitives.add(buildings);
-                }
-              })
-              .catch((err) => console.error('Failed to load OSM buildings', err));
+              .catch((err) => console.warn('Google 3D Tiles optional fallback:', err));
           }
 
           viewer.scene.globe.enableLighting = true;
