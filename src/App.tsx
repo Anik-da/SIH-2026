@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Cartesian3,
   Color,
@@ -25,12 +25,14 @@ import { TopologyValidationModal } from './components/cadastral/TopologyValidati
 import { PropertyPassportModal } from './components/cadastral/PropertyPassportModal';
 import { EmergencyPlanningModal } from './components/cadastral/EmergencyPlanningModal';
 import { AuditLogDrawer } from './components/cadastral/AuditLogDrawer';
+import { AuthModal } from './components/auth/AuthModal';
 
 import { DEFAULT_LAYERS, DEMO_AREA } from './types/gis';
 import type { Coordinates, LayerConfig, SelectionInfo } from './types/gis';
 import type { UserRole, ExplodeState, ValidationConflict, AuditLogEntry } from './types/cadastral';
 import { demoBuilding, demoProperties, demoConflicts, demoAuditLogs } from './data/cadastralDemoData';
 import { flyToBuilding, flyToFloor } from './utils/cesium3dHelpers';
+import { auth, onAuthStateChanged, type User } from './firebase';
 
 function App() {
   const globeRef = useRef<CesiumGlobeHandle>(null);
@@ -58,9 +60,20 @@ function App() {
   const [isPassportOpen, setIsPassportOpen] = useState(false);
   const [isEmergencyOpen, setIsEmergencyOpen] = useState(false);
   const [isAuditOpen, setIsAuditOpen] = useState(false);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+
+  const [authUser, setAuthUser] = useState<User | null>(null);
 
   const [conflicts, setConflicts] = useState<ValidationConflict[]>(demoConflicts);
   const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>(demoAuditLogs);
+
+  // Subscribe to Firebase Auth State Changes
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setAuthUser(user);
+    });
+    return () => unsubscribe();
+  }, []);
 
   const selectedProperty =
     demoProperties.find((p) => p.floorId === selectedFloorId) ?? null;
@@ -108,7 +121,6 @@ function App() {
       data,
     });
 
-    // Automatically focus camera on 3D building tower when demo parcel selected
     const viewer = viewerRef.current;
     if (viewer) {
       flyToBuilding(viewer, demoBuilding);
@@ -128,7 +140,6 @@ function App() {
     globeRef.current?.setMode3D(newMode);
   }, [is3D]);
 
-  // ── Demo area & camera fly to target building ───────────────────────────
   const handleGoToDemo = useCallback(() => {
     const viewer = viewerRef.current;
     if (viewer) {
@@ -189,7 +200,6 @@ function App() {
     });
   }, []);
 
-  // ── Clear selection ─────────────────────────────────────────────────────
   const handleClearSelection = useCallback(() => {
     const viewer = viewerRef.current;
     if (viewer) {
@@ -199,7 +209,6 @@ function App() {
     setSelectedFloorId(null);
   }, []);
 
-  // ── Measurement tool ────────────────────────────────────────────────────
   const handleToggleMeasure = useCallback(() => {
     const viewer = viewerRef.current;
     if (!viewer) return;
@@ -263,7 +272,6 @@ function App() {
     }, ScreenSpaceEventType.RIGHT_CLICK);
   }, [isMeasuring]);
 
-  // Conflict Resolution Action
   const handleResolveConflict = useCallback((id: string) => {
     setConflicts((prev) =>
       prev.map((c) => (c.id === id ? { ...c, resolved: true } : c))
@@ -275,11 +283,11 @@ function App() {
         userRole,
         action: 'CONFLICT_RESOLVED',
         targetId: id,
-        details: `Conflict ${id} resolved by ${userRole}.`,
+        details: `Conflict ${id} resolved by ${userRole} (${authUser?.email || 'Anonymous'}).`,
       },
       ...prev,
     ]);
-  }, [userRole]);
+  }, [userRole, authUser]);
 
   const activeConflictCount = conflicts.filter((c) => !c.resolved).length;
 
@@ -291,12 +299,14 @@ function App() {
         explodeState={explodeState}
         showUnderground={showUnderground}
         activeConflictCount={activeConflictCount}
+        authUser={authUser}
         onRoleChange={setUserRole}
         onToggleExplode={() => setExplodeState((prev) => (prev === 'exploded' ? 'collapsed' : 'exploded'))}
         onToggleUnderground={() => setShowUnderground((prev) => !prev)}
         onOpenValidation={() => setIsValidationOpen(true)}
         onOpenEmergency={() => setIsEmergencyOpen(true)}
         onOpenAudit={() => setIsAuditOpen(true)}
+        onOpenAuth={() => setIsAuthOpen(true)}
       />
 
       {/* Main 3D GIS & Cadastral Area */}
@@ -378,6 +388,12 @@ function App() {
       </div>
 
       {/* Modals & Drawers */}
+      <AuthModal
+        isOpen={isAuthOpen}
+        user={authUser}
+        onClose={() => setIsAuthOpen(false)}
+      />
+
       <TopologyValidationModal
         isOpen={isValidationOpen}
         conflicts={conflicts}
@@ -407,7 +423,6 @@ function App() {
   );
 }
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
 function calculateDistance(points: Cartesian3[], viewer: Viewer): number {
   let total = 0;
   for (let i = 1; i < points.length; i++) {
