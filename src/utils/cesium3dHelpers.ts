@@ -42,6 +42,7 @@ export function makeFloorLabel(
   const { zMax } = computeExplodedZ(floor, explodeFactor);
   const labelZ = zMax + 0.6;
   return viewer.entities.add({
+    id: `label-floor-${floor.id}`,
     position: Cesium.Cartesian3.fromDegrees(building.center.lon, building.center.lat, labelZ),
     label: {
       text,
