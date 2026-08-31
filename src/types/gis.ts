@@ -36,11 +36,35 @@ export interface Coordinates {
 }
 
 export const DEMO_AREA = {
-  name: 'Karnataka / Bengaluru — Demo Study Area',
-  longitude: 77.5946,
-  latitude: 12.9716,
-  height: 4200,
+  name: 'Shanghai 3D Photorealistic Twin (Image 1)',
+  longitude: 121.4998,
+  latitude: 31.2397,
+  height: 1200,
 };
+
+export const DEMO_LOCATIONS = [
+  {
+    id: 'shanghai',
+    name: '🏙️ Shanghai 3D Digital Twin (Matching Image)',
+    longitude: 121.4998,
+    latitude: 31.2397,
+    height: 1100,
+  },
+  {
+    id: 'nyc',
+    name: '🗽 New York City 3D Skyscraper Mesh',
+    longitude: -74.0060,
+    latitude: 40.7128,
+    height: 1200,
+  },
+  {
+    id: 'bengaluru',
+    name: '🇮🇳 Bengaluru Cadastral Twin',
+    longitude: 77.5946,
+    latitude: 12.9716,
+    height: 1200,
+  },
+];
 
 export const DEFAULT_LAYERS: LayerConfig[] = [
   { id: 'terrain', label: 'Terrain', description: '3D terrain elevation', visible: true, color: '#8b7355' },
