@@ -125,7 +125,7 @@ export const VolumetricAnalyticsModal: React.FC<Props> = ({
             <div className="flex items-center gap-3">
               <ShieldCheck className="h-6 w-6 text-emerald-400" />
               <div>
-                <h4 className="text-xs font-bold text-white">SIH26011 Volumetric Spatial Compliance</h4>
+                <h4 className="text-xs font-bold text-white">Volumetric Spatial Compliance</h4>
                 <p className="text-[11px] text-slate-400">
                   Sub-surface and vertical parcel boundaries match master cadastral register.
                 </p>

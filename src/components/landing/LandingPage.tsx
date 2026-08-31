@@ -23,7 +23,7 @@ interface Props {
 
 export const LandingPage: React.FC<Props> = ({ user, onLaunchApp, onOpenLogin }) => {
   return (
-    <div className="min-h-screen w-full bg-slate-950 text-slate-100 selection:bg-cyan-500 selection:text-slate-950 font-sans">
+    <div className="min-h-screen w-full overflow-x-hidden bg-slate-950 text-slate-100 selection:bg-cyan-500 selection:text-slate-950 font-sans">
       {/* Background Glow Accents */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute -top-40 -left-40 h-[500px] w-[500px] rounded-full bg-cyan-500/10 blur-[120px]" />
@@ -40,9 +40,6 @@ export const LandingPage: React.FC<Props> = ({ user, onLaunchApp, onOpenLogin })
           <div>
             <div className="flex items-center gap-2">
               <span className="text-base font-black tracking-wider text-white">VOLU-CAD 3D</span>
-              <span className="rounded-md border border-cyan-500/40 bg-cyan-500/10 px-2 py-0.5 text-[10px] font-bold text-cyan-300">
-                SIH 2026
-              </span>
             </div>
             <p className="text-[11px] text-slate-400">3D ULPIN &amp; Vertical Cadastral Mapping</p>
           </div>
@@ -78,11 +75,6 @@ export const LandingPage: React.FC<Props> = ({ user, onLaunchApp, onOpenLogin })
 
       {/* Hero Section */}
       <section className="relative z-10 mx-auto max-w-6xl px-6 pt-16 pb-20 text-center md:pt-24 md:pb-28">
-        <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-4 py-1.5 text-xs font-bold text-cyan-300 backdrop-blur-md mb-6">
-          <Sparkles className="h-4 w-4 text-cyan-400 animate-pulse" />
-          <span>Smart India Hackathon 2026 · Problem Statement SIH26011</span>
-        </div>
-
         <h1 className="text-4xl font-black tracking-tight text-white sm:text-6xl md:text-7xl leading-tight">
           Next-Gen <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">3D Vertical Cadastre</span> &amp; Volumetric Mapping
         </h1>
@@ -119,7 +111,7 @@ export const LandingPage: React.FC<Props> = ({ user, onLaunchApp, onOpenLogin })
           </div>
           <div className="p-2">
             <span className="text-2xl font-black text-purple-400 md:text-3xl">Sub-Surface</span>
-            <p className="mt-1 text-xs text-slate-400">Underground $Z &lt; 0$ Cadastre</p>
+            <p className="mt-1 text-xs text-slate-400">Underground Cadastre (Z &lt; 0m)</p>
           </div>
           <div className="p-2">
             <span className="text-2xl font-black text-emerald-400 md:text-3xl">6 Rules</span>
@@ -220,7 +212,6 @@ export const LandingPage: React.FC<Props> = ({ user, onLaunchApp, onOpenLogin })
           <div className="flex items-center gap-2">
             <Globe2 className="h-4 w-4 text-cyan-400" />
             <span className="font-bold text-slate-300">VOLU-CAD 3D</span>
-            <span>· Smart India Hackathon 2026 (SIH26011)</span>
           </div>
           <p>© 2026 VOLU-CAD 3D System. All Rights Reserved.</p>
         </div>

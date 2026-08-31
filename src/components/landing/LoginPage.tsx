@@ -95,9 +95,6 @@ export const LoginPage: React.FC<Props> = ({ user, onBackToLanding, onLaunchApp 
           >
             <ArrowLeft className="h-4 w-4" /> Back to Landing Page
           </button>
-          <span className="rounded-md border border-cyan-500/30 bg-cyan-500/10 px-2.5 py-1 text-[10px] font-bold text-cyan-300">
-            SIH26011 OFFICIAL PORTAL
-          </span>
         </div>
 
         {/* Mid Title & Visual Graphic */}
@@ -129,7 +126,7 @@ export const LoginPage: React.FC<Props> = ({ user, onBackToLanding, onLaunchApp 
 
         {/* Bottom Footer info */}
         <div className="relative z-10 text-[11px] text-slate-500">
-          VOLU-CAD 3D System · Smart India Hackathon 2026
+          VOLU-CAD 3D Spatial System
         </div>
       </div>
 

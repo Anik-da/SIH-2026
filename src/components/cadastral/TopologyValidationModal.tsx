@@ -32,7 +32,7 @@ export const TopologyValidationModal: React.FC<Props> = ({
             <div>
               <h2 className="text-lg font-bold text-white">3D Spatial Topology Validation Engine</h2>
               <p className="text-xs text-slate-400">
-                SIH26011 Automated Geometry & Volume Overlap Detector
+                Automated Geometry &amp; Volume Overlap Detector
               </p>
             </div>
           </div>
