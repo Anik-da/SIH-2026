@@ -88,6 +88,15 @@ function App() {
   const [showRealFinderHud, setShowRealFinderHud] = useState(false);
   const [isRealFinderCardOpen, setIsRealFinderCardOpen] = useState(true);
   const [isRealFinderInspectOpen, setIsRealFinderInspectOpen] = useState(false);
+  const [selectedBuildingFeature, setSelectedBuildingFeature] = useState<{
+    name: string;
+    ulpin: string;
+    lat: number;
+    lon: number;
+    height: number;
+    floors: number;
+    valuation: string;
+  } | null>(null);
 
   const [authUser, setAuthUser] = useState<User | null>(null);
 
@@ -430,6 +439,10 @@ function App() {
           onCoordinatesChange={handleCoordinates}
           onSelect={handleSelectEntity}
           onSelectFloor={handleSelectFloor}
+          onSelectBuildingFeature={(bData) => {
+            setSelectedBuildingFeature(bData);
+            setIsRealFinderCardOpen(true);
+          }}
           onReady={handleReady}
         />
 
@@ -612,14 +625,18 @@ function App() {
           setIsRealFinderCardOpen(false);
           setIsRealFinderInspectOpen(true);
         }}
-        buildingName="B1-A Commercial Skyscraper"
+        buildingName={selectedBuildingFeature?.name || 'B1-A Commercial Skyscraper'}
+        ulpin={selectedBuildingFeature?.ulpin || 'ULPIN-IN-MH-2026-89421'}
+        valuation={selectedBuildingFeature?.valuation || '₹1,28,35,000'}
+        lat={selectedBuildingFeature?.lat || 31.2397}
+        lon={selectedBuildingFeature?.lon || 121.4998}
       />
 
       {/* RealFinder Unit Occupancy & CAD Blueprint Inspector Modal (Image 1) */}
       <RealFinderInspectModal
         isOpen={isRealFinderInspectOpen}
         onClose={() => setIsRealFinderInspectOpen(false)}
-        buildingName="B1-A Commercial Skyscraper"
+        buildingName={selectedBuildingFeature?.name || 'B1-A Commercial Skyscraper'}
       />
     </div>
   );

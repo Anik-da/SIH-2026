@@ -6,6 +6,10 @@ interface Props {
   onClose: () => void;
   onExplore: () => void;
   buildingName?: string;
+  ulpin?: string;
+  valuation?: string;
+  lat?: number;
+  lon?: number;
 }
 
 export const RealFinderCardPopup: React.FC<Props> = ({
@@ -13,6 +17,10 @@ export const RealFinderCardPopup: React.FC<Props> = ({
   onClose,
   onExplore,
   buildingName = 'B1-A Commercial Skyscraper',
+  ulpin = 'ULPIN-IN-MH-2026-89421',
+  valuation = '₹1,28,35,000',
+  lat = 31.2397,
+  lon = 121.4998,
 }) => {
   if (!isOpen) return null;
 
@@ -29,13 +37,13 @@ export const RealFinderCardPopup: React.FC<Props> = ({
 
       <h3 className="text-sm font-bold text-slate-100">{buildingName}</h3>
       <p className="flex items-center gap-1 text-[11px] text-slate-400 mt-0.5">
-        <MapPin className="h-3 w-3 text-cyan-400" /> 24412 Star Valley Dr · ULPIN: VP-31-LUJ-894
+        <MapPin className="h-3 w-3 text-cyan-400" /> {lat.toFixed(4)}° N, {lon.toFixed(4)}° E · {ulpin}
       </p>
 
       <div className="mt-3 flex items-center justify-between border-t border-slate-800 pt-2.5">
         <div>
           <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Valuation / Rent</span>
-          <p className="text-sm font-extrabold text-cyan-300">₹1,28,35,000</p>
+          <p className="text-sm font-extrabold text-cyan-300">{valuation}</p>
         </div>
         <div className="text-right">
           <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Occupancy</span>
