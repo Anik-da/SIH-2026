@@ -33,6 +33,8 @@ import { BlueprintConverterModal } from './components/cadastral/BlueprintConvert
 import { PropertyPresentationModal } from './components/cadastral/PropertyPresentationModal';
 import { ZoningDashboardModal } from './components/cadastral/ZoningDashboardModal';
 import { RealFinderHUD } from './components/cadastral/RealFinderHUD';
+import { RealFinderInspectModal } from './components/cadastral/RealFinderInspectModal';
+import { RealFinderCardPopup } from './components/cadastral/RealFinderCardPopup';
 import { StitchNavigationDrawer, PageId } from './components/navigation/StitchNavigationDrawer';
 import { AuthModal } from './components/auth/AuthModal';
 
@@ -84,6 +86,8 @@ function App() {
   const [isZoningOpen, setIsZoningOpen] = useState(false);
   const [isPagesDrawerOpen, setIsPagesDrawerOpen] = useState(false);
   const [showRealFinderHud, setShowRealFinderHud] = useState(false);
+  const [isRealFinderCardOpen, setIsRealFinderCardOpen] = useState(true);
+  const [isRealFinderInspectOpen, setIsRealFinderInspectOpen] = useState(false);
 
   const [authUser, setAuthUser] = useState<User | null>(null);
 
@@ -598,6 +602,24 @@ function App() {
         activePage="globe"
         onClose={() => setIsPagesDrawerOpen(false)}
         onSelectPage={handleSelectPage}
+      />
+
+      {/* Floating 3D Building Click Popup Card (Image 2) */}
+      <RealFinderCardPopup
+        isOpen={isRealFinderCardOpen}
+        onClose={() => setIsRealFinderCardOpen(false)}
+        onExplore={() => {
+          setIsRealFinderCardOpen(false);
+          setIsRealFinderInspectOpen(true);
+        }}
+        buildingName="B1-A Commercial Skyscraper"
+      />
+
+      {/* RealFinder Unit Occupancy & CAD Blueprint Inspector Modal (Image 1) */}
+      <RealFinderInspectModal
+        isOpen={isRealFinderInspectOpen}
+        onClose={() => setIsRealFinderInspectOpen(false)}
+        buildingName="B1-A Commercial Skyscraper"
       />
     </div>
   );
