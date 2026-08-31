@@ -255,9 +255,14 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
       const viewer = viewerRef.current;
       if (!viewer || !building) return;
 
-      // Remove existing custom 3D floor entities & utility pipes
+      // Remove existing custom 3D floor entities, labels, pins & utility pipes
       const toRemove = viewer.entities.values.filter(
-        (e) => e.id.startsWith('floor-') || e.id.startsWith('parcel-outline') || e.id.startsWith('utility-')
+        (e) =>
+          e.id.startsWith('floor-') ||
+          e.id.startsWith('label-') ||
+          e.id.startsWith('building-pin-') ||
+          e.id.startsWith('parcel-outline') ||
+          e.id.startsWith('utility-')
       );
       toRemove.forEach((e) => viewer.entities.remove(e));
 
@@ -337,13 +342,17 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
           },
         });
 
-        makeFloorLabel(
-          viewer,
-          building,
-          floor,
-          explodeFactor,
-          `${floor.label}\n${prop.vpid}`
-        );
+        // Render label if exploded or if this floor is currently selected
+        const shouldShowLabel = explodeState === 'exploded' || isSelected;
+        if (shouldShowLabel) {
+          makeFloorLabel(
+            viewer,
+            building,
+            floor,
+            explodeFactor,
+            `${floor.label}\n${prop.vpid}`
+          );
+        }
       });
 
         // 3. Sub-surface Utility Infrastructure Lines ($Z < 0$)
