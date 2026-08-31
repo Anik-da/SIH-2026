@@ -480,47 +480,46 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
           },
         });
 
-        // 3. Render Surrounding 3D Buildings for Complete 3D City Context
-        const SURROUNDING_OFFSETS = [
-          { dLon: 0.0004, dLat: 0.0003, width: 22, depth: 18, height: 24, id: 'surround-1' },
-          { dLon: -0.0005, dLat: 0.0003, width: 20, depth: 25, height: 32, id: 'surround-2' },
-          { dLon: 0.0003, dLat: -0.0004, width: 25, depth: 20, height: 28, id: 'surround-3' },
-          { dLon: -0.0004, dLat: -0.0004, width: 18, depth: 18, height: 18, id: 'surround-4' },
-          { dLon: 0.0007, dLat: 0.0001, width: 20, depth: 20, height: 40, id: 'surround-5' },
-          { dLon: -0.0007, dLat: 0.0001, width: 24, depth: 22, height: 36, id: 'surround-6' },
-          { dLon: 0.0001, dLat: 0.0006, width: 30, depth: 15, height: 22, id: 'surround-7' },
-          { dLon: 0.0001, dLat: -0.0006, width: 28, depth: 16, height: 20, id: 'surround-8' },
-        ];
-
+        // 3. Render Dense 5x5 Urban 3D Building Grid for 100% Neighborhood Coverage
         const LAT_M = 111320;
         const LON_M = 111320 * Math.cos((building.center.lat * Math.PI) / 180);
 
-        SURROUNDING_OFFSETS.forEach((item) => {
-          const cLat = building.center.lat + item.dLat;
-          const cLon = building.center.lon + item.dLon;
-          const hw = item.width / (2 * LON_M);
-          const hd = item.depth / (2 * LAT_M);
+        for (let dx = -2; dx <= 2; dx++) {
+          for (let dy = -2; dy <= 2; dy++) {
+            if (dx === 0 && dy === 0) continue; // Skip main central building
 
-          const polyFootprint: [number, number][] = [
-            [cLon - hw, cLat - hd],
-            [cLon + hw, cLat - hd],
-            [cLon + hw, cLat + hd],
-            [cLon - hw, cLat + hd],
-          ];
+            const cLat = building.center.lat + dy * 0.00035;
+            const cLon = building.center.lon + dx * 0.00035;
+            const width = 20 + Math.abs((dx * 7 + dy * 11) % 12);
+            const depth = 18 + Math.abs((dx * 13 + dy * 5) % 10);
+            const height = 15 + Math.abs((dx * 17 + dy * 23) % 25);
 
-          viewer.entities.add({
-            id: `building-${item.id}`,
-            polygon: {
-              hierarchy: new PolygonHierarchy(footprintToCartesian(polyFootprint, 0)),
-              extrudedHeight: item.height,
-              material: Color.fromCssColorString('#cbd5e1').withAlpha(0.85),
-              outline: true,
-              outlineColor: Color.fromCssColorString('#475569'),
-              outlineWidth: 1,
-              shadows: ShadowMode.ENABLED,
-            },
-          });
-        });
+            const hw = width / (2 * LON_M);
+            const hd = depth / (2 * LAT_M);
+
+            const polyFootprint: [number, number][] = [
+              [cLon - hw, cLat - hd],
+              [cLon + hw, cLat - hd],
+              [cLon + hw, cLat + hd],
+              [cLon - hw, cLat + hd],
+            ];
+
+            viewer.entities.add({
+              id: `building-grid-${dx}-${dy}`,
+              polygon: {
+                hierarchy: new PolygonHierarchy(footprintToCartesian(polyFootprint, 0)),
+                extrudedHeight: height,
+                material: Color.fromCssColorString(
+                  (dx + dy) % 2 === 0 ? '#cbd5e1' : '#94a3b8'
+                ).withAlpha(0.85),
+                outline: true,
+                outlineColor: Color.fromCssColorString('#475569'),
+                outlineWidth: 1,
+                shadows: ShadowMode.ENABLED,
+              },
+            });
+          }
+        }
 
         return;
       }
