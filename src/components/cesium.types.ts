@@ -9,6 +9,9 @@ export interface CesiumGlobeHandle {
   goHome: () => void;
   setMode3D: (is3D: boolean) => void;
   toggleFullscreen: () => void;
+  rotateLeft: () => void;
+  rotateRight: () => void;
+  tiltView: () => void;
 }
 
 export type { Viewer, Entity };

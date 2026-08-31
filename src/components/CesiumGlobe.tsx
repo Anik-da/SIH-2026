@@ -146,6 +146,33 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
           document.exitFullscreen?.();
         }
       },
+      rotateLeft: () => {
+        const viewer = viewerRef.current;
+        if (!viewer) return;
+        viewer.camera.rotateLeft(CesiumMath.toRadians(45));
+      },
+      rotateRight: () => {
+        const viewer = viewerRef.current;
+        if (!viewer) return;
+        viewer.camera.rotateRight(CesiumMath.toRadians(45));
+      },
+      tiltView: () => {
+        const viewer = viewerRef.current;
+        if (!viewer) return;
+        // Toggle tilt between -25deg, -45deg, and -70deg pitch
+        const currentPitch = CesiumMath.toDegrees(viewer.camera.pitch);
+        let nextPitch = -45;
+        if (currentPitch < -60) nextPitch = -25;
+        else if (currentPitch < -35) nextPitch = -70;
+
+        viewer.camera.setView({
+          orientation: {
+            heading: viewer.camera.heading,
+            pitch: CesiumMath.toRadians(nextPitch),
+            roll: 0,
+          },
+        });
+      },
     }));
 
     // Viewer Initialization

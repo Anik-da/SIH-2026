@@ -470,6 +470,9 @@ function App() {
                 onToggle2D3D={handleToggle2D3D}
                 isMeasuring={isMeasuring}
                 onToggleMeasure={handleToggleMeasure}
+                onRotateLeft={() => globeRef.current?.rotateLeft()}
+                onRotateRight={() => globeRef.current?.rotateRight()}
+                onTiltView={() => globeRef.current?.tiltView()}
               />
             </div>
 

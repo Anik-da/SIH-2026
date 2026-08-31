@@ -1,4 +1,4 @@
-import { Home, ZoomIn, ZoomOut, Maximize2, Compass, Ruler, Box, Map } from 'lucide-react';
+import { Home, ZoomIn, ZoomOut, Maximize2, Compass, Ruler, Box, Map, RotateCcw, RotateCw, Eye } from 'lucide-react';
 
 interface MapToolbarProps {
   onHome: () => void;
@@ -10,6 +10,9 @@ interface MapToolbarProps {
   onToggle2D3D: () => void;
   isMeasuring: boolean;
   onToggleMeasure: () => void;
+  onRotateLeft?: () => void;
+  onRotateRight?: () => void;
+  onTiltView?: () => void;
 }
 
 interface ToolButton {
@@ -29,11 +32,17 @@ export default function MapToolbar({
   onToggle2D3D,
   isMeasuring,
   onToggleMeasure,
+  onRotateLeft,
+  onRotateRight,
+  onTiltView,
 }: MapToolbarProps) {
   const buttons: ToolButton[] = [
     { icon: Home, label: 'Home', onClick: onHome },
     { icon: ZoomIn, label: 'Zoom In', onClick: onZoomIn },
     { icon: ZoomOut, label: 'Zoom Out', onClick: onZoomOut },
+    { icon: RotateCcw, label: 'Rotate 45° Left', onClick: onRotateLeft || (() => {}) },
+    { icon: RotateCw, label: 'Rotate 45° Right', onClick: onRotateRight || (() => {}) },
+    { icon: Eye, label: 'Change 3D Pitch / Tilt', onClick: onTiltView || (() => {}) },
     { icon: Compass, label: 'Reset North', onClick: onResetNorth },
     { icon: Ruler, label: 'Measure', onClick: onToggleMeasure, active: isMeasuring },
     { icon: Maximize2, label: 'Fullscreen', onClick: onToggleFullscreen },
