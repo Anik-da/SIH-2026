@@ -20,6 +20,8 @@ import {
   createWorldTerrainAsync,
   createWorldImageryAsync,
   createOsmBuildingsAsync,
+  createGooglePhotorealistic3DTileset,
+  Cesium3DTileStyle,
   IonWorldImageryStyle,
 } from 'cesium';
 import type { CesiumGlobeHandle } from './cesium.types';
@@ -214,21 +216,76 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
             })
             .catch((err) => console.error('Failed to load world imagery', err));
 
-          createOsmBuildingsAsync()
-            .then((buildings) => {
-              if (!viewer.isDestroyed()) {
-                viewer.scene.primitives.add(buildings);
-              }
-            })
-            .catch((err) => console.error('Failed to load OSM buildings', err));
+          // 1. Try Google Photorealistic 3D Tileset for Shanghai/Global realistic 3D mesh
+          if (typeof createGooglePhotorealistic3DTileset === 'function') {
+            createGooglePhotorealistic3DTileset()
+              .then((googleTiles) => {
+                if (!viewer.isDestroyed()) {
+                  viewer.scene.primitives.add(googleTiles);
+                }
+              })
+              .catch(() => {
+                // Fallback to OSM 3D Buildings with high-fidelity glass/cyan styling
+                createOsmBuildingsAsync()
+                  .then((buildings) => {
+                    if (!viewer.isDestroyed()) {
+                      buildings.style = new Cesium3DTileStyle({
+                        color: {
+                          conditions: [
+                            ["${feature['building']} === 'commercial'", "color('#38bdf8', 0.85)"],
+                            ["${feature['building']} === 'residential'", "color('#818cf8', 0.85)"],
+                            ["true", "color('#0ea5e9', 0.8)"],
+                          ],
+                        },
+                      });
+                      viewer.scene.primitives.add(buildings);
+                    }
+                  })
+                  .catch((err) => console.error('Failed to load OSM buildings', err));
+              });
+          } else {
+            createOsmBuildingsAsync()
+              .then((buildings) => {
+                if (!viewer.isDestroyed()) {
+                  buildings.style = new Cesium3DTileStyle({
+                    color: {
+                      conditions: [
+                        ["${feature['building']} === 'commercial'", "color('#38bdf8', 0.85)"],
+                        ["${feature['building']} === 'residential'", "color('#818cf8', 0.85)"],
+                        ["true", "color('#0ea5e9', 0.8)"],
+                      ],
+                    },
+                  });
+                  viewer.scene.primitives.add(buildings);
+                }
+              })
+              .catch((err) => console.error('Failed to load OSM buildings', err));
+          }
 
           viewer.scene.globe.enableLighting = true;
           if (viewer.scene.skyAtmosphere) viewer.scene.skyAtmosphere.show = true;
           viewer.scene.fog.enabled = true;
 
-          // Auto fly to 3D perspective pitch on load
+          // Prevent camera from going under terrain/inside globe
+          viewer.scene.screenSpaceCameraController.minimumZoomDistance = 35;
+          viewer.scene.globe.depthTestAgainstTerrain = true;
+
+          // Initialize camera high above terrain level (1250m = 815m ground + 435m overhead pitch distance)
           if (building) {
-            flyToBuilding(viewer, building, 2.5);
+            viewer.camera.setView({
+              destination: Cartesian3.fromDegrees(building.center.lon, building.center.lat, 1250),
+              orientation: {
+                heading: CesiumMath.toRadians(35),
+                pitch: CesiumMath.toRadians(-35),
+                roll: 0,
+              },
+            });
+            // Smoothly fly to 95m close-up inspection after terrain renders
+            setTimeout(() => {
+              if (!viewer.isDestroyed()) {
+                flyToBuilding(viewer, building, 2.0);
+              }
+            }, 1200);
           }
         } catch {
           setDemoMode(true);
