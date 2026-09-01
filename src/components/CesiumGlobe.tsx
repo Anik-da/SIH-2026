@@ -58,17 +58,19 @@ function generateViewportMesh(
   const cLon = (west + east) / 2;
   const LON_M = 111320 * Math.cos((cLat * Math.PI) / 180);
 
-  const stepX = Math.min((east - west) / 9, 0.002);
-  const stepY = Math.min((north - south) / 9, 0.002);
+  const spanX = Math.abs(east - west);
+  const spanY = Math.abs(north - south);
+  const stepX = spanX / 13;
+  const stepY = spanY / 13;
 
-  for (let i = 1; i <= 8; i++) {
-    for (let j = 1; j <= 8; j++) {
-      const bLat = south + j * stepY;
-      const bLon = west + i * stepX;
+  for (let i = 1; i <= 12; i++) {
+    for (let j = 1; j <= 12; j++) {
+      const bLat = Math.min(south, north) + j * stepY;
+      const bLon = Math.min(west, east) + i * stepX;
 
-      const width = 16 + Math.abs((i * 11 + j * 7) % 14);
-      const depth = 15 + Math.abs((i * 13 + j * 5) % 12);
-      const height = 12 + Math.abs((i * 17 + j * 23) % 26);
+      const width = 18 + Math.abs((i * 11 + j * 7) % 16);
+      const depth = 16 + Math.abs((i * 13 + j * 5) % 14);
+      const height = 12 + Math.abs((i * 17 + j * 23) % 28);
 
       const hw = width / (2 * LON_M);
       const hd = depth / (2 * LAT_M);
@@ -138,16 +140,17 @@ function loadViewport3DBuildings(viewer: Viewer) {
   );
   oldOsmEntities.forEach((e) => viewer.entities.remove(e));
 
+  // Always generate dense procedural 3D building mesh so 100% of the viewport is filled with 3D buildings
+  generateViewportMesh(viewer, west, south, east, north);
+
+  // Fetch OpenStreetMap real footprints if available
   const query = `[out:json][timeout:10];(way["building"](${south.toFixed(4)},${west.toFixed(4)},${north.toFixed(4)},${east.toFixed(4)}););out body;>;out skel qt;`;
   const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
 
   fetch(url)
     .then((res) => res.json())
     .then((data) => {
-      if (!data || !data.elements || viewer.isDestroyed()) {
-        generateViewportMesh(viewer, west, south, east, north);
-        return;
-      }
+      if (!data || !data.elements || viewer.isDestroyed()) return;
 
       const nodesMap = new Map<number, [number, number]>();
       data.elements.forEach((el: any) => {
@@ -156,7 +159,7 @@ function loadViewport3DBuildings(viewer: Viewer) {
 
       let count = 0;
       data.elements.forEach((el: any) => {
-        if (el.type === 'way' && el.nodes && el.nodes.length >= 3 && count < 200) {
+        if (el.type === 'way' && el.nodes && el.nodes.length >= 3 && count < 250) {
           const coordsFlat: number[] = [];
           el.nodes.forEach((nodeId: number) => {
             const coord = nodesMap.get(nodeId);
@@ -169,7 +172,7 @@ function loadViewport3DBuildings(viewer: Viewer) {
               ? parseFloat(el.tags.height)
               : el.tags?.['building:levels']
               ? parseFloat(el.tags['building:levels']) * 3.5
-              : Math.max(10, (el.id % 25) + 9);
+              : Math.max(12, (el.id % 25) + 10);
 
             viewer.entities.add({
               id: `osm-ext-${el.id}`,
@@ -189,14 +192,8 @@ function loadViewport3DBuildings(viewer: Viewer) {
           }
         }
       });
-
-      if (count < 6) {
-        generateViewportMesh(viewer, west, south, east, north);
-      }
     })
-    .catch(() => {
-      generateViewportMesh(viewer, west, south, east, north);
-    });
+    .catch(() => {});
 }
 
 export interface PickedBuildingData {
