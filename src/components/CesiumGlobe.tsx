@@ -182,6 +182,7 @@ interface CesiumGlobeProps {
   onCoordinatesChange?: (coords: { latitude: number; longitude: number; elevation: number }) => void;
   onSelect?: (entity: Entity | null) => void;
   onSelectFloor?: (floorId: string) => void;
+  customGeoJson?: any;
   onSelectBuildingFeature?: (data: PickedBuildingData) => void;
   onReady?: (viewer: Viewer) => void;
 }
@@ -198,6 +199,7 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
       onCoordinatesChange,
       onSelect,
       onSelectFloor,
+      customGeoJson,
       onSelectBuildingFeature,
       onReady,
     },
@@ -766,6 +768,53 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
         viewer.scene.globe.translucency.backFaceAlpha = 1.0;
       }
     }, [showUnderground]);
+
+    // Render Custom Imported GeoJSON 3D Buildings
+    useEffect(() => {
+      const viewer = viewerRef.current;
+      if (!viewer || !customGeoJson || viewer.isDestroyed()) return;
+
+      const oldImported = viewer.entities.values.filter(
+        (e) => typeof e.id === 'string' && e.id.startsWith('custom-geojson-3d-')
+      );
+      oldImported.forEach((e) => viewer.entities.remove(e));
+
+      if (customGeoJson.type === 'FeatureCollection' && Array.isArray(customGeoJson.features)) {
+        customGeoJson.features.forEach((feature: any, idx: number) => {
+          if (feature.geometry && (feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon')) {
+            const rawCoords =
+              feature.geometry.type === 'Polygon'
+                ? feature.geometry.coordinates[0]
+                : feature.geometry.coordinates[0][0];
+
+            const flatCoords: number[] = [];
+            rawCoords.forEach((pt: number[]) => flatCoords.push(pt[0], pt[1]));
+
+            if (flatCoords.length >= 6) {
+              const tagHeight =
+                feature.properties?.height ||
+                (feature.properties?.['building:levels'] ? feature.properties['building:levels'] * 3.5 : 22);
+
+              viewer.entities.add({
+                id: `custom-geojson-3d-${idx}`,
+                polygon: {
+                  hierarchy: new PolygonHierarchy(Cartesian3.fromDegreesArray(flatCoords)),
+                  height: 0,
+                  extrudedHeight: tagHeight,
+                  heightReference: HeightReference.CLAMP_TO_GROUND,
+                  extrudedHeightReference: HeightReference.RELATIVE_TO_GROUND,
+                  material: Color.fromCssColorString('#0284c7').withAlpha(0.92),
+                  outline: true,
+                  outlineColor: Color.fromCssColorString('#38bdf8'),
+                  outlineWidth: 2,
+                  shadows: ShadowMode.ENABLED,
+                },
+              });
+            }
+          }
+        });
+      }
+    }, [customGeoJson]);
 
     return (
       <div className="relative h-full w-full">

@@ -90,6 +90,7 @@ function App() {
   const [isRealFinderCardOpen, setIsRealFinderCardOpen] = useState(true);
   const [isRealFinderInspectOpen, setIsRealFinderInspectOpen] = useState(false);
   const [isGeoJsonImporterOpen, setIsGeoJsonImporterOpen] = useState(false);
+  const [importedGeoJson, setImportedGeoJson] = useState<any>(null);
   const [selectedBuildingFeature, setSelectedBuildingFeature] = useState<{
     name: string;
     ulpin: string;
@@ -439,6 +440,7 @@ function App() {
           explodeState={explodeState}
           showUnderground={showUnderground}
           showUtilities={showUtilities}
+          customGeoJson={importedGeoJson}
           onCoordinatesChange={handleCoordinates}
           onSelect={handleSelectEntity}
           onSelectFloor={handleSelectFloor}
@@ -647,6 +649,7 @@ function App() {
       <GeoJsonImporterModal
         isOpen={isGeoJsonImporterOpen}
         onClose={() => setIsGeoJsonImporterOpen(false)}
+        onImportGeoJson={(gData) => setImportedGeoJson(gData)}
       />
     </div>
   );

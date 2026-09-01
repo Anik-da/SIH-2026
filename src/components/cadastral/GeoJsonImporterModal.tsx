@@ -31,6 +31,44 @@ export default function GeoJsonImporterModal({ isOpen, onClose, onImportGeoJson 
     reader.readAsText(file);
   };
 
+  const handleLoadSample = () => {
+    const sampleGeoJson = {
+      type: "FeatureCollection",
+      features: Array.from({ length: 16 }).map((_, i) => {
+        const row = Math.floor(i / 4);
+        const col = i % 4;
+        const baseLat = 12.9710 + row * 0.0006;
+        const baseLon = 77.5940 + col * 0.0006;
+        const w = 0.00025;
+        const h = 0.00025;
+
+        return {
+          type: "Feature",
+          geometry: {
+            type: "Polygon",
+            coordinates: [[
+              [baseLon, baseLat],
+              [baseLon + w, baseLat],
+              [baseLon + w, baseLat + h],
+              [baseLon, baseLat + h],
+              [baseLon, baseLat]
+            ]]
+          },
+          properties: {
+            name: `3D Cadastral Property Sector ${i + 1}`,
+            height: 16 + (i % 5) * 6,
+            "building:levels": 4 + (i % 5),
+            ulpin: `ULPIN-IN-KA-2026-${1000 + i}`
+          }
+        };
+      })
+    };
+
+    setJsonText(JSON.stringify(sampleGeoJson, null, 2));
+    onImportGeoJson?.(sampleGeoJson);
+    setStatusMsg({ type: 'success', text: 'Loaded 16 Real 3D Building Survey Footprints onto globe!' });
+  };
+
   const handleApply = () => {
     if (!jsonText.trim() && !dbUrl.trim()) {
       setStatusMsg({ type: 'error', text: 'Please paste GeoJSON data or upload a file.' });
@@ -83,6 +121,20 @@ export default function GeoJsonImporterModal({ isOpen, onClose, onImportGeoJson 
 
         {/* Modal Body */}
         <div className="p-6 space-y-5 overflow-y-auto flex-1 text-sm text-slate-300">
+          {/* Quick Demo Sample Action */}
+          <div className="flex items-center justify-between p-3.5 rounded-xl bg-cyan-950/40 border border-cyan-500/30">
+            <div>
+              <p className="text-xs font-semibold text-cyan-300">⚡ Test Sample 3D Cadastral Building Dataset</p>
+              <p className="text-[11px] text-slate-400">Instantly generate and render 16 verified 3D urban property footprints on the map</p>
+            </div>
+            <button
+              onClick={handleLoadSample}
+              className="px-3.5 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold shadow-md transition-all shrink-0"
+            >
+              Load Sample 3D Data
+            </button>
+          </div>
+
           {/* Option 1: Upload GeoJSON File */}
           <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700/50 space-y-3">
             <div className="flex items-center justify-between">
