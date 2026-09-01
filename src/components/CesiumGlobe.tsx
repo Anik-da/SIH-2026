@@ -58,11 +58,11 @@ function generateViewportMesh(
   const cLon = (west + east) / 2;
   const LON_M = 111320 * Math.cos((cLat * Math.PI) / 180);
 
-  const stepX = Math.min((east - west) / 6, 0.002);
-  const stepY = Math.min((north - south) / 6, 0.002);
+  const stepX = Math.min((east - west) / 9, 0.002);
+  const stepY = Math.min((north - south) / 9, 0.002);
 
-  for (let i = 1; i <= 5; i++) {
-    for (let j = 1; j <= 5; j++) {
+  for (let i = 1; i <= 8; i++) {
+    for (let j = 1; j <= 8; j++) {
       const bLat = south + j * stepY;
       const bLon = west + i * stepX;
 
@@ -102,13 +102,34 @@ function generateViewportMesh(
 function loadViewport3DBuildings(viewer: Viewer) {
   if (viewer.isDestroyed()) return;
 
-  const rect = viewer.camera.computeViewRectangle(viewer.scene.globe.ellipsoid);
-  if (!rect) return;
+  let west: number, south: number, east: number, north: number;
 
-  const west = CesiumMath.toDegrees(rect.west);
-  const south = CesiumMath.toDegrees(rect.south);
-  const east = CesiumMath.toDegrees(rect.east);
-  const north = CesiumMath.toDegrees(rect.north);
+  const rect = viewer.camera.computeViewRectangle(viewer.scene.globe.ellipsoid);
+  if (rect) {
+    west = CesiumMath.toDegrees(rect.west);
+    south = CesiumMath.toDegrees(rect.south);
+    east = CesiumMath.toDegrees(rect.east);
+    north = CesiumMath.toDegrees(rect.north);
+  } else {
+    const centerCartesian = viewer.camera.pickEllipsoid(
+      new Cartesian3(viewer.canvas.clientWidth / 2, viewer.canvas.clientHeight / 2, 0),
+      viewer.scene.globe.ellipsoid
+    );
+    if (centerCartesian) {
+      const carto = Cartographic.fromCartesian(centerCartesian);
+      const cLat = CesiumMath.toDegrees(carto.latitude);
+      const cLon = CesiumMath.toDegrees(carto.longitude);
+      west = cLon - 0.015;
+      east = cLon + 0.015;
+      south = cLat - 0.015;
+      north = cLat + 0.015;
+    } else {
+      west = 77.585;
+      east = 77.615;
+      south = 12.960;
+      north = 12.985;
+    }
+  }
 
   const oldOsmEntities = viewer.entities.values.filter(
     (e) =>
