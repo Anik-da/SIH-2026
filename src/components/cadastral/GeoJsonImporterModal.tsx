@@ -34,39 +34,69 @@ export default function GeoJsonImporterModal({ isOpen, onClose, onImportGeoJson 
   const handleLoadSample = () => {
     const sampleGeoJson = {
       type: "FeatureCollection",
-      features: Array.from({ length: 16 }).map((_, i) => {
-        const row = Math.floor(i / 4);
-        const col = i % 4;
-        const baseLat = 12.9710 + row * 0.0006;
-        const baseLon = 77.5940 + col * 0.0006;
-        const w = 0.00025;
-        const h = 0.00025;
-
-        return {
+      features: [
+        {
           type: "Feature",
           geometry: {
             type: "Polygon",
             coordinates: [[
-              [baseLon, baseLat],
-              [baseLon + w, baseLat],
-              [baseLon + w, baseLat + h],
-              [baseLon, baseLat + h],
-              [baseLon, baseLat]
+              [77.5956, 12.9718],
+              [77.5960, 12.9718],
+              [77.5960, 12.9721],
+              [77.5956, 12.9721],
+              [77.5956, 12.9718]
             ]]
           },
-          properties: {
-            name: `3D Cadastral Property Sector ${i + 1}`,
-            height: 16 + (i % 5) * 6,
-            "building:levels": 4 + (i % 5),
-            ulpin: `ULPIN-IN-KA-2026-${1000 + i}`
-          }
-        };
-      })
+          properties: { name: "UB City Commercial Tower B", height: 42, "building:levels": 12, ulpin: "ULPIN-IN-KA-2026-98121" }
+        },
+        {
+          type: "Feature",
+          geometry: {
+            type: "Polygon",
+            coordinates: [[
+              [77.5936, 12.9724],
+              [77.5940, 12.9724],
+              [77.5940, 12.9727],
+              [77.5936, 12.9727],
+              [77.5936, 12.9724]
+            ]]
+          },
+          properties: { name: "Prestige Meridian Tower A", height: 36, "building:levels": 10, ulpin: "ULPIN-IN-KA-2026-98122" }
+        },
+        {
+          type: "Feature",
+          geometry: {
+            type: "Polygon",
+            coordinates: [[
+              [77.5933, 12.9709],
+              [77.5937, 12.9709],
+              [77.5937, 12.9712],
+              [77.5933, 12.9712],
+              [77.5933, 12.9709]
+            ]]
+          },
+          properties: { name: "Concorde Innovation Block 3", height: 30, "building:levels": 8, ulpin: "ULPIN-IN-KA-2026-98123" }
+        },
+        {
+          type: "Feature",
+          geometry: {
+            type: "Polygon",
+            coordinates: [[
+              [77.5950, 12.9704],
+              [77.5954, 12.9704],
+              [77.5954, 12.9707],
+              [77.5950, 12.9707],
+              [77.5950, 12.9704]
+            ]]
+          },
+          properties: { name: "Garuda Corporate Hub", height: 28, "building:levels": 7, ulpin: "ULPIN-IN-KA-2026-98124" }
+        }
+      ]
     };
 
     setJsonText(JSON.stringify(sampleGeoJson, null, 2));
     onImportGeoJson?.(sampleGeoJson);
-    setStatusMsg({ type: 'success', text: 'Loaded 16 Real 3D Building Survey Footprints onto globe!' });
+    setStatusMsg({ type: 'success', text: 'Loaded 4 Verified Satellite 3D Building Footprints!' });
   };
 
   const handleApply = () => {
