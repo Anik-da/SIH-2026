@@ -183,6 +183,7 @@ interface CesiumGlobeProps {
   onSelect?: (entity: Entity | null) => void;
   onSelectFloor?: (floorId: string) => void;
   customGeoJson?: any;
+  visMode?: 'photorealistic' | 'cadastral' | 'vertical_cadastre' | 'analytics';
   userCreatedBuildings?: {
     id: string;
     name: string;
@@ -211,6 +212,7 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
       onSelect,
       onSelectFloor,
       customGeoJson,
+      visMode = 'vertical_cadastre',
       userCreatedBuildings,
       onSelectBuildingFeature,
       onReady,
