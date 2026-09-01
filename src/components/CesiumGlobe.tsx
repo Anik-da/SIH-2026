@@ -249,18 +249,81 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
             .then((buildings) => {
               if (!viewer.isDestroyed()) {
                 buildings.style = new Cesium3DTileStyle({
+                  defines: {
+                    buildingHeight:
+                      "Boolean(${feature['height']}) ? Number(${feature['height']}) : (Boolean(${feature['building:levels']}) ? Number(${feature['building:levels']}) * 3.5 : 14.0)",
+                  },
+                  height: "${buildingHeight}",
                   color: {
                     conditions: [
-                      ["${feature['building']} === 'commercial'", "color('#38bdf8', 0.9)"],
-                      ["${feature['building']} === 'residential'", "color('#818cf8', 0.9)"],
-                      ["true", "color('#f8fafc', 0.9)"],
+                      ["${feature['building']} === 'commercial'", "color('#38bdf8', 0.95)"],
+                      ["${feature['building']} === 'residential'", "color('#818cf8', 0.95)"],
+                      ["true", "color('#f8fafc', 0.92)"],
                     ],
                   },
+                  show: true,
                 });
                 viewer.scene.primitives.add(buildings);
               }
             })
             .catch((err) => console.error('Failed to load OSM buildings', err));
+
+          // Real-Time OpenStreetMap Overpass API 3D Building Extrusion Engine
+          const south = 12.965;
+          const west = 77.588;
+          const north = 12.978;
+          const east = 77.602;
+          const overpassUrl = `https://overpass-api.de/api/interpreter?data=%5Bout%3Ajson%5D%3Bway%5B%22building%22%5D(${south}%2C${west}%2C${north}%2C${east})%3Bout%20body%3B%3E%3Bout%20skel%20qt%3B`;
+
+          fetch(overpassUrl)
+            .then((res) => res.json())
+            .then((data) => {
+              if (!data || !data.elements || viewer.isDestroyed()) return;
+
+              const nodesMap = new Map<number, [number, number]>();
+              data.elements.forEach((el: any) => {
+                if (el.type === 'node') {
+                  nodesMap.set(el.id, [el.lon, el.lat]);
+                }
+              });
+
+              data.elements.forEach((el: any) => {
+                if (el.type === 'way' && el.nodes && el.nodes.length >= 3) {
+                  const coordsFlat: number[] = [];
+                  el.nodes.forEach((nodeId: number) => {
+                    const coord = nodesMap.get(nodeId);
+                    if (coord) {
+                      coordsFlat.push(coord[0], coord[1]);
+                    }
+                  });
+
+                  if (coordsFlat.length >= 6) {
+                    const tagHeight = el.tags?.height
+                      ? parseFloat(el.tags.height)
+                      : el.tags?.['building:levels']
+                      ? parseFloat(el.tags['building:levels']) * 3.5
+                      : Math.max(10, (el.id % 25) + 8);
+
+                    viewer.entities.add({
+                      id: `real-osm-building-${el.id}`,
+                      polygon: {
+                        hierarchy: new PolygonHierarchy(Cartesian3.fromDegreesArray(coordsFlat)),
+                        height: 0,
+                        extrudedHeight: tagHeight,
+                        heightReference: HeightReference.CLAMP_TO_GROUND,
+                        extrudedHeightReference: HeightReference.RELATIVE_TO_GROUND,
+                        material: Color.fromCssColorString('#f8fafc').withAlpha(0.94),
+                        outline: true,
+                        outlineColor: Color.fromCssColorString('#0284c7'),
+                        outlineWidth: 1.5,
+                        shadows: ShadowMode.ENABLED,
+                      },
+                    });
+                  }
+                }
+              });
+            })
+            .catch((err) => console.warn('Overpass Live 3D Building Extruder optional fetch:', err));
 
           // Load Google Photorealistic 3D Tileset if supported
           if (typeof createGooglePhotorealistic3DTileset === 'function') {
@@ -349,7 +412,23 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
         if (picked) {
           if (picked.id) {
             const entity = picked.id;
-            if (typeof entity.id === 'string' && entity.id.startsWith('city-building-')) {
+            if (typeof entity.id === 'string' && entity.id.startsWith('real-osm-building-')) {
+              const osmId = entity.id.replace('real-osm-building-', '');
+              const hash = Math.abs(parseInt(osmId, 10) || Math.floor(lat * 10000 + lon * 10000));
+              const floors = Math.max(3, Math.round(12 / 3.5));
+              onSelectBuildingFeature?.({
+                name: `OpenStreetMap 3D Urban Structure #${osmId}`,
+                ulpin: `ULPIN-IN-OSM-2026-${hash}`,
+                lat,
+                lon,
+                height: 18,
+                floors,
+                valuation: `₹${(floors * 18500000).toLocaleString()}`,
+              });
+              if (entity instanceof Entity) {
+                onSelect?.(entity);
+              }
+            } else if (typeof entity.id === 'string' && entity.id.startsWith('city-building-')) {
               const bId = entity.id.replace('city-building-', '');
               const cityB = SURROUNDING_CITY_BUILDINGS.find((b) => b.id === bId);
               if (cityB) {
