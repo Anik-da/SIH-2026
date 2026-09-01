@@ -84,7 +84,12 @@ function loadViewport3DBuildings(viewer: Viewer) {
   oldOsmEntities.forEach((e) => viewer.entities.remove(e));
 
   // Fetch REAL OpenStreetMap 2D building footprints for exact coordinate boundaries
-  const query = `[out:json][timeout:15];(way["building"](${Math.min(south, north).toFixed(4)},${Math.min(west, east).toFixed(4)},${Math.max(south, north).toFixed(4)},${Math.max(west, east).toFixed(4)}););out body;>;out skel qt;`;
+  const minLat = Math.min(south, north).toFixed(4);
+  const maxLat = Math.max(south, north).toFixed(4);
+  const minLon = Math.min(west, east).toFixed(4);
+  const maxLon = Math.max(west, east).toFixed(4);
+
+  const query = `[out:json][timeout:15];(way["building"](${minLat},${minLon},${maxLat},${maxLon});way["building:levels"](${minLat},${minLon},${maxLat},${maxLon});relation["building"](${minLat},${minLon},${maxLat},${maxLon}););out body;>;out skel qt;`;
   const urlPrimary = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
   const urlMirror = `https://overpass.kumi.systems/api/interpreter?data=${encodeURIComponent(query)}`;
 
@@ -98,7 +103,7 @@ function loadViewport3DBuildings(viewer: Viewer) {
 
     let count = 0;
     data.elements.forEach((el: any) => {
-      if (el.type === 'way' && el.nodes && el.nodes.length >= 3 && count < 500) {
+      if ((el.type === 'way' || el.type === 'relation') && el.nodes && el.nodes.length >= 3 && count < 1000) {
         const coordsFlat: number[] = [];
         el.nodes.forEach((nodeId: number) => {
           const coord = nodesMap.get(nodeId);
