@@ -652,38 +652,6 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
           },
         });
 
-        // Render Real Surrounding City 3D Buildings across the Urban District
-        const LAT_M = 111320;
-        const LON_M = 111320 * Math.cos((building.center.lat * Math.PI) / 180);
-
-        SURROUNDING_CITY_BUILDINGS.forEach((item) => {
-          const hw = item.width / (2 * LON_M);
-          const hd = item.depth / (2 * LAT_M);
-
-          const itemFootprint: [number, number][] = [
-            [item.center.lon - hw, item.center.lat - hd],
-            [item.center.lon + hw, item.center.lat - hd],
-            [item.center.lon + hw, item.center.lat + hd],
-            [item.center.lon - hw, item.center.lat + hd],
-          ];
-
-          viewer.entities.add({
-            id: `city-building-${item.id}`,
-            polygon: {
-              hierarchy: new PolygonHierarchy(footprintToCartesian(itemFootprint, 0)),
-              height: 0,
-              extrudedHeight: item.height,
-              heightReference: HeightReference.CLAMP_TO_GROUND,
-              extrudedHeightReference: HeightReference.RELATIVE_TO_GROUND,
-              material: Color.fromCssColorString('#f8fafc').withAlpha(0.92),
-              outline: true,
-              outlineColor: Color.fromCssColorString('#0284c7'),
-              outlineWidth: 1.5,
-              shadows: ShadowMode.ENABLED,
-            },
-          });
-        });
-
         return;
       }
 
