@@ -367,11 +367,6 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
             .then((buildings) => {
               if (!viewer.isDestroyed()) {
                 buildings.style = new Cesium3DTileStyle({
-                  defines: {
-                    buildingHeight:
-                      "Boolean(${feature['height']}) ? Number(${feature['height']}) : (Boolean(${feature['building:levels']}) ? Number(${feature['building:levels']}) * 3.5 : 14.0)",
-                  },
-                  height: "${buildingHeight}",
                   color: {
                     conditions: [
                       ["${feature['building']} === 'commercial'", "color('#38bdf8', 0.95)"],
@@ -387,9 +382,16 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
             .catch((err) => console.error('Failed to load OSM buildings', err));
 
           // Dynamic Viewport 3D Building Extruder for 100% Coverage Across All Indian & Global Cities
-          loadViewport3DBuildings(viewer);
+          setTimeout(() => {
+            if (viewerRef.current && !viewerRef.current.isDestroyed()) {
+              loadViewport3DBuildings(viewerRef.current);
+            }
+          }, 600);
+
           viewer.camera.moveEnd.addEventListener(() => {
-            loadViewport3DBuildings(viewer);
+            if (viewerRef.current && !viewerRef.current.isDestroyed()) {
+              loadViewport3DBuildings(viewerRef.current);
+            }
           });
 
           // Load Google Photorealistic 3D Tileset if supported
