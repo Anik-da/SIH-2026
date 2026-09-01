@@ -27,6 +27,7 @@ import {
   Cesium3DTileFeature,
 } from 'cesium';
 import type { CesiumGlobeHandle } from './cesium.types';
+import type { ThreeCityStatus } from './cadastral/ThreeCityStatusHUD';
 import { DEMO_AREA } from '../types/gis';
 import type { Building, VerticalProperty, ExplodeState, Floor } from '../types/cadastral';
 import {
@@ -197,6 +198,7 @@ interface CesiumGlobeProps {
   }[];
   onSelectBuildingFeature?: (data: PickedBuildingData) => void;
   onReady?: (viewer: Viewer) => void;
+  onStatusUpdate?: (status: ThreeCityStatus) => void;
 }
 
 const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
@@ -216,6 +218,7 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
       userCreatedBuildings,
       onSelectBuildingFeature,
       onReady,
+      onStatusUpdate,
     },
     ref
   ) => {
@@ -345,6 +348,28 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
 
       let viewer: Viewer;
 
+      const currentStatus: ThreeCityStatus = {
+        photorealisticStatus: 'IDLE',
+        osmStatus: 'IDLE',
+        terrainStatus: 'IDLE',
+        imageryStatus: 'IDLE',
+        activeMode: 'FLAT_MAP',
+        camera: {
+          lat: 12.9716,
+          lon: 77.5946,
+          height: 1200,
+          heading: 45,
+          pitch: -40,
+        },
+        tilesRendered: 0,
+        lastError: null,
+      };
+
+      const updateStatus = (partial: Partial<ThreeCityStatus>) => {
+        Object.assign(currentStatus, partial);
+        if (onStatusUpdate) onStatusUpdate({ ...currentStatus });
+      };
+
       if (HAS_TOKEN) {
         try {
           viewer = new Viewer(containerRef.current, {
@@ -362,64 +387,99 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
             baseLayer: false as unknown as undefined,
           });
 
+          // 1. World Terrain Provider
+          updateStatus({ terrainStatus: 'LOADING' });
           createWorldTerrainAsync()
             .then((terrain) => {
               if (!viewer.isDestroyed()) {
                 viewer.terrainProvider = terrain;
+                updateStatus({ terrainStatus: 'LOADED' });
               }
             })
-            .catch((err) => console.error('Failed to load world terrain', err));
+            .catch((err) => {
+              console.error('Failed to load world terrain', err);
+              updateStatus({ terrainStatus: 'FAILED', lastError: `Terrain Error: ${err.message || String(err)}` });
+            });
 
+          // 2. World Imagery Provider
+          updateStatus({ imageryStatus: 'LOADING' });
           createWorldImageryAsync({ style: IonWorldImageryStyle.AERIAL_WITH_LABELS })
             .then((imagery) => {
               if (!viewer.isDestroyed()) {
                 viewer.imageryLayers.addImageryProvider(imagery);
+                updateStatus({ imageryStatus: 'LOADED' });
               }
             })
-            .catch((err) => console.error('Failed to load world imagery', err));
+            .catch((err) => {
+              console.error('Failed to load world imagery', err);
+              updateStatus({ imageryStatus: 'FAILED', lastError: `Imagery Error: ${err.message || String(err)}` });
+            });
 
-          // Load OpenStreetMap 3D Buildings for worldwide 3D building coverage (including India)
-          createOsmBuildingsAsync()
-            .then((buildings) => {
-              if (!viewer.isDestroyed()) {
-                buildings.style = new Cesium3DTileStyle({
-                  color: {
-                    conditions: [
-                      ["${feature['building']} === 'commercial'", "color('#38bdf8', 0.95)"],
-                      ["${feature['building']} === 'residential'", "color('#818cf8', 0.95)"],
-                      ["true", "color('#f8fafc', 0.92)"],
-                    ],
-                  },
-                  show: true,
-                });
-                viewer.scene.primitives.add(buildings);
-              }
-            })
-            .catch((err) => console.error('Failed to load OSM buildings', err));
+          // 3. STEP 2 & 5: Photorealistic 3D Tiles with OSM 3D Buildings Fallback
+          const load3DTilesPipeline = async () => {
+            let googleSuccess = false;
 
-          // Dynamic Viewport 3D Building Extruder for 100% Coverage Across All Indian & Global Cities
-          setTimeout(() => {
-            if (viewerRef.current && !viewerRef.current.isDestroyed()) {
-              loadViewport3DBuildings(viewerRef.current);
-            }
-          }, 600);
-
-          viewer.camera.moveEnd.addEventListener(() => {
-            if (viewerRef.current && !viewerRef.current.isDestroyed()) {
-              loadViewport3DBuildings(viewerRef.current);
-            }
-          });
-
-          // Load Google Photorealistic 3D Tileset if supported
-          if (typeof createGooglePhotorealistic3DTileset === 'function') {
-            createGooglePhotorealistic3DTileset()
-              .then((googleTiles) => {
+            // Attempt MODE A: Google Photorealistic 3D Tiles
+            if (typeof createGooglePhotorealistic3DTileset === 'function') {
+              updateStatus({ photorealisticStatus: 'LOADING' });
+              try {
+                const googleTileset = await createGooglePhotorealistic3DTileset();
                 if (!viewer.isDestroyed()) {
-                  viewer.scene.primitives.add(googleTiles);
+                  viewer.scene.primitives.add(googleTileset);
+                  googleSuccess = true;
+                  updateStatus({
+                    photorealisticStatus: 'LOADED',
+                    activeMode: 'PHOTOREALISTIC',
+                  });
+                  console.log('Google Photorealistic 3D Tiles loaded successfully');
                 }
-              })
-              .catch((err) => console.warn('Google 3D Tiles optional fallback:', err));
-          }
+              } catch (error: any) {
+                console.error('Google Photorealistic 3D Tiles failed to load', error);
+                const errMsg = error?.message || String(error);
+                updateStatus({
+                  photorealisticStatus: errMsg.includes('key') ? 'NOT_CONFIGURED' : 'FAILED',
+                  lastError: `Google 3D Tiles unavailable: ${errMsg}`,
+                });
+              }
+            } else {
+              updateStatus({ photorealisticStatus: 'NOT_CONFIGURED', lastError: '3D CITY DATA NOT CONFIGURED: Google 3D Tiles API function not available' });
+            }
+
+            // Fall back to MODE B: Cesium OSM 3D Buildings ONLY if Google Tiles failed or unavailable
+            if (!googleSuccess) {
+              updateStatus({ osmStatus: 'LOADING' });
+              try {
+                const osmBuildings = await createOsmBuildingsAsync();
+                if (!viewer.isDestroyed()) {
+                  osmBuildings.style = new Cesium3DTileStyle({
+                    color: {
+                      conditions: [
+                        ["${feature['building']} === 'commercial'", "color('#38bdf8', 0.95)"],
+                        ["${feature['building']} === 'residential'", "color('#818cf8', 0.95)"],
+                        ["true", "color('#f8fafc', 0.92)"],
+                      ],
+                    },
+                    show: true,
+                  });
+                  viewer.scene.primitives.add(osmBuildings);
+                  updateStatus({
+                    osmStatus: 'LOADED',
+                    activeMode: 'OSM_3D',
+                  });
+                  console.log('3D Buildings — OpenStreetMap loaded successfully');
+                }
+              } catch (osmError: any) {
+                console.error('Failed to load 3D Buildings — OpenStreetMap', osmError);
+                updateStatus({
+                  osmStatus: 'FAILED',
+                  activeMode: 'FLAT_MAP',
+                  lastError: `3D building data unavailable: ${osmError?.message || String(osmError)}`,
+                });
+              }
+            }
+          };
+
+          load3DTilesPipeline();
 
           viewer.scene.globe.enableLighting = true;
           if (viewer.scene.skyAtmosphere) viewer.scene.skyAtmosphere.show = true;
@@ -429,30 +489,58 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
           viewer.scene.screenSpaceCameraController.minimumZoomDistance = 75;
           viewer.scene.globe.depthTestAgainstTerrain = true;
 
-          // Initialize camera high above terrain level (1250m = 815m ground + 435m overhead pitch distance)
+          // STEP 7: India / Bengaluru Initial Location Fly-to
+          const bldgLon = building ? building.center.lon : 77.5946; // Bengaluru Longitude
+          const bldgLat = building ? building.center.lat : 12.9716; // Bengaluru Latitude
+
+          viewer.camera.setView({
+            destination: Cartesian3.fromDegrees(bldgLon, bldgLat, 1200),
+            orientation: {
+              heading: CesiumMath.toRadians(45), // 45° Heading
+              pitch: CesiumMath.toRadians(-40),   // -40° Pitch for elevated 3D roofs & facades
+              roll: 0,
+            },
+          });
+
           if (building) {
-            viewer.camera.setView({
-              destination: Cartesian3.fromDegrees(building.center.lon, building.center.lat, 1250),
-              orientation: {
-                heading: CesiumMath.toRadians(35),
-                pitch: CesiumMath.toRadians(-35),
-                roll: 0,
-              },
-            });
-            // Smoothly fly to 95m close-up inspection after terrain renders
             setTimeout(() => {
               if (!viewer.isDestroyed()) {
                 flyToBuilding(viewer, building, 2.0);
               }
             }, 1200);
           }
-        } catch {
+
+          // Camera telemetry listener
+          viewer.camera.changed.addEventListener(() => {
+            if (viewer.isDestroyed()) return;
+            const carto = viewer.camera.positionCartographic;
+            if (carto) {
+              updateStatus({
+                camera: {
+                  lat: CesiumMath.toDegrees(carto.latitude),
+                  lon: CesiumMath.toDegrees(carto.longitude),
+                  height: carto.height,
+                  heading: CesiumMath.toDegrees(viewer.camera.heading),
+                  pitch: CesiumMath.toDegrees(viewer.camera.pitch),
+                },
+              });
+            }
+          });
+        } catch (err: any) {
           setDemoMode(true);
           viewer = createDemoViewer(containerRef.current);
+          updateStatus({
+            lastError: `Cesium Viewer Error: ${err.message || String(err)}`,
+          });
         }
       } else {
         viewer = createDemoViewer(containerRef.current);
         setDemoMode(true);
+        updateStatus({
+          photorealisticStatus: 'NOT_CONFIGURED',
+          osmStatus: 'NOT_CONFIGURED',
+          lastError: '3D CITY DATA NOT CONFIGURED: VITE_CESIUM_ION_TOKEN is required',
+        });
       }
 
       viewerRef.current = viewer;
