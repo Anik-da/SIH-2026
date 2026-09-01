@@ -44,63 +44,6 @@ export const CESIUM_ION_TOKEN =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6IjdyUG1VUjdPQXZjbmtHQlYiLCJqdGkiOiJlZjMyYTZmMi00OWZkLTQyNTctYmIzOC05NDRiNzQ5YjJjY2QiLCJpZCI6NDcyNjEyLCJpc3MiOiJodHRwczovL2FwaS5jZXNpdW0uY29tIiwiYXVkIjoidW5kZWZpbmVkX2RlZmF1bHQiLCJpYXQiOjE3ODc3MzcxMTl9.uPJ4DnQzuEVLyPy4QjuiBHWb5AwMAvC8d8q9cK9QM7I';
 const HAS_TOKEN = Boolean(CESIUM_ION_TOKEN);
 
-function generateViewportMesh(
-  viewer: Viewer,
-  west: number,
-  south: number,
-  east: number,
-  north: number
-) {
-  if (viewer.isDestroyed()) return;
-
-  const LAT_M = 111320;
-  const cLat = (south + north) / 2;
-  const cLon = (west + east) / 2;
-  const LON_M = 111320 * Math.cos((cLat * Math.PI) / 180);
-
-  const spanX = Math.abs(east - west);
-  const spanY = Math.abs(north - south);
-  const stepX = spanX / 13;
-  const stepY = spanY / 13;
-
-  for (let i = 1; i <= 12; i++) {
-    for (let j = 1; j <= 12; j++) {
-      const bLat = Math.min(south, north) + j * stepY;
-      const bLon = Math.min(west, east) + i * stepX;
-
-      const width = 18 + Math.abs((i * 11 + j * 7) % 16);
-      const depth = 16 + Math.abs((i * 13 + j * 5) % 14);
-      const height = 12 + Math.abs((i * 17 + j * 23) % 28);
-
-      const hw = width / (2 * LON_M);
-      const hd = depth / (2 * LAT_M);
-
-      const poly: number[] = [
-        bLon - hw, bLat - hd,
-        bLon + hw, bLat - hd,
-        bLon + hw, bLat + hd,
-        bLon - hw, bLat + hd,
-      ];
-
-      viewer.entities.add({
-        id: `osm-ext-vp-${i}-${j}`,
-        polygon: {
-          hierarchy: new PolygonHierarchy(Cartesian3.fromDegreesArray(poly)),
-          height: 0,
-          extrudedHeight: height,
-          heightReference: HeightReference.CLAMP_TO_GROUND,
-          extrudedHeightReference: HeightReference.RELATIVE_TO_GROUND,
-          material: Color.fromCssColorString('#f8fafc').withAlpha(0.93),
-          outline: true,
-          outlineColor: Color.fromCssColorString('#0284c7'),
-          outlineWidth: 1.5,
-          shadows: ShadowMode.ENABLED,
-        },
-      });
-    }
-  }
-}
-
 function loadViewport3DBuildings(viewer: Viewer) {
   if (viewer.isDestroyed()) return;
 
@@ -140,60 +83,65 @@ function loadViewport3DBuildings(viewer: Viewer) {
   );
   oldOsmEntities.forEach((e) => viewer.entities.remove(e));
 
-  // Always generate dense procedural 3D building mesh so 100% of the viewport is filled with 3D buildings
-  generateViewportMesh(viewer, west, south, east, north);
+  // Fetch REAL OpenStreetMap 2D building footprints for exact coordinate boundaries
+  const query = `[out:json][timeout:15];(way["building"](${Math.min(south, north).toFixed(4)},${Math.min(west, east).toFixed(4)},${Math.max(south, north).toFixed(4)},${Math.max(west, east).toFixed(4)}););out body;>;out skel qt;`;
+  const urlPrimary = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
+  const urlMirror = `https://overpass.kumi.systems/api/interpreter?data=${encodeURIComponent(query)}`;
 
-  // Fetch OpenStreetMap real footprints if available
-  const query = `[out:json][timeout:10];(way["building"](${south.toFixed(4)},${west.toFixed(4)},${north.toFixed(4)},${east.toFixed(4)}););out body;>;out skel qt;`;
-  const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
+  const processOverpassData = (data: any) => {
+    if (!data || !data.elements || viewer.isDestroyed()) return;
 
-  fetch(url)
-    .then((res) => res.json())
-    .then((data) => {
-      if (!data || !data.elements || viewer.isDestroyed()) return;
+    const nodesMap = new Map<number, [number, number]>();
+    data.elements.forEach((el: any) => {
+      if (el.type === 'node') nodesMap.set(el.id, [el.lon, el.lat]);
+    });
 
-      const nodesMap = new Map<number, [number, number]>();
-      data.elements.forEach((el: any) => {
-        if (el.type === 'node') nodesMap.set(el.id, [el.lon, el.lat]);
-      });
+    let count = 0;
+    data.elements.forEach((el: any) => {
+      if (el.type === 'way' && el.nodes && el.nodes.length >= 3 && count < 500) {
+        const coordsFlat: number[] = [];
+        el.nodes.forEach((nodeId: number) => {
+          const coord = nodesMap.get(nodeId);
+          if (coord) coordsFlat.push(coord[0], coord[1]);
+        });
 
-      let count = 0;
-      data.elements.forEach((el: any) => {
-        if (el.type === 'way' && el.nodes && el.nodes.length >= 3 && count < 250) {
-          const coordsFlat: number[] = [];
-          el.nodes.forEach((nodeId: number) => {
-            const coord = nodesMap.get(nodeId);
-            if (coord) coordsFlat.push(coord[0], coord[1]);
+        if (coordsFlat.length >= 6) {
+          count++;
+          const tagHeight = el.tags?.height
+            ? parseFloat(el.tags.height)
+            : el.tags?.['building:levels']
+            ? parseFloat(el.tags['building:levels']) * 3.5
+            : Math.max(10, (el.id % 25) + 8);
+
+          viewer.entities.add({
+            id: `real-osm-building-${el.id}`,
+            polygon: {
+              hierarchy: new PolygonHierarchy(Cartesian3.fromDegreesArray(coordsFlat)),
+              height: 0,
+              extrudedHeight: tagHeight,
+              heightReference: HeightReference.CLAMP_TO_GROUND,
+              extrudedHeightReference: HeightReference.RELATIVE_TO_GROUND,
+              material: Color.fromCssColorString('#f8fafc').withAlpha(0.94),
+              outline: true,
+              outlineColor: Color.fromCssColorString('#0284c7'),
+              outlineWidth: 1.5,
+              shadows: ShadowMode.ENABLED,
+            },
           });
-
-          if (coordsFlat.length >= 6) {
-            count++;
-            const tagHeight = el.tags?.height
-              ? parseFloat(el.tags.height)
-              : el.tags?.['building:levels']
-              ? parseFloat(el.tags['building:levels']) * 3.5
-              : Math.max(12, (el.id % 25) + 10);
-
-            viewer.entities.add({
-              id: `osm-ext-${el.id}`,
-              polygon: {
-                hierarchy: new PolygonHierarchy(Cartesian3.fromDegreesArray(coordsFlat)),
-                height: 0,
-                extrudedHeight: tagHeight,
-                heightReference: HeightReference.CLAMP_TO_GROUND,
-                extrudedHeightReference: HeightReference.RELATIVE_TO_GROUND,
-                material: Color.fromCssColorString('#f8fafc').withAlpha(0.93),
-                outline: true,
-                outlineColor: Color.fromCssColorString('#0284c7'),
-                outlineWidth: 1.5,
-                shadows: ShadowMode.ENABLED,
-              },
-            });
-          }
         }
-      });
-    })
-    .catch(() => {});
+      }
+    });
+  };
+
+  fetch(urlPrimary)
+    .then((res) => res.json())
+    .then(processOverpassData)
+    .catch(() => {
+      fetch(urlMirror)
+        .then((res) => res.json())
+        .then(processOverpassData)
+        .catch((err) => console.warn('Real OpenStreetMap 3D Footprint fetch fallback:', err));
+    });
 }
 
 export interface PickedBuildingData {
