@@ -40,6 +40,7 @@ import { AuthModal } from './components/auth/AuthModal';
 
 import { LandingPage } from './components/landing/LandingPage';
 import { LoginPage } from './components/landing/LoginPage';
+import GeoJsonImporterModal from './components/cadastral/GeoJsonImporterModal';
 
 import { DEFAULT_LAYERS, DEMO_AREA } from './types/gis';
 import type { Coordinates, LayerConfig, SelectionInfo } from './types/gis';
@@ -88,6 +89,7 @@ function App() {
   const [showRealFinderHud, setShowRealFinderHud] = useState(false);
   const [isRealFinderCardOpen, setIsRealFinderCardOpen] = useState(true);
   const [isRealFinderInspectOpen, setIsRealFinderInspectOpen] = useState(false);
+  const [isGeoJsonImporterOpen, setIsGeoJsonImporterOpen] = useState(false);
   const [selectedBuildingFeature, setSelectedBuildingFeature] = useState<{
     name: string;
     ulpin: string;
@@ -424,6 +426,7 @@ function App() {
         onOpenPagesDrawer={() => setIsPagesDrawerOpen(true)}
         showRealFinderHud={showRealFinderHud}
         onToggleRealFinderHud={() => setShowRealFinderHud((prev) => !prev)}
+        onOpenGeoJsonImporter={() => setIsGeoJsonImporterOpen(true)}
       />
 
       {/* Main 3D GIS & Cadastral Area */}
@@ -638,6 +641,12 @@ function App() {
         isOpen={isRealFinderInspectOpen}
         onClose={() => setIsRealFinderInspectOpen(false)}
         buildingName={selectedBuildingFeature?.name || 'B1-A Commercial Skyscraper'}
+      />
+
+      {/* India National 3D GIS & GeoJSON Database Importer Modal */}
+      <GeoJsonImporterModal
+        isOpen={isGeoJsonImporterOpen}
+        onClose={() => setIsGeoJsonImporterOpen(false)}
       />
     </div>
   );

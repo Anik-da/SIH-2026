@@ -37,6 +37,7 @@ interface Props {
   onOpenPagesDrawer: () => void;
   showRealFinderHud: boolean;
   onToggleRealFinderHud: () => void;
+  onOpenGeoJsonImporter?: () => void;
 }
 
 export default function AppHeader({
@@ -60,6 +61,7 @@ export default function AppHeader({
   onOpenPagesDrawer,
   showRealFinderHud,
   onToggleRealFinderHud,
+  onOpenGeoJsonImporter,
 }: Props) {
   return (
     <header className="pointer-events-auto flex flex-wrap items-center justify-between border-b border-slate-800 bg-slate-900/95 px-5 py-2.5 shadow-lg backdrop-blur-xl">
@@ -148,6 +150,14 @@ export default function AppHeader({
         >
           <Sparkles className="h-4 w-4 text-cyan-400" />
           51WORLD / RealFinder HUD Overlay
+        </button>
+
+        <button
+          onClick={onOpenGeoJsonImporter}
+          className="flex items-center gap-1.5 rounded-xl border border-blue-500/30 bg-blue-500/10 px-3 py-1.5 text-xs font-semibold text-blue-300 transition-all hover:bg-blue-500/20 active:scale-95"
+        >
+          <Globe2 className="h-4 w-4 text-blue-400" />
+          Import 3D GIS Database
         </button>
 
         <button
