@@ -38,6 +38,7 @@ interface Props {
   showRealFinderHud: boolean;
   onToggleRealFinderHud: () => void;
   onOpenGeoJsonImporter?: () => void;
+  onOpenCreateBuilding?: () => void;
 }
 
 export default function AppHeader({
@@ -62,6 +63,7 @@ export default function AppHeader({
   showRealFinderHud,
   onToggleRealFinderHud,
   onOpenGeoJsonImporter,
+  onOpenCreateBuilding,
 }: Props) {
   return (
     <header className="pointer-events-auto flex flex-wrap items-center justify-between border-b border-slate-800 bg-slate-900/95 px-5 py-2.5 shadow-lg backdrop-blur-xl">
@@ -158,6 +160,14 @@ export default function AppHeader({
         >
           <Globe2 className="h-4 w-4 text-blue-400" />
           Import 3D GIS Database
+        </button>
+
+        <button
+          onClick={onOpenCreateBuilding}
+          className="flex items-center gap-1.5 rounded-xl border border-emerald-500/40 bg-emerald-500/20 px-3 py-1.5 text-xs font-bold text-emerald-300 shadow-md shadow-emerald-900/30 transition-all hover:bg-emerald-500/30 active:scale-95"
+        >
+          <Sparkles className="h-4 w-4 text-emerald-400" />
+          + Create 3D Building
         </button>
 
         <button

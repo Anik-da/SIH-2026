@@ -183,6 +183,17 @@ interface CesiumGlobeProps {
   onSelect?: (entity: Entity | null) => void;
   onSelectFloor?: (floorId: string) => void;
   customGeoJson?: any;
+  userCreatedBuildings?: {
+    id: string;
+    name: string;
+    lat: number;
+    lon: number;
+    floors: number;
+    height: number;
+    width: number;
+    depth: number;
+    ulpin: string;
+  }[];
   onSelectBuildingFeature?: (data: PickedBuildingData) => void;
   onReady?: (viewer: Viewer) => void;
 }
@@ -200,6 +211,7 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
       onSelect,
       onSelectFloor,
       customGeoJson,
+      userCreatedBuildings,
       onSelectBuildingFeature,
       onReady,
     },
@@ -815,6 +827,54 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
         });
       }
     }, [customGeoJson]);
+
+    // Render User Created 3D Buildings At Exact Location
+    useEffect(() => {
+      const viewer = viewerRef.current;
+      if (!viewer || viewer.isDestroyed() || !userCreatedBuildings || userCreatedBuildings.length === 0) return;
+
+      const LAT_M = 111320;
+
+      userCreatedBuildings.forEach((b) => {
+        const LON_M = 111320 * Math.cos((b.lat * Math.PI) / 180);
+        const hw = b.width / (2 * LON_M);
+        const hd = b.depth / (2 * LAT_M);
+
+        const itemFootprint: [number, number][] = [
+          [b.lon - hw, b.lat - hd],
+          [b.lon + hw, b.lat - hd],
+          [b.lon + hw, b.lat + hd],
+          [b.lon - hw, b.lat + hd],
+        ];
+
+        viewer.entities.add({
+          id: `user-created-building-${b.id}`,
+          polygon: {
+            hierarchy: new PolygonHierarchy(footprintToCartesian(itemFootprint, 0)),
+            height: 0,
+            extrudedHeight: b.height,
+            heightReference: HeightReference.CLAMP_TO_GROUND,
+            extrudedHeightReference: HeightReference.RELATIVE_TO_GROUND,
+            material: Color.fromCssColorString('#0284c7').withAlpha(0.95),
+            outline: true,
+            outlineColor: Color.fromCssColorString('#38bdf8'),
+            outlineWidth: 2,
+            shadows: ShadowMode.ENABLED,
+          },
+        });
+
+        // Fly camera directly to user's created 3D building
+        viewer.camera.flyTo({
+          destination: Cartesian3.fromDegrees(b.lon, b.lat - 0.0015, b.height + 140),
+          orientation: {
+            heading: CesiumMath.toRadians(0),
+            pitch: CesiumMath.toRadians(-35),
+            roll: 0,
+          },
+          duration: 2.0,
+        });
+      });
+    }, [userCreatedBuildings]);
 
     return (
       <div className="relative h-full w-full">

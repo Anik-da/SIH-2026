@@ -41,6 +41,7 @@ import { AuthModal } from './components/auth/AuthModal';
 import { LandingPage } from './components/landing/LandingPage';
 import { LoginPage } from './components/landing/LoginPage';
 import GeoJsonImporterModal from './components/cadastral/GeoJsonImporterModal';
+import CreateBuildingModal from './components/cadastral/CreateBuildingModal';
 
 import { DEFAULT_LAYERS, DEMO_AREA } from './types/gis';
 import type { Coordinates, LayerConfig, SelectionInfo } from './types/gis';
@@ -91,6 +92,8 @@ function App() {
   const [isRealFinderInspectOpen, setIsRealFinderInspectOpen] = useState(false);
   const [isGeoJsonImporterOpen, setIsGeoJsonImporterOpen] = useState(false);
   const [importedGeoJson, setImportedGeoJson] = useState<any>(null);
+  const [isCreateBuildingOpen, setIsCreateBuildingOpen] = useState(false);
+  const [userCreatedBuildings, setUserCreatedBuildings] = useState<any[]>([]);
   const [selectedBuildingFeature, setSelectedBuildingFeature] = useState<{
     name: string;
     ulpin: string;
@@ -428,6 +431,7 @@ function App() {
         showRealFinderHud={showRealFinderHud}
         onToggleRealFinderHud={() => setShowRealFinderHud((prev) => !prev)}
         onOpenGeoJsonImporter={() => setIsGeoJsonImporterOpen(true)}
+        onOpenCreateBuilding={() => setIsCreateBuildingOpen(true)}
       />
 
       {/* Main 3D GIS & Cadastral Area */}
@@ -441,6 +445,7 @@ function App() {
           showUnderground={showUnderground}
           showUtilities={showUtilities}
           customGeoJson={importedGeoJson}
+          userCreatedBuildings={userCreatedBuildings}
           onCoordinatesChange={handleCoordinates}
           onSelect={handleSelectEntity}
           onSelectFloor={handleSelectFloor}
@@ -650,6 +655,15 @@ function App() {
         isOpen={isGeoJsonImporterOpen}
         onClose={() => setIsGeoJsonImporterOpen(false)}
         onImportGeoJson={(gData) => setImportedGeoJson(gData)}
+      />
+
+      {/* Create 3D Building Structure At My Location Modal */}
+      <CreateBuildingModal
+        isOpen={isCreateBuildingOpen}
+        onClose={() => setIsCreateBuildingOpen(false)}
+        onCreateBuilding={(newB) => {
+          setUserCreatedBuildings((prev) => [...prev, { ...newB, id: `b-${Date.now()}` }]);
+        }}
       />
     </div>
   );
