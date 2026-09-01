@@ -185,3 +185,111 @@ export const demoAuditLogs: AuditLogEntry[] = [
     details: 'Public Digital Property Passport queried for Ground Floor Commercial.',
   },
 ];
+
+export interface CityBuildingData {
+  id: string;
+  name: string;
+  ulpin: string;
+  center: { lat: number; lon: number };
+  width: number;
+  depth: number;
+  height: number;
+  floors: number;
+  valuation: string;
+  ownerName: string;
+  propertyType: string;
+}
+
+export const SURROUNDING_CITY_BUILDINGS: CityBuildingData[] = [
+  {
+    id: 'B-002',
+    name: 'UB City Commercial Tower B',
+    ulpin: 'ULPIN-IN-KA-2026-98121',
+    center: { lat: 12.9719, lon: 77.5958 },
+    width: 28,
+    depth: 22,
+    height: 42,
+    floors: 12,
+    valuation: '₹14,50,00,000',
+    ownerName: 'Vittal Mallya Realty Trust',
+    propertyType: 'Commercial',
+  },
+  {
+    id: 'B-003',
+    name: 'Prestige Meridian Tower A',
+    ulpin: 'ULPIN-IN-KA-2026-98122',
+    center: { lat: 12.9725, lon: 77.5938 },
+    width: 24,
+    depth: 26,
+    height: 36,
+    floors: 10,
+    valuation: '₹9,80,00,000',
+    ownerName: 'Prestige Estates Projects Ltd.',
+    propertyType: 'Office',
+  },
+  {
+    id: 'B-004',
+    name: 'Concorde Innovation Block 3',
+    ulpin: 'ULPIN-IN-KA-2026-98123',
+    center: { lat: 12.9710, lon: 77.5935 },
+    width: 30,
+    depth: 20,
+    height: 30,
+    floors: 8,
+    valuation: '₹7,20,00,000',
+    ownerName: 'Concorde Group Infra',
+    propertyType: 'Mixed Use',
+  },
+  {
+    id: 'B-005',
+    name: 'Garuda Retail & Corporate Center',
+    ulpin: 'ULPIN-IN-KA-2026-98124',
+    center: { lat: 12.9705, lon: 77.5952 },
+    width: 26,
+    depth: 24,
+    height: 28,
+    floors: 7,
+    valuation: '₹6,50,00,000',
+    ownerName: 'Garuda Commercial Holdings',
+    propertyType: 'Commercial',
+  },
+  {
+    id: 'B-006',
+    name: 'Vittal Mallya Executive Hub',
+    ulpin: 'ULPIN-IN-KA-2026-98125',
+    center: { lat: 12.9730, lon: 77.5950 },
+    width: 22,
+    depth: 28,
+    height: 38,
+    floors: 11,
+    valuation: '₹11,20,00,000',
+    ownerName: 'UB Global Investments',
+    propertyType: 'Office',
+  },
+  {
+    id: 'B-007',
+    name: 'Residency Plaza East Wing',
+    ulpin: 'ULPIN-IN-KA-2026-98126',
+    center: { lat: 12.9722, lon: 77.5965 },
+    width: 32,
+    depth: 18,
+    height: 32,
+    floors: 9,
+    valuation: '₹8,40,00,000',
+    ownerName: 'State Land Revenue Board',
+    propertyType: 'Mixed Use',
+  },
+  {
+    id: 'B-008',
+    name: 'Kanteerava Executive Suites',
+    ulpin: 'ULPIN-IN-KA-2026-98127',
+    center: { lat: 12.9702, lon: 77.5960 },
+    width: 25,
+    depth: 25,
+    height: 26,
+    floors: 7,
+    valuation: '₹5,90,00,000',
+    ownerName: 'Karnataka Housing Board',
+    propertyType: 'Residential',
+  },
+];

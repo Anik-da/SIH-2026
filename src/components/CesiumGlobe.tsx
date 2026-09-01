@@ -37,6 +37,7 @@ import {
   flyToBuilding,
 } from '../utils/cesium3dHelpers';
 import { STATUS_COLORS, SELECTED_COLOR, UNDERGROUND_COLOR, PARCEL_COLOR } from '../data/colors';
+import { SURROUNDING_CITY_BUILDINGS } from '../data/cadastralDemoData';
 
 export const CESIUM_ION_TOKEN =
   (import.meta.env.VITE_CESIUM_ION_TOKEN as string | undefined) ||
@@ -348,7 +349,24 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
         if (picked) {
           if (picked.id) {
             const entity = picked.id;
-            if (typeof entity.id === 'string' && entity.id.startsWith('floor-')) {
+            if (typeof entity.id === 'string' && entity.id.startsWith('city-building-')) {
+              const bId = entity.id.replace('city-building-', '');
+              const cityB = SURROUNDING_CITY_BUILDINGS.find((b) => b.id === bId);
+              if (cityB) {
+                onSelectBuildingFeature?.({
+                  name: cityB.name,
+                  ulpin: cityB.ulpin,
+                  lat: cityB.center.lat,
+                  lon: cityB.center.lon,
+                  height: cityB.height,
+                  floors: cityB.floors,
+                  valuation: cityB.valuation,
+                });
+              }
+              if (entity instanceof Entity) {
+                onSelect?.(entity);
+              }
+            } else if (typeof entity.id === 'string' && entity.id.startsWith('floor-')) {
               const floorId = entity.id.replace('floor-', '');
               onSelectFloor?.(floorId);
             } else if (typeof entity.id === 'string' && (entity.id.includes('solid-bim') || entity.id.includes('building') || entity.id.includes('parcel'))) {
@@ -408,9 +426,8 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
         handler.destroy();
         handlerRef.current = null;
         if (viewer && !viewer.isDestroyed()) {
-          viewer.destroy();
+          viewer.entities.removeAll();
         }
-        viewerRef.current = null;
       };
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -427,6 +444,7 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
           (e.id.includes('floor') ||
             e.id.includes('label') ||
             e.id.includes('building') ||
+            e.id.includes('city-building') ||
             e.id.includes('solid-bim') ||
             e.id.includes('parcel') ||
             e.id.includes('utility'))
@@ -484,6 +502,38 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
             outlineWidth: 2,
             shadows: ShadowMode.ENABLED,
           },
+        });
+
+        // Render Real Surrounding 3D Buildings in District
+        const LAT_M = 111320;
+        const LON_M = 111320 * Math.cos((building.center.lat * Math.PI) / 180);
+
+        SURROUNDING_CITY_BUILDINGS.forEach((item) => {
+          const hw = item.width / (2 * LON_M);
+          const hd = item.depth / (2 * LAT_M);
+
+          const itemFootprint: [number, number][] = [
+            [item.center.lon - hw, item.center.lat - hd],
+            [item.center.lon + hw, item.center.lat - hd],
+            [item.center.lon + hw, item.center.lat + hd],
+            [item.center.lon - hw, item.center.lat + hd],
+          ];
+
+          viewer.entities.add({
+            id: `city-building-${item.id}`,
+            polygon: {
+              hierarchy: new PolygonHierarchy(footprintToCartesian(itemFootprint, 0)),
+              height: 0,
+              extrudedHeight: item.height,
+              heightReference: HeightReference.CLAMP_TO_GROUND,
+              extrudedHeightReference: HeightReference.RELATIVE_TO_GROUND,
+              material: Color.fromCssColorString('#f8fafc').withAlpha(0.92),
+              outline: true,
+              outlineColor: Color.fromCssColorString('#0284c7'),
+              outlineWidth: 1.5,
+              shadows: ShadowMode.ENABLED,
+            },
+          });
         });
 
         return;
