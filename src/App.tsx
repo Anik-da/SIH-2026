@@ -33,6 +33,7 @@ import { BlueprintConverterModal } from './components/cadastral/BlueprintConvert
 import { PropertyPresentationModal } from './components/cadastral/PropertyPresentationModal';
 import { ZoningDashboardModal } from './components/cadastral/ZoningDashboardModal';
 import { RealFinderHUD } from './components/cadastral/RealFinderHUD';
+import { ThreeCityStatusHUD, type ThreeCityStatus } from './components/cadastral/ThreeCityStatusHUD';
 import { RealFinderInspectModal } from './components/cadastral/RealFinderInspectModal';
 import { RealFinderCardPopup } from './components/cadastral/RealFinderCardPopup';
 import { StitchNavigationDrawer, PageId } from './components/navigation/StitchNavigationDrawer';
@@ -105,6 +106,23 @@ function App() {
   } | null>(null);
 
   const [authUser, setAuthUser] = useState<User | null>(null);
+
+  const [threeCityStatus, setThreeCityStatus] = useState<ThreeCityStatus>({
+    photorealisticStatus: 'IDLE',
+    osmStatus: 'IDLE',
+    terrainStatus: 'IDLE',
+    imageryStatus: 'IDLE',
+    activeMode: 'FLAT_MAP',
+    camera: {
+      lat: 12.9716,
+      lon: 77.5946,
+      height: 1200,
+      heading: 45,
+      pitch: -40,
+    },
+    tilesRendered: 0,
+    lastError: null,
+  });
 
   const handleSelectPage = (pageId: PageId) => {
     switch (pageId) {
@@ -449,6 +467,7 @@ function App() {
           onCoordinatesChange={handleCoordinates}
           onSelect={handleSelectEntity}
           onSelectFloor={handleSelectFloor}
+          onStatusUpdate={setThreeCityStatus}
           onSelectBuildingFeature={(bData) => {
             setSelectedBuildingFeature(bData);
             setIsRealFinderCardOpen(true);
@@ -484,6 +503,9 @@ function App() {
               onOpenAnalytics={() => setIsAnalyticsOpen(true)}
               onOpenValidation={() => setIsValidationOpen(true)}
             />
+
+            {/* Diagnostic 3D City Status HUD */}
+            <ThreeCityStatusHUD status={threeCityStatus} />
 
             {/* Left side: Toolbar */}
             <div className="absolute left-4 top-4 z-10">
