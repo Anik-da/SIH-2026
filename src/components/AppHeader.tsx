@@ -15,6 +15,8 @@ import {
 } from 'lucide-react';
 import type { UserRole, ExplodeState } from '../types/cadastral';
 import type { User } from '../firebase';
+import { useDataProvider } from '../services/data/DataProviderContext';
+import { DataProvenanceBadge } from './common/DataProvenanceBadge';
 
 interface Props {
   userRole: UserRole;
@@ -65,9 +67,11 @@ export default function AppHeader({
   onOpenGeoJsonImporter,
   onOpenCreateBuilding,
 }: Props) {
+  const { isDemoMode, toggleDemoMode } = useDataProvider();
+
   return (
     <header className="pointer-events-auto flex flex-wrap items-center justify-between border-b border-slate-800 bg-slate-900/95 px-5 py-2.5 shadow-lg backdrop-blur-xl">
-      {/* Brand Title with Home Button */}
+      {/* Brand Title with Home Button & Data Provider Mode Switch */}
       <div className="flex items-center gap-3">
         <button
           onClick={onGoToLanding}
@@ -79,6 +83,17 @@ export default function AppHeader({
         <div className="leading-tight">
           <div className="flex items-center gap-2">
             <h1 className="text-sm font-black tracking-wide text-white">VOLU-CAD 3D</h1>
+            <button
+              onClick={toggleDemoMode}
+              title={isDemoMode ? "Switch to Real Spatial Data Engine" : "Switch to Static Demo Mode"}
+              className={`px-2 py-0.5 rounded-full text-[10px] font-bold border transition-all ${
+                isDemoMode
+                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                  : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+              }`}
+            >
+              {isDemoMode ? '⚡ MOCK DEMO MODE' : '🌐 REAL DATA ENGINE'}
+            </button>
           </div>
           <p className="text-[10px] text-slate-400">3D ULPIN &amp; Vertical Property Mapping Platform</p>
         </div>

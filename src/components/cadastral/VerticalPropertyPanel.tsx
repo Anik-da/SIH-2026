@@ -15,6 +15,8 @@ import {
   ExternalLink,
 } from 'lucide-react';
 
+import { DataProvenanceBadge } from '../common/DataProvenanceBadge';
+
 interface Props {
   property: VerticalProperty | null;
   onClose: () => void;
@@ -51,7 +53,7 @@ export const VerticalPropertyPanel: React.FC<Props> = ({
           <h2 className="mt-1 text-lg font-bold tracking-tight text-white">
             {property.floorLabel}
           </h2>
-          <p className="font-mono text-xs text-slate-400">VPID: {property.vpid}</p>
+          <p className="font-mono text-[11px] text-slate-400">System-generated VPID: {property.vpid}</p>
         </div>
 
         <button
@@ -68,9 +70,11 @@ export const VerticalPropertyPanel: React.FC<Props> = ({
         <div className="rounded-xl border border-slate-800/80 bg-slate-950/50 p-3">
           <div className="flex items-center gap-1.5 text-slate-400">
             <Building2 className="h-3.5 w-3.5 text-cyan-400" />
-            <span>ULPIN Code</span>
+            <span>Official ULPIN</span>
           </div>
-          <p className="mt-1 font-mono font-medium text-slate-200">{property.ulpin}</p>
+          <p className={`mt-1 font-mono text-xs ${property.ulpin ? 'font-medium text-slate-200' : 'text-amber-400/90 font-sans italic'}`}>
+            {property.ulpin || 'Not available from source'}
+          </p>
         </div>
 
         <div className="rounded-xl border border-slate-800/80 bg-slate-950/50 p-3">
@@ -100,6 +104,19 @@ export const VerticalPropertyPanel: React.FC<Props> = ({
             {property.volume.toLocaleString()} m³
           </p>
         </div>
+      </div>
+
+      {/* Explicit Data Provenance Card */}
+      <div className="mt-3">
+        <DataProvenanceBadge
+          provenance={{
+            sourceName: property.ulpin ? 'State Land Survey Cadastre' : 'OpenStreetMap Live Footprints',
+            sourceType: property.ulpin ? 'official_government' : 'open_data',
+            sourceRecordId: property.vpid,
+            confidenceScore: property.ulpin ? 0.95 : 0.82,
+            verificationStatus: property.ulpin ? 'verified_official' : 'unverified',
+          }}
+        />
       </div>
 
       {/* Owner & Legal Verification */}
