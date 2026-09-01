@@ -118,6 +118,19 @@ function loadViewport3DBuildings(viewer: Viewer) {
             ? parseFloat(el.tags['building:levels']) * 3.5
             : Math.max(10, (el.id % 25) + 8);
 
+          // Architectural Color Palette for Realistic 3D Facades
+          const colorHue = el.id % 5;
+          const matColor =
+            colorHue === 0
+              ? Color.fromCssColorString('#f8fafc').withAlpha(0.95) // White Ceramic
+              : colorHue === 1
+              ? Color.fromCssColorString('#0284c7').withAlpha(0.88) // Reflected Sky Glass
+              : colorHue === 2
+              ? Color.fromCssColorString('#e2e8f0').withAlpha(0.94) // Concrete Architectural
+              : colorHue === 3
+              ? Color.fromCssColorString('#38bdf8').withAlpha(0.90) // Cyan Tinted Glass
+              : Color.fromCssColorString('#f1f5f9').withAlpha(0.95); // Off-white Slate
+
           viewer.entities.add({
             id: `real-osm-building-${el.id}`,
             polygon: {
@@ -126,7 +139,7 @@ function loadViewport3DBuildings(viewer: Viewer) {
               extrudedHeight: tagHeight,
               heightReference: HeightReference.CLAMP_TO_GROUND,
               extrudedHeightReference: HeightReference.RELATIVE_TO_GROUND,
-              material: Color.fromCssColorString('#f8fafc').withAlpha(0.94),
+              material: matColor,
               outline: true,
               outlineColor: Color.fromCssColorString('#0284c7'),
               outlineWidth: 1.5,
