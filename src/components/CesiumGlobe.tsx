@@ -42,9 +42,13 @@ import { STATUS_COLORS, SELECTED_COLOR, UNDERGROUND_COLOR, PARCEL_COLOR } from '
 import { SURROUNDING_CITY_BUILDINGS } from '../data/cadastralDemoData';
 
 export const CESIUM_ION_TOKEN =
+  (import.meta.env.VITE_CESIUM_ION_ACCESS_TOKEN as string | undefined) ||
   (import.meta.env.VITE_CESIUM_ION_TOKEN as string | undefined) ||
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6IjdyUG1VUjdPQXZjbmtHQlYiLCJqdGkiOiJlZjMyYTZmMi00OWZkLTQyNTctYmIzOC05NDRiNzQ5YjJjY2QiLCJpZCI6NDcyNjEyLCJpc3MiOiJodHRwczovL2FwaS5jZXNpdW0uY29tIiwiYXVkIjoidW5kZWZpbmVkX2RlZmF1bHQiLCJpYXQiOjE3ODc3MzcxMTl9.uPJ4DnQzuEVLyPy4QjuiBHWb5AwMAvC8d8q9cK9QM7I';
 const HAS_TOKEN = Boolean(CESIUM_ION_TOKEN);
+
+// Configure global Cesium Ion Access Token
+Ion.defaultAccessToken = CESIUM_ION_TOKEN;
 
 function loadViewport3DBuildings(viewer: Viewer) {
   if (viewer.isDestroyed()) return;
@@ -417,24 +421,21 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
               updateStatus({ imageryStatus: 'FAILED', lastError: `Imagery Error: ${err.message || String(err)}` });
             });
 
-          // 3. Google Photorealistic 3D Tiles Initialization (Ion Asset 2275207 & API Function)
+          // 3. Real-Time 3D City Building Pipeline (Google Photorealistic + Global OSM 3D Buildings + Viewport Real-Time Footprints)
           const load3DTilesPipeline = async () => {
             let googleSuccess = false;
             updateStatus({ photorealisticStatus: 'LOADING' });
 
+            // A. Primary: Google Photorealistic 3D Tiles (Ion Asset 2275207 / API function)
             try {
               let googleTileset: any = null;
-
-              // Attempt 1: Native Cesium API createGooglePhotorealistic3DTileset
               if (typeof createGooglePhotorealistic3DTileset === 'function') {
                 try {
                   googleTileset = await createGooglePhotorealistic3DTileset();
-                } catch (e1: any) {
-                  console.warn('createGooglePhotorealistic3DTileset direct call, checking Ion Asset 2275207...', e1?.message || e1);
+                } catch {
+                  // Fall back to Ion Asset 2275207
                 }
               }
-
-              // Attempt 2: Direct Cesium Ion Asset 2275207 (Google Photorealistic 3D Tiles via Ion)
               if (!googleTileset) {
                 googleTileset = await Cesium3DTileset.fromIonAssetId(2275207);
               }
@@ -447,48 +448,48 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
                   activeMode: 'PHOTOREALISTIC',
                   lastError: null,
                 });
-                console.log('Google Photorealistic 3D Tiles (Cesium Ion 2275207) loaded successfully!');
+                console.log('Google Photorealistic 3D Tiles loaded successfully!');
               }
             } catch (error: any) {
-              console.error('Google Photorealistic 3D Tiles failed to load', error);
-              const errMsg = error?.message || String(error);
+              console.warn('Google Photorealistic 3D Tiles load attempt:', error?.message || error);
               updateStatus({
                 photorealisticStatus: 'FAILED',
-                lastError: `Photorealistic 3D data could not be loaded: ${errMsg}`,
+                lastError: `Photorealistic 3D data: ${error?.message || String(error)}`,
               });
             }
 
-            // Fall back to OSM 3D Buildings ONLY if Google Tiles failed or unavailable
-            if (!googleSuccess) {
-              updateStatus({ osmStatus: 'LOADING' });
-              try {
-                const osmBuildings = await createOsmBuildingsAsync();
-                if (!viewer.isDestroyed()) {
-                  osmBuildings.style = new Cesium3DTileStyle({
-                    color: {
-                      conditions: [
-                        ["${feature['building']} === 'commercial'", "color('#38bdf8', 0.95)"],
-                        ["${feature['building']} === 'residential'", "color('#818cf8', 0.95)"],
-                        ["true", "color('#f8fafc', 0.92)"],
-                      ],
-                    },
-                    show: true,
-                  });
-                  viewer.scene.primitives.add(osmBuildings);
-                  updateStatus({
-                    osmStatus: 'LOADED',
-                    activeMode: 'OSM_3D',
-                  });
-                  console.log('3D Buildings — OpenStreetMap loaded as fallback');
-                }
-              } catch (osmError: any) {
-                console.error('Failed to load 3D Buildings — OpenStreetMap', osmError);
-                updateStatus({
-                  osmStatus: 'FAILED',
-                  activeMode: 'FLAT_MAP',
-                  lastError: `3D building data unavailable: ${osmError?.message || String(osmError)}`,
+            // B. Global 3D Building Layer: Cesium OSM 3D Buildings for worldwide coverage
+            updateStatus({ osmStatus: 'LOADING' });
+            try {
+              const osmBuildings = await createOsmBuildingsAsync();
+              if (!viewer.isDestroyed()) {
+                osmBuildings.style = new Cesium3DTileStyle({
+                  color: {
+                    conditions: [
+                      ["${feature['building']} === 'commercial'", "color('#38bdf8', 0.95)"],
+                      ["${feature['building']} === 'residential'", "color('#818cf8', 0.95)"],
+                      ["true", "color('#f8fafc', 0.92)"],
+                    ],
+                  },
+                  show: true,
                 });
+                viewer.scene.primitives.add(osmBuildings);
+                updateStatus({
+                  osmStatus: 'LOADED',
+                  activeMode: googleSuccess ? 'PHOTOREALISTIC' : 'OSM_3D',
+                });
+                console.log('Global 3D Buildings (OpenStreetMap) loaded successfully!');
               }
+            } catch (osmError: any) {
+              console.warn('Cesium OSM 3D Buildings load attempt:', osmError?.message || osmError);
+            }
+
+            // C. Real-time Overpass API 3D Building Footprints for local areas
+            if (!viewer.isDestroyed()) {
+              loadViewport3DBuildings(viewer);
+              viewer.camera.moveEnd.addEventListener(() => {
+                if (!viewer.isDestroyed()) loadViewport3DBuildings(viewer);
+              });
             }
           };
 
