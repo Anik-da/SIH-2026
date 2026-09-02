@@ -50,87 +50,14 @@ const HAS_TOKEN = Boolean(CESIUM_ION_TOKEN);
 // Configure global Cesium Ion Access Token
 Ion.defaultAccessToken = CESIUM_ION_TOKEN;
 
-function fillNeighborhood3DBuildings(
-  viewer: Viewer,
-  s: number,
-  n: number,
-  w: number,
-  e: number,
-  existingCoords: Set<string>
-) {
+function loadViewport3DBuildings(viewer: Viewer) {
   if (viewer.isDestroyed()) return;
 
-  // Clear previous fallback building entities for new viewport
+  // Clean up any legacy synthetic fallback entities
   const oldFallbackEntities = viewer.entities.values.filter(
     (el) => typeof el.id === 'string' && el.id.startsWith('cadastral-residential-3d-')
   );
   oldFallbackEntities.forEach((el) => viewer.entities.remove(el));
-
-  const latStep = 0.0006; // ~65m grid spacing for dense residential building coverage
-  const lonStep = 0.0006;
-
-  let idCounter = 0;
-  const minLat = Math.min(s, n);
-  const maxLat = Math.max(s, n);
-  const minLon = Math.min(w, e);
-  const maxLon = Math.max(w, e);
-
-  for (let lat = minLat; lat <= maxLat; lat += latStep) {
-    for (let lon = minLon; lon <= maxLon; lon += lonStep) {
-      const cellKey = `${lat.toFixed(3)}_${lon.toFixed(3)}`;
-      if (existingCoords.has(cellKey)) continue;
-
-      idCounter++;
-      const bldgId = `cadastral-residential-3d-${lat.toFixed(4)}-${lon.toFixed(4)}-${idCounter}`;
-
-      const hash = Math.abs(Math.sin(lat * 12.9898 + lon * 78.233) * 43758.5453);
-      const bHeight = 10 + (hash % 26); // 10m to 36m height
-      const widthDeg = (16 + (hash % 18)) / 111320; // 16m to 34m width
-      const depthDeg = (14 + ((hash * 3) % 16)) / 111320; // 14m to 30m depth
-
-      const cWest = lon;
-      const cEast = lon + widthDeg;
-      const cSouth = lat;
-      const cNorth = lat + depthDeg;
-
-      const footprintCoords = [
-        cWest, cSouth,
-        cEast, cSouth,
-        cEast, cNorth,
-        cWest, cNorth,
-      ];
-
-      const colorHue = Math.floor(hash) % 5;
-      const matColor =
-        colorHue === 0
-          ? Color.fromCssColorString('#f8fafc').withAlpha(0.95)
-          : colorHue === 1
-          ? Color.fromCssColorString('#0284c7').withAlpha(0.88)
-          : colorHue === 2
-          ? Color.fromCssColorString('#e2e8f0').withAlpha(0.94)
-          : colorHue === 3
-          ? Color.fromCssColorString('#38bdf8').withAlpha(0.90)
-          : Color.fromCssColorString('#f1f5f9').withAlpha(0.95);
-
-      viewer.entities.add({
-        id: bldgId,
-        polygon: {
-          hierarchy: new PolygonHierarchy(Cartesian3.fromDegreesArray(footprintCoords)),
-          height: 0,
-          extrudedHeight: bHeight,
-          material: matColor,
-          outline: true,
-          outlineColor: Color.fromCssColorString('#0284c7'),
-          outlineWidth: 1.2,
-          shadows: ShadowMode.ENABLED,
-        },
-      });
-    }
-  }
-}
-
-function loadViewport3DBuildings(viewer: Viewer) {
-  if (viewer.isDestroyed()) return;
 
   let west: number, south: number, east: number, north: number;
 
@@ -169,11 +96,6 @@ function loadViewport3DBuildings(viewer: Viewer) {
   const w = Math.min(west, east);
   const e = Math.max(west, east);
 
-  const existingCoords = new Set<string>();
-
-  // Render 3D neighborhood building coverage immediately without waiting for network responses
-  fillNeighborhood3DBuildings(viewer, s, n, w, e, existingCoords);
-
   // Fetch REAL OpenStreetMap 2D building footprints for exact coordinate boundaries
   const minLat = s.toFixed(4);
   const maxLat = n.toFixed(4);
@@ -205,7 +127,6 @@ function loadViewport3DBuildings(viewer: Viewer) {
             const coord = nodesMap.get(nodeId);
             if (coord) {
               coordsFlat.push(coord[0], coord[1]);
-              existingCoords.add(`${coord[1].toFixed(3)}_${coord[0].toFixed(3)}`);
             }
           });
 
@@ -514,12 +435,12 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
               updateStatus({ imageryStatus: 'FAILED', lastError: `Imagery Error: ${err.message || String(err)}` });
             });
 
-          // 3. Real-Time 3D City Building Pipeline (Google Photorealistic + Global OSM 3D Buildings + Viewport Real-Time Footprints)
+          // 3. Real-Time 3D City Building Pipeline (Google Photorealistic 3D Tiles / Real OSM 3D Buildings)
           const load3DTilesPipeline = async () => {
             let googleSuccess = false;
             updateStatus({ photorealisticStatus: 'LOADING' });
 
-            // A. Primary: Google Photorealistic 3D Tiles (Ion Asset 2275207 / API function)
+            // A. Primary: Google Photorealistic 3D Tiles (Cesium Ion Asset 2275207)
             try {
               let googleTileset: any = null;
               if (typeof createGooglePhotorealistic3DTileset === 'function') {
@@ -534,7 +455,7 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
               }
 
               if (!viewer.isDestroyed() && googleTileset) {
-                googleTileset.maximumScreenSpaceError = 8;
+                googleTileset.maximumScreenSpaceError = 2; // Highest level of detail for photorealistic 3D city buildings
                 viewer.scene.primitives.add(googleTileset);
                 googleSuccess = true;
                 updateStatus({
@@ -552,39 +473,40 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
               });
             }
 
-            // B. Global 3D Building Layer: Cesium OSM 3D Buildings for worldwide coverage
-            updateStatus({ osmStatus: 'LOADING' });
-            try {
-              const osmBuildings = await createOsmBuildingsAsync();
-              if (!viewer.isDestroyed()) {
-                osmBuildings.maximumScreenSpaceError = 6;
-                osmBuildings.style = new Cesium3DTileStyle({
-                  color: {
-                    conditions: [
-                      ["${feature['building']} === 'commercial'", "color('#38bdf8', 0.95)"],
-                      ["${feature['building']} === 'residential'", "color('#818cf8', 0.95)"],
-                      ["true", "color('#f8fafc', 0.92)"],
-                    ],
-                  },
-                  show: true,
-                });
-                viewer.scene.primitives.add(osmBuildings);
-                updateStatus({
-                  osmStatus: 'LOADED',
-                  activeMode: googleSuccess ? 'PHOTOREALISTIC' : 'OSM_3D',
-                });
-                console.log('Global 3D Buildings (OpenStreetMap) loaded successfully!');
+            // B. Fallback: If Photorealistic 3D Tiles are not available, stream Real OSM 3D Buildings
+            if (!googleSuccess) {
+              updateStatus({ osmStatus: 'LOADING' });
+              try {
+                const osmBuildings = await createOsmBuildingsAsync();
+                if (!viewer.isDestroyed()) {
+                  osmBuildings.maximumScreenSpaceError = 4;
+                  osmBuildings.style = new Cesium3DTileStyle({
+                    color: {
+                      conditions: [
+                        ["${feature['building']} === 'commercial'", "color('#38bdf8', 0.95)"],
+                        ["${feature['building']} === 'residential'", "color('#818cf8', 0.95)"],
+                        ["true", "color('#f8fafc', 0.92)"],
+                      ],
+                    },
+                    show: true,
+                  });
+                  viewer.scene.primitives.add(osmBuildings);
+                  updateStatus({
+                    osmStatus: 'LOADED',
+                    activeMode: 'OSM_3D',
+                  });
+                  console.log('Global 3D Buildings (OpenStreetMap) loaded successfully!');
+                }
+              } catch (osmError: any) {
+                console.warn('Cesium OSM 3D Buildings load attempt:', osmError?.message || osmError);
               }
-            } catch (osmError: any) {
-              console.warn('Cesium OSM 3D Buildings load attempt:', osmError?.message || osmError);
-            }
 
-            // C. Real-time Overpass API 3D Building Footprints for local areas
-            if (!viewer.isDestroyed()) {
-              loadViewport3DBuildings(viewer);
-              viewer.camera.moveEnd.addEventListener(() => {
-                if (!viewer.isDestroyed()) loadViewport3DBuildings(viewer);
-              });
+              if (!viewer.isDestroyed()) {
+                loadViewport3DBuildings(viewer);
+                viewer.camera.moveEnd.addEventListener(() => {
+                  if (!viewer.isDestroyed()) loadViewport3DBuildings(viewer);
+                });
+              }
             }
           };
 
