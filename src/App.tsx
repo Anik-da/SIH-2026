@@ -504,9 +504,6 @@ function App() {
               onOpenValidation={() => setIsValidationOpen(true)}
             />
 
-            {/* Diagnostic 3D City Status HUD */}
-            <ThreeCityStatusHUD status={threeCityStatus} />
-
             {/* Left side: Toolbar */}
             <div className="absolute left-4 top-4 z-10">
               <MapToolbar
