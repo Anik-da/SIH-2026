@@ -435,12 +435,11 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
               updateStatus({ imageryStatus: 'FAILED', lastError: `Imagery Error: ${err.message || String(err)}` });
             });
 
-          // 3. Real-Time 3D City Building Pipeline (Google Photorealistic 3D Tiles / Real OSM 3D Buildings)
+          // 3. Real-Time 3D City Building Pipeline (Google Photorealistic + Global OSM 3D Buildings + Viewport Real-Time Footprints)
           const load3DTilesPipeline = async () => {
-            let googleSuccess = false;
             updateStatus({ photorealisticStatus: 'LOADING' });
 
-            // A. Primary: Google Photorealistic 3D Tiles (Cesium Ion Asset 2275207)
+            // A. Optional Photorealistic Layer (Google Earth Photogrammetry Mesh)
             try {
               let googleTileset: any = null;
               if (typeof createGooglePhotorealistic3DTileset === 'function') {
@@ -455,9 +454,8 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
               }
 
               if (!viewer.isDestroyed() && googleTileset) {
-                googleTileset.maximumScreenSpaceError = 2; // Highest level of detail for photorealistic 3D city buildings
+                googleTileset.maximumScreenSpaceError = 8;
                 viewer.scene.primitives.add(googleTileset);
-                googleSuccess = true;
                 updateStatus({
                   photorealisticStatus: 'LOADED',
                   activeMode: 'PHOTOREALISTIC',
@@ -473,40 +471,39 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
               });
             }
 
-            // B. Fallback: If Photorealistic 3D Tiles are not available, stream Real OSM 3D Buildings
-            if (!googleSuccess) {
-              updateStatus({ osmStatus: 'LOADING' });
-              try {
-                const osmBuildings = await createOsmBuildingsAsync();
-                if (!viewer.isDestroyed()) {
-                  osmBuildings.maximumScreenSpaceError = 4;
-                  osmBuildings.style = new Cesium3DTileStyle({
-                    color: {
-                      conditions: [
-                        ["${feature['building']} === 'commercial'", "color('#38bdf8', 0.95)"],
-                        ["${feature['building']} === 'residential'", "color('#818cf8', 0.95)"],
-                        ["true", "color('#f8fafc', 0.92)"],
-                      ],
-                    },
-                    show: true,
-                  });
-                  viewer.scene.primitives.add(osmBuildings);
-                  updateStatus({
-                    osmStatus: 'LOADED',
-                    activeMode: 'OSM_3D',
-                  });
-                  console.log('Global 3D Buildings (OpenStreetMap) loaded successfully!');
-                }
-              } catch (osmError: any) {
-                console.warn('Cesium OSM 3D Buildings load attempt:', osmError?.message || osmError);
-              }
-
+            // B. Global Real 3D Building Geometry (Cesium OSM 3D Buildings)
+            updateStatus({ osmStatus: 'LOADING' });
+            try {
+              const osmBuildings = await createOsmBuildingsAsync();
               if (!viewer.isDestroyed()) {
-                loadViewport3DBuildings(viewer);
-                viewer.camera.moveEnd.addEventListener(() => {
-                  if (!viewer.isDestroyed()) loadViewport3DBuildings(viewer);
+                osmBuildings.maximumScreenSpaceError = 4; // High LOD for real 3D buildings
+                osmBuildings.style = new Cesium3DTileStyle({
+                  color: {
+                    conditions: [
+                      ["${feature['building']} === 'commercial'", "color('#38bdf8', 0.95)"],
+                      ["${feature['building']} === 'residential'", "color('#818cf8', 0.95)"],
+                      ["true", "color('#f8fafc', 0.92)"],
+                    ],
+                  },
+                  show: true,
                 });
+                viewer.scene.primitives.add(osmBuildings);
+                updateStatus({
+                  osmStatus: 'LOADED',
+                  activeMode: 'OSM_3D',
+                });
+                console.log('Global 3D Buildings (OpenStreetMap) loaded successfully!');
               }
+            } catch (osmError: any) {
+              console.warn('Cesium OSM 3D Buildings load attempt:', osmError?.message || osmError);
+            }
+
+            // C. Real OpenStreetMap 2D Footprint Extrusions for detailed local structures
+            if (!viewer.isDestroyed()) {
+              loadViewport3DBuildings(viewer);
+              viewer.camera.moveEnd.addEventListener(() => {
+                if (!viewer.isDestroyed()) loadViewport3DBuildings(viewer);
+              });
             }
           };
 
