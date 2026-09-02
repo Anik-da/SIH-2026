@@ -720,45 +720,8 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
       });
 
       // 2. High-Detail 3D Architectural Building Model & Surrounding 3D Urban Grid
+      // Note: Synthetic extruded boxes (solid-bim-building) are disabled to ensure authentic 3D photorealistic tiles / 3D buildings are fully visible.
       if (explodeState !== 'exploded') {
-        const isSelected = selectedFloorId !== null;
-        
-        // Main Architectural 3D BIM Mass (Matching White/Monochrome Style in Image 2)
-        viewer.entities.add({
-          id: 'solid-bim-building',
-          polygon: {
-            hierarchy: new PolygonHierarchy(footprintToCartesian(building.footprint, 0)),
-            height: 0,
-            extrudedHeight: 28,
-            heightReference: HeightReference.CLAMP_TO_GROUND,
-            extrudedHeightReference: HeightReference.RELATIVE_TO_GROUND,
-            material: Color.fromCssColorString('#f8fafc').withAlpha(0.95),
-            outline: true,
-            outlineColor: isSelected
-              ? Color.fromCssColorString('#06b6d4')
-              : Color.fromCssColorString('#64748b'),
-            outlineWidth: isSelected ? 3 : 1.5,
-            shadows: ShadowMode.ENABLED,
-          },
-        });
-
-        // Architectural Penthouse / Rooftop Volume Structure (Image 2 detail)
-        viewer.entities.add({
-          id: 'solid-bim-rooftop',
-          polygon: {
-            hierarchy: new PolygonHierarchy(footprintToCartesian(building.footprint, 0)),
-            height: 28,
-            extrudedHeight: 33,
-            heightReference: HeightReference.RELATIVE_TO_GROUND,
-            extrudedHeightReference: HeightReference.RELATIVE_TO_GROUND,
-            material: Color.fromCssColorString('#e2e8f0').withAlpha(0.95),
-            outline: true,
-            outlineColor: Color.fromCssColorString('#0284c7'),
-            outlineWidth: 2,
-            shadows: ShadowMode.ENABLED,
-          },
-        });
-
         return;
       }
 
