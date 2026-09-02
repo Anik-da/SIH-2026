@@ -60,8 +60,14 @@ function fillNeighborhood3DBuildings(
 ) {
   if (viewer.isDestroyed()) return;
 
-  const latStep = 0.0007; // ~75m grid spacing for dense residential coverage
-  const lonStep = 0.0007;
+  // Clear previous fallback building entities for new viewport
+  const oldFallbackEntities = viewer.entities.values.filter(
+    (el) => typeof el.id === 'string' && el.id.startsWith('cadastral-residential-3d-')
+  );
+  oldFallbackEntities.forEach((el) => viewer.entities.remove(el));
+
+  const latStep = 0.0006; // ~65m grid spacing for dense residential building coverage
+  const lonStep = 0.0006;
 
   let idCounter = 0;
   const minLat = Math.min(s, n);
@@ -77,13 +83,10 @@ function fillNeighborhood3DBuildings(
       idCounter++;
       const bldgId = `cadastral-residential-3d-${lat.toFixed(4)}-${lon.toFixed(4)}-${idCounter}`;
 
-      // Skip already added fallback entity
-      if (viewer.entities.getById(bldgId)) continue;
-
       const hash = Math.abs(Math.sin(lat * 12.9898 + lon * 78.233) * 43758.5453);
-      const bHeight = 8 + (hash % 24); // 8m to 32m height
-      const widthDeg = (14 + (hash % 16)) / 111320; // 14m to 30m width
-      const depthDeg = (12 + ((hash * 3) % 14)) / 111320; // 12m to 26m depth
+      const bHeight = 10 + (hash % 26); // 10m to 36m height
+      const widthDeg = (16 + (hash % 18)) / 111320; // 16m to 34m width
+      const depthDeg = (14 + ((hash * 3) % 16)) / 111320; // 14m to 30m depth
 
       const cWest = lon;
       const cEast = lon + widthDeg;
@@ -115,8 +118,6 @@ function fillNeighborhood3DBuildings(
           hierarchy: new PolygonHierarchy(Cartesian3.fromDegreesArray(footprintCoords)),
           height: 0,
           extrudedHeight: bHeight,
-          heightReference: HeightReference.CLAMP_TO_GROUND,
-          extrudedHeightReference: HeightReference.RELATIVE_TO_GROUND,
           material: matColor,
           outline: true,
           outlineColor: Color.fromCssColorString('#0284c7'),
@@ -144,26 +145,34 @@ function loadViewport3DBuildings(viewer: Viewer) {
       new Cartesian3(viewer.canvas.clientWidth / 2, viewer.canvas.clientHeight / 2, 0),
       viewer.scene.globe.ellipsoid
     );
+    let cLat = 12.9716;
+    let cLon = 77.5946;
     if (centerCartesian) {
       const carto = Cartographic.fromCartesian(centerCartesian);
-      const cLat = CesiumMath.toDegrees(carto.latitude);
-      const cLon = CesiumMath.toDegrees(carto.longitude);
-      west = cLon - 0.035;
-      east = cLon + 0.035;
-      south = cLat - 0.035;
-      north = cLat + 0.035;
+      cLat = CesiumMath.toDegrees(carto.latitude);
+      cLon = CesiumMath.toDegrees(carto.longitude);
     } else {
-      west = 77.550;
-      east = 77.650;
-      south = 12.930;
-      north = 13.010;
+      const carto = viewer.camera.positionCartographic;
+      if (carto) {
+        cLat = CesiumMath.toDegrees(carto.latitude);
+        cLon = CesiumMath.toDegrees(carto.longitude);
+      }
     }
+    west = cLon - 0.045;
+    east = cLon + 0.045;
+    south = cLat - 0.045;
+    north = cLat + 0.045;
   }
 
   const s = Math.min(south, north);
   const n = Math.max(south, north);
   const w = Math.min(west, east);
   const e = Math.max(west, east);
+
+  const existingCoords = new Set<string>();
+
+  // Render 3D neighborhood building coverage immediately without waiting for network responses
+  fillNeighborhood3DBuildings(viewer, s, n, w, e, existingCoords);
 
   // Fetch REAL OpenStreetMap 2D building footprints for exact coordinate boundaries
   const minLat = s.toFixed(4);
@@ -175,19 +184,14 @@ function loadViewport3DBuildings(viewer: Viewer) {
   const urlPrimary = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
   const urlMirror = `https://overpass.kumi.systems/api/interpreter?data=${encodeURIComponent(query)}`;
 
-  const existingCoords = new Set<string>();
-
   const processOverpassData = (data: any) => {
     if (viewer.isDestroyed()) return;
 
     if (data && data.elements) {
-      // Clean up old OSM building entities only when new data is ready
       const oldOsmEntities = viewer.entities.values.filter(
-        (e) =>
-          typeof e.id === 'string' &&
-          (e.id.startsWith('osm-ext-') || e.id.startsWith('real-osm-building-') || e.id.startsWith('cadastral-residential-3d-'))
+        (el) => typeof el.id === 'string' && el.id.startsWith('real-osm-building-')
       );
-      oldOsmEntities.forEach((e) => viewer.entities.remove(e));
+      oldOsmEntities.forEach((el) => viewer.entities.remove(el));
 
       const nodesMap = new Map<number, [number, number]>();
       data.elements.forEach((el: any) => {
@@ -230,8 +234,6 @@ function loadViewport3DBuildings(viewer: Viewer) {
                 hierarchy: new PolygonHierarchy(Cartesian3.fromDegreesArray(coordsFlat)),
                 height: 0,
                 extrudedHeight: tagHeight,
-                heightReference: HeightReference.CLAMP_TO_GROUND,
-                extrudedHeightReference: HeightReference.RELATIVE_TO_GROUND,
                 material: matColor,
                 outline: true,
                 outlineColor: Color.fromCssColorString('#0284c7'),
@@ -243,22 +245,20 @@ function loadViewport3DBuildings(viewer: Viewer) {
         }
       });
     }
-
-    // Ensure 100% 3D coverage across all residential areas in the viewport
-    fillNeighborhood3DBuildings(viewer, s, n, w, e, existingCoords);
   };
 
   fetch(urlPrimary)
-    .then((res) => res.json())
-    .then(processOverpassData)
-    .catch(() => {
-      fetch(urlMirror)
-        .then((res) => res.json())
-        .then(processOverpassData)
-        .catch(() => {
-          fillNeighborhood3DBuildings(viewer, s, n, w, e, existingCoords);
-        });
-    });
+    .then((res) => (res.ok ? res.json() : null))
+    .then((data) => {
+      if (data) processOverpassData(data);
+      else {
+        fetch(urlMirror)
+          .then((res) => (res.ok ? res.json() : null))
+          .then((mirrorData) => mirrorData && processOverpassData(mirrorData))
+          .catch(() => {});
+      }
+    })
+    .catch(() => {});
 }
 
 export interface PickedBuildingData {
