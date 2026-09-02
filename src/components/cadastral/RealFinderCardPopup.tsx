@@ -40,18 +40,29 @@ export const RealFinderCardPopup: React.FC<Props> = ({
         <MapPin className="h-3 w-3 text-cyan-400" /> {lat.toFixed(4)}° N, {lon.toFixed(4)}° E · {ulpin}
       </p>
 
-      <div className="mt-3 flex items-center justify-between border-t border-slate-800 pt-2.5">
-        <div>
-          <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Valuation / Rent</span>
-          <p className="text-sm font-extrabold text-cyan-300">{valuation}</p>
-        </div>
-        <div className="text-right">
-          <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Occupancy</span>
-          <p className="text-xs font-bold text-emerald-400 flex items-center gap-1">
-            <ShieldCheck className="h-3 w-3" /> 92.2% Leased
+      {ulpin === 'Not available from source' ? (
+        <div className="mt-2.5 rounded-xl border border-amber-500/30 bg-amber-500/10 p-2 text-[11px] text-amber-300 font-sans">
+          <p className="font-semibold leading-snug">
+            Photorealistic building detected.
+          </p>
+          <p className="text-[10px] text-amber-400/90 mt-0.5">
+            No verified cadastral/property record is linked to this building.
           </p>
         </div>
-      </div>
+      ) : (
+        <div className="mt-3 flex items-center justify-between border-t border-slate-800 pt-2.5">
+          <div>
+            <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Valuation / Rent</span>
+            <p className="text-sm font-extrabold text-cyan-300">{valuation}</p>
+          </div>
+          <div className="text-right">
+            <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Occupancy</span>
+            <p className="text-xs font-bold text-emerald-400 flex items-center gap-1">
+              <ShieldCheck className="h-3 w-3" /> 92.2% Leased
+            </p>
+          </div>
+        </div>
+      )}
 
       <button
         onClick={onExplore}

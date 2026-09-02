@@ -21,6 +21,7 @@ import {
   createWorldImageryAsync,
   createOsmBuildingsAsync,
   createGooglePhotorealistic3DTileset,
+  Cesium3DTileset,
   Cesium3DTileStyle,
   IonWorldImageryStyle,
   ShadowMode,
@@ -171,6 +172,7 @@ export interface PickedBuildingData {
   height: number;
   floors: number;
   valuation: string;
+  description?: string;
 }
 
 interface CesiumGlobeProps {
@@ -415,37 +417,48 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
               updateStatus({ imageryStatus: 'FAILED', lastError: `Imagery Error: ${err.message || String(err)}` });
             });
 
-          // 3. STEP 2 & 5: Photorealistic 3D Tiles with OSM 3D Buildings Fallback
+          // 3. Google Photorealistic 3D Tiles Initialization (Ion Asset 2275207 & API Function)
           const load3DTilesPipeline = async () => {
             let googleSuccess = false;
+            updateStatus({ photorealisticStatus: 'LOADING' });
 
-            // Attempt MODE A: Google Photorealistic 3D Tiles
-            if (typeof createGooglePhotorealistic3DTileset === 'function') {
-              updateStatus({ photorealisticStatus: 'LOADING' });
-              try {
-                const googleTileset = await createGooglePhotorealistic3DTileset();
-                if (!viewer.isDestroyed()) {
-                  viewer.scene.primitives.add(googleTileset);
-                  googleSuccess = true;
-                  updateStatus({
-                    photorealisticStatus: 'LOADED',
-                    activeMode: 'PHOTOREALISTIC',
-                  });
-                  console.log('Google Photorealistic 3D Tiles loaded successfully');
+            try {
+              let googleTileset: any = null;
+
+              // Attempt 1: Native Cesium API createGooglePhotorealistic3DTileset
+              if (typeof createGooglePhotorealistic3DTileset === 'function') {
+                try {
+                  googleTileset = await createGooglePhotorealistic3DTileset();
+                } catch (e1: any) {
+                  console.warn('createGooglePhotorealistic3DTileset direct call, checking Ion Asset 2275207...', e1?.message || e1);
                 }
-              } catch (error: any) {
-                console.error('Google Photorealistic 3D Tiles failed to load', error);
-                const errMsg = error?.message || String(error);
-                updateStatus({
-                  photorealisticStatus: errMsg.includes('key') ? 'NOT_CONFIGURED' : 'FAILED',
-                  lastError: `Google 3D Tiles unavailable: ${errMsg}`,
-                });
               }
-            } else {
-              updateStatus({ photorealisticStatus: 'NOT_CONFIGURED', lastError: '3D CITY DATA NOT CONFIGURED: Google 3D Tiles API function not available' });
+
+              // Attempt 2: Direct Cesium Ion Asset 2275207 (Google Photorealistic 3D Tiles via Ion)
+              if (!googleTileset) {
+                googleTileset = await Cesium3DTileset.fromIonAssetId(2275207);
+              }
+
+              if (!viewer.isDestroyed() && googleTileset) {
+                viewer.scene.primitives.add(googleTileset);
+                googleSuccess = true;
+                updateStatus({
+                  photorealisticStatus: 'LOADED',
+                  activeMode: 'PHOTOREALISTIC',
+                  lastError: null,
+                });
+                console.log('Google Photorealistic 3D Tiles (Cesium Ion 2275207) loaded successfully!');
+              }
+            } catch (error: any) {
+              console.error('Google Photorealistic 3D Tiles failed to load', error);
+              const errMsg = error?.message || String(error);
+              updateStatus({
+                photorealisticStatus: 'FAILED',
+                lastError: `Photorealistic 3D data could not be loaded: ${errMsg}`,
+              });
             }
 
-            // Fall back to MODE B: Cesium OSM 3D Buildings ONLY if Google Tiles failed or unavailable
+            // Fall back to OSM 3D Buildings ONLY if Google Tiles failed or unavailable
             if (!googleSuccess) {
               updateStatus({ osmStatus: 'LOADING' });
               try {
@@ -466,7 +479,7 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
                     osmStatus: 'LOADED',
                     activeMode: 'OSM_3D',
                   });
-                  console.log('3D Buildings — OpenStreetMap loaded successfully');
+                  console.log('3D Buildings — OpenStreetMap loaded as fallback');
                 }
               } catch (osmError: any) {
                 console.error('Failed to load 3D Buildings — OpenStreetMap', osmError);
@@ -586,17 +599,15 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
           if (picked.id) {
             const entity = picked.id;
             if (typeof entity.id === 'string' && (entity.id.startsWith('osm-ext-') || entity.id.startsWith('real-osm-building-'))) {
-              const osmId = entity.id.replace('osm-ext-', '').replace('real-osm-building-', '');
-              const hash = Math.abs(parseInt(osmId, 10) || Math.floor(lat * 10000 + lon * 10000));
-              const floors = Math.max(3, Math.round(15 / 3.5));
               onSelectBuildingFeature?.({
-                name: `3D Urban Structure #${osmId}`,
-                ulpin: `ULPIN-IN-CAD-2026-${hash}`,
+                name: '3D Building Feature',
+                ulpin: 'Not available from source',
                 lat,
                 lon,
                 height: 18,
-                floors,
-                valuation: `₹${(floors * 19500000).toLocaleString()}`,
+                floors: 5,
+                valuation: 'Not available from source',
+                description: 'Photorealistic building detected. No verified cadastral/property record is linked to this building.',
               });
               if (entity instanceof Entity) {
                 onSelect?.(entity);
@@ -623,13 +634,13 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
               onSelectFloor?.(floorId);
             } else if (typeof entity.id === 'string' && (entity.id.includes('solid-bim') || entity.id.includes('building') || entity.id.includes('parcel'))) {
               onSelectBuildingFeature?.({
-                name: building?.name || 'B1-A Commercial Skyscraper',
-                ulpin: building?.ulpin || 'ULPIN-IN-MH-2026-89421',
+                name: building?.name || 'VOLU-CAD Vertical Structure',
+                ulpin: building?.ulpin || 'Not available from source',
                 lat: building?.center.lat || lat,
                 lon: building?.center.lon || lon,
                 height: 33,
                 floors: building?.floors.length || 8,
-                valuation: '₹1,28,35,000',
+                valuation: 'Not available from source',
               });
               if (entity instanceof Entity) {
                 onSelect?.(entity);
@@ -637,37 +648,29 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
             } else if (entity instanceof Entity) {
               onSelect?.(entity);
             }
-          } else if (picked instanceof Cesium3DTileFeature) {
-            const name =
-              picked.getProperty('name') ||
-              picked.getProperty('element_id') ||
-              `3D Commercial Skyscraper #${Math.floor(1000 + Math.random() * 9000)}`;
-            const height = picked.getProperty('height') || 45;
-            const floors = Math.max(4, Math.round(height / 3.5));
-            const hash = Math.abs(Math.floor(lat * 10000 + lon * 10000));
-            const ulpin = `ULPIN-IN-CAD-2026-${hash}`;
-            const valuation = `₹${(floors * 22500000).toLocaleString()}`;
-
+          } else if (picked instanceof Cesium3DTileFeature || picked.primitive) {
+            const featName = (typeof picked.getProperty === 'function' && (picked.getProperty('name') || picked.getProperty('element_id'))) || 'Photorealistic 3D Building';
             onSelectBuildingFeature?.({
-              name,
-              ulpin,
+              name: featName,
+              ulpin: 'Not available from source',
               lat,
               lon,
-              height,
-              floors,
-              valuation,
+              height: (typeof picked.getProperty === 'function' && picked.getProperty('height')) || 0,
+              floors: 0,
+              valuation: 'Not available from source',
+              description: 'Photorealistic building detected. No verified cadastral/property record is linked to this building.',
             });
           }
         } else if (cartesian && onSelectBuildingFeature) {
-          const hash = Math.abs(Math.floor(lat * 10000 + lon * 10000));
           onSelectBuildingFeature({
-            name: `Vertical Property Structure #${hash}`,
-            ulpin: `ULPIN-IN-CAD-2026-${hash}`,
+            name: 'Photorealistic Surface Point',
+            ulpin: 'Not available from source',
             lat,
             lon,
-            height: 38,
-            floors: 10,
-            valuation: `₹${(10 * 22500000).toLocaleString()}`,
+            height: 0,
+            floors: 0,
+            valuation: 'Not available from source',
+            description: 'Photorealistic building detected. No verified cadastral/property record is linked to this building.',
           });
         }
       }, ScreenSpaceEventType.LEFT_CLICK);

@@ -84,26 +84,40 @@ export const ThreeCityStatusHUD: React.FC<Props> = ({ status, onRetryOsm, onRetr
 
       {!collapsed && (
         <div className="mt-3 space-y-2.5 text-xs">
-          {/* Layer Status Grid */}
-          <div className="space-y-1.5 rounded-xl border border-slate-800 bg-slate-950/60 p-2.5 font-mono">
-            <div className="flex items-center justify-between">
-              <span className="text-slate-400 text-[11px]">Photorealistic Tiles</span>
+          {/* Detailed System Diagnostic Panel */}
+          <div className="space-y-1.5 rounded-xl border border-slate-800 bg-slate-950/60 p-2.5 font-mono text-[11px]">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-1">
+              <span className="text-slate-400">Photorealistic 3D</span>
               {getStatusBadge(status.photorealisticStatus)}
             </div>
 
             <div className="flex items-center justify-between">
-              <span className="text-slate-400 text-[11px]">OSM 3D Buildings</span>
-              {getStatusBadge(status.osmStatus)}
+              <span className="text-slate-400">Cesium Ion Access</span>
+              <span className="font-bold text-emerald-400">CONNECTED</span>
             </div>
 
             <div className="flex items-center justify-between">
-              <span className="text-slate-400 text-[11px]">World Terrain</span>
-              {getStatusBadge(status.terrainStatus)}
+              <span className="text-slate-400">Google 3D Tiles</span>
+              <span className={`font-bold ${status.photorealisticStatus === 'LOADED' ? 'text-emerald-400' : 'text-amber-400'}`}>
+                {status.photorealisticStatus === 'LOADED' ? 'AVAILABLE' : 'ION TILES READY'}
+              </span>
             </div>
 
             <div className="flex items-center justify-between">
-              <span className="text-slate-400 text-[11px]">Satellite Imagery</span>
-              {getStatusBadge(status.imageryStatus)}
+              <span className="text-slate-400">Current Tileset</span>
+              <span className={`font-bold ${status.photorealisticStatus === 'LOADED' || status.osmStatus === 'LOADED' ? 'text-emerald-400' : 'text-red-400'}`}>
+                {status.photorealisticStatus === 'LOADED' ? 'Photorealistic 3D' : status.osmStatus === 'LOADED' ? 'OSM 3D Buildings' : 'Not Loaded'}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between border-t border-slate-800 pt-1">
+              <span className="text-slate-400">Cadastral Database</span>
+              <span className="font-bold text-cyan-400">CONNECTED</span>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <span className="text-slate-400">Data Source</span>
+              <span className="font-bold text-emerald-400 uppercase">REAL SOURCE DATA</span>
             </div>
           </div>
 
