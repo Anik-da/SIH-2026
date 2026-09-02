@@ -70,24 +70,17 @@ function loadViewport3DBuildings(viewer: Viewer) {
       const carto = Cartographic.fromCartesian(centerCartesian);
       const cLat = CesiumMath.toDegrees(carto.latitude);
       const cLon = CesiumMath.toDegrees(carto.longitude);
-      west = cLon - 0.015;
-      east = cLon + 0.015;
-      south = cLat - 0.015;
-      north = cLat + 0.015;
+      west = cLon - 0.035;
+      east = cLon + 0.035;
+      south = cLat - 0.035;
+      north = cLat + 0.035;
     } else {
-      west = 77.585;
-      east = 77.615;
-      south = 12.960;
-      north = 12.985;
+      west = 77.550;
+      east = 77.650;
+      south = 12.930;
+      north = 13.010;
     }
   }
-
-  const oldOsmEntities = viewer.entities.values.filter(
-    (e) =>
-      typeof e.id === 'string' &&
-      (e.id.startsWith('osm-ext-') || e.id.startsWith('real-osm-building-'))
-  );
-  oldOsmEntities.forEach((e) => viewer.entities.remove(e));
 
   // Fetch REAL OpenStreetMap 2D building footprints for exact coordinate boundaries
   const minLat = Math.min(south, north).toFixed(4);
@@ -95,21 +88,28 @@ function loadViewport3DBuildings(viewer: Viewer) {
   const minLon = Math.min(west, east).toFixed(4);
   const maxLon = Math.max(west, east).toFixed(4);
 
-  const query = `[out:json][timeout:15];(way["building"](${minLat},${minLon},${maxLat},${maxLon});way["building:levels"](${minLat},${minLon},${maxLat},${maxLon});relation["building"](${minLat},${minLon},${maxLat},${maxLon}););out body;>;out skel qt;`;
+  const query = `[out:json][timeout:25];(way["building"](${minLat},${minLon},${maxLat},${maxLon});relation["building"](${minLat},${minLon},${maxLat},${maxLon}););out body;>;out skel qt;`;
   const urlPrimary = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
   const urlMirror = `https://overpass.kumi.systems/api/interpreter?data=${encodeURIComponent(query)}`;
 
   const processOverpassData = (data: any) => {
     if (!data || !data.elements || viewer.isDestroyed()) return;
 
+    // Clean up old OSM building entities only when new data is ready
+    const oldOsmEntities = viewer.entities.values.filter(
+      (e) =>
+        typeof e.id === 'string' &&
+        (e.id.startsWith('osm-ext-') || e.id.startsWith('real-osm-building-'))
+    );
+    oldOsmEntities.forEach((e) => viewer.entities.remove(e));
+
     const nodesMap = new Map<number, [number, number]>();
     data.elements.forEach((el: any) => {
       if (el.type === 'node') nodesMap.set(el.id, [el.lon, el.lat]);
     });
 
-    let count = 0;
     data.elements.forEach((el: any) => {
-      if ((el.type === 'way' || el.type === 'relation') && el.nodes && el.nodes.length >= 3 && count < 1000) {
+      if ((el.type === 'way' || el.type === 'relation') && el.nodes && el.nodes.length >= 3) {
         const coordsFlat: number[] = [];
         el.nodes.forEach((nodeId: number) => {
           const coord = nodesMap.get(nodeId);
@@ -117,7 +117,6 @@ function loadViewport3DBuildings(viewer: Viewer) {
         });
 
         if (coordsFlat.length >= 6) {
-          count++;
           const tagHeight = el.tags?.height
             ? parseFloat(el.tags.height)
             : el.tags?.['building:levels']
@@ -441,6 +440,7 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
               }
 
               if (!viewer.isDestroyed() && googleTileset) {
+                googleTileset.maximumScreenSpaceError = 8;
                 viewer.scene.primitives.add(googleTileset);
                 googleSuccess = true;
                 updateStatus({
@@ -463,6 +463,7 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
             try {
               const osmBuildings = await createOsmBuildingsAsync();
               if (!viewer.isDestroyed()) {
+                osmBuildings.maximumScreenSpaceError = 6;
                 osmBuildings.style = new Cesium3DTileStyle({
                   color: {
                     conditions: [
