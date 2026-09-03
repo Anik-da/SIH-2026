@@ -11,6 +11,7 @@ import {
 import type { DataSource, PolylineGraphics } from 'cesium';
 import CesiumGlobe from './components/CesiumGlobe';
 import type { CesiumGlobeHandle } from './components/cesium.types';
+import type { SensorMode } from './utils/godsEyeShaders';
 import MapToolbar from './components/MapToolbar';
 import LayerManager from './components/LayerManager';
 import MapLegend from './components/MapLegend';
@@ -62,6 +63,27 @@ function App() {
   const [viewMode, setViewMode] = useState<'landing' | 'login' | 'app'>('landing');
 
   // Base GIS State
+  const [activeSensorMode, setActiveSensorMode] = useState<SensorMode>('NORMAL');
+
+  const handleSelectSensorMode = (mode: SensorMode) => {
+    setActiveSensorMode(mode);
+    globeRef.current?.setSensorMode(mode);
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement)?.tagName)) return;
+      if (e.key === '1') handleSelectSensorMode('NORMAL');
+      else if (e.key === '2') handleSelectSensorMode('NVG');
+      else if (e.key === '3') handleSelectSensorMode('FLIR');
+      else if (e.key === '4') handleSelectSensorMode('CRT');
+      else if (e.key === '5') handleSelectSensorMode('NOIR');
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const [coordinates, setCoordinates] = useState<Coordinates | null>(null);
   const [layers, setLayers] = useState<LayerConfig[]>(DEFAULT_LAYERS);
   const [selection, setSelection] = useState<SelectionInfo | null>(null);
@@ -519,6 +541,8 @@ function App() {
                 onRotateLeft={() => globeRef.current?.rotateLeft()}
                 onRotateRight={() => globeRef.current?.rotateRight()}
                 onTiltView={() => globeRef.current?.tiltView()}
+                activeSensorMode={activeSensorMode}
+                onSelectSensorMode={handleSelectSensorMode}
               />
             </div>
 

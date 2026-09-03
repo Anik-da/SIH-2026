@@ -41,6 +41,8 @@ import {
 import { STATUS_COLORS, SELECTED_COLOR, UNDERGROUND_COLOR, PARCEL_COLOR } from '../data/colors';
 import { SURROUNDING_CITY_BUILDINGS } from '../data/cadastralDemoData';
 
+import { applySensorMode, type SensorMode } from '../utils/godsEyeShaders';
+
 export const CESIUM_ION_TOKEN =
   (import.meta.env.VITE_CESIUM_ION_ACCESS_TOKEN as string | undefined) ||
   (import.meta.env.VITE_CESIUM_ION_TOKEN as string | undefined) ||
@@ -359,6 +361,11 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
           },
           duration: 2.5,
         });
+      },
+      setSensorMode: (mode: SensorMode) => {
+        const viewer = viewerRef.current;
+        if (!viewer) return;
+        applySensorMode(viewer, mode);
       },
     }));
 
