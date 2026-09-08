@@ -194,6 +194,10 @@ function loadViewport3DBuildings(viewer: Viewer) {
     .catch(() => {});
 }
 
+export const isLocationInNewYork = (lat: number, lon: number): boolean => {
+  return lat >= 40.40 && lat <= 41.05 && lon >= -74.35 && lon <= -73.60;
+};
+
 export interface PickedBuildingData {
   name: string;
   ulpin: string;
@@ -567,19 +571,35 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
           loadImagery();
 
           // 3. Real-Time 3D City Building Pipeline (Photorealistic for New York ONLY, Solid OSM elsewhere)
+          const isCameraInNewYork = () => {
+            if (viewer.isDestroyed()) return false;
+            // 1. Check camera eye cartographic position
+            const carto = viewer.camera.positionCartographic;
+            if (carto) {
+              const lat = CesiumMath.toDegrees(carto.latitude);
+              const lon = CesiumMath.toDegrees(carto.longitude);
+              if (isLocationInNewYork(lat, lon)) return true;
+            }
+            // 2. Check screen-center ground intersection (focal point)
+            try {
+              const canvas = viewer.scene.canvas;
+              const centerRay = viewer.camera.getPickRay(new Cartesian2(canvas.clientWidth / 2, canvas.clientHeight / 2));
+              if (centerRay) {
+                const targetCartesian = viewer.scene.globe.pick(centerRay, viewer.scene);
+                if (targetCartesian) {
+                  const targetCarto = Cartographic.fromCartesian(targetCartesian);
+                  const tLat = CesiumMath.toDegrees(targetCarto.latitude);
+                  const tLon = CesiumMath.toDegrees(targetCarto.longitude);
+                  if (isLocationInNewYork(tLat, tLon)) return true;
+                }
+              }
+            } catch (_) {}
+            return false;
+          };
+
           const load3DTilesPipeline = async () => {
             let osmBuildings: any = null;
             let photorealisticTileset: any = null;
-
-            const isCameraInNewYork = () => {
-              if (viewer.isDestroyed()) return false;
-              const carto = viewer.camera.positionCartographic;
-              if (!carto) return false;
-              const lat = CesiumMath.toDegrees(carto.latitude);
-              const lon = CesiumMath.toDegrees(carto.longitude);
-              // Bounding box for Greater New York City
-              return lat >= 40.45 && lat <= 40.95 && lon >= -74.30 && lon <= -73.65;
-            };
 
             const updateTilesetForCurrentLocation = () => {
               if (viewer.isDestroyed()) return;
@@ -595,7 +615,7 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
               updateStatus({
                 photorealisticStatus: inNYC ? 'LOADED' : 'IDLE',
                 osmStatus: inNYC ? 'IDLE' : 'LOADED',
-                activeMode: inNYC ? 'PHOTOREALISTIC_3D' : 'OSM_3D',
+                activeMode: inNYC ? 'PHOTOREALISTIC' : 'OSM_3D',
               });
             };
 
@@ -642,6 +662,12 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
             // Real OpenStreetMap 2D Footprint Extrusions for detailed local structures
             if (!viewer.isDestroyed()) {
               loadViewport3DBuildings(viewer);
+              viewer.camera.percentageChanged = 0.05;
+              viewer.camera.changed.addEventListener(() => {
+                if (!viewer.isDestroyed()) {
+                  updateTilesetForCurrentLocation();
+                }
+              });
               viewer.camera.moveEnd.addEventListener(() => {
                 if (!viewer.isDestroyed()) {
                   updateTilesetForCurrentLocation();
@@ -828,7 +854,7 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
                 floors: bFloors,
                 valuation: 'Not available from source',
                 address: getFormattedAddress(lat, lon),
-                description: 'Photorealistic building detected. Cadastral record linked via MongoDB.',
+                description: '3D Building structure extruded from real OpenStreetMap cadastral footprint.',
                 cesiumFeatureId: entity.id,
               });
               if (entity instanceof Entity) {
@@ -877,7 +903,8 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
               onSelect?.(entity);
             }
           } else if (picked instanceof Cesium3DTileFeature || picked.primitive) {
-            const featName = (typeof picked.getProperty === 'function' && (picked.getProperty('name') || picked.getProperty('element_id'))) || '3D Building Feature';
+            const inNyc = isLocationInNewYork(lat, lon);
+            const featName = (typeof picked.getProperty === 'function' && (picked.getProperty('name') || picked.getProperty('element_id'))) || (inNyc ? '🗽 New York 3D Structure' : '3D Building Feature');
             const featureId = (typeof picked.getProperty === 'function' && (picked.getProperty('id') || picked.getProperty('element_id'))) || `CESIUM-BLDG-3DTILE-${Math.floor(lat * 10000)}`;
             const rawHeight = (typeof picked.getProperty === 'function' && picked.getProperty('height')) || 24;
             const tileFloors = Math.max(1, Math.round(rawHeight / 3.5));
@@ -890,13 +917,16 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
               floors: tileFloors,
               valuation: 'Not available from source',
               address: getFormattedAddress(lat, lon),
-              description: '3D Building structure detected in viewport.',
+              description: inNyc
+                ? 'Photorealistic 3D building structure detected in New York City.'
+                : 'Solid 3D Cadastral building structure (Cesium OSM 3D Buildings).',
               cesiumFeatureId: String(featureId),
             });
           }
         } else if (cartesian && onSelectBuildingFeature) {
+          const inNyc = isLocationInNewYork(lat, lon);
           onSelectBuildingFeature({
-            name: 'Photorealistic Surface Point',
+            name: inNyc ? '🗽 New York Photorealistic 3D Surface' : 'Cadastral Ground Point',
             ulpin: 'Not available from source',
             lat,
             lon,
@@ -904,7 +934,9 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
             floors: 0,
             valuation: 'Not available from source',
             address: getFormattedAddress(lat, lon),
-            description: 'Photorealistic building detected. No verified cadastral/property record is linked to this building.',
+            description: inNyc
+              ? 'Google Photorealistic 3D building mesh detected in New York City.'
+              : 'Cadastral coordinate point on terrain.',
           });
         }
       }, ScreenSpaceEventType.LEFT_CLICK);

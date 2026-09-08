@@ -56,7 +56,9 @@ export const RealFinderCardPopup: React.FC<Props> = ({
       {ulpin === 'Not available from source' ? (
         <div className="mt-2.5 rounded-xl border border-amber-500/30 bg-amber-500/10 p-2 text-[11px] text-amber-300 font-sans">
           <p className="font-semibold leading-snug">
-            Photorealistic building detected.
+            {lat >= 40.40 && lat <= 41.05 && lon >= -74.35 && lon <= -73.60
+              ? '🗽 Photorealistic 3D building detected.'
+              : '🏛️ 3D Building structure detected.'}
           </p>
           <p className="text-[10px] text-amber-400/90 mt-0.5">
             No verified cadastral/property record is linked to this building.

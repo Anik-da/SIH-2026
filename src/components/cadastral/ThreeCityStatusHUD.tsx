@@ -88,7 +88,13 @@ export const ThreeCityStatusHUD: React.FC<Props> = ({ status, onRetryOsm, onRetr
           <div className="space-y-1.5 rounded-xl border border-slate-800 bg-slate-950/60 p-2.5 font-mono text-[11px]">
             <div className="flex items-center justify-between border-b border-slate-800 pb-1">
               <span className="text-slate-400">Photorealistic 3D</span>
-              {getStatusBadge(status.photorealisticStatus)}
+              {status.photorealisticStatus === 'LOADED' ? (
+                <span className="inline-flex items-center gap-1 font-mono font-bold text-emerald-400 text-[11px]">
+                  <CheckCircle2 className="w-3.5 h-3.5" /> NYC ACTIVE
+                </span>
+              ) : (
+                <span className="font-mono text-slate-400 text-[10px] bg-slate-800/60 px-1.5 py-0.5 rounded">NEW YORK ONLY</span>
+              )}
             </div>
 
             <div className="flex items-center justify-between">
@@ -98,15 +104,15 @@ export const ThreeCityStatusHUD: React.FC<Props> = ({ status, onRetryOsm, onRetr
 
             <div className="flex items-center justify-between">
               <span className="text-slate-400">Google 3D Tiles</span>
-              <span className={`font-bold ${status.photorealisticStatus === 'LOADED' ? 'text-emerald-400' : 'text-amber-400'}`}>
-                {status.photorealisticStatus === 'LOADED' ? 'AVAILABLE' : 'ION TILES READY'}
+              <span className={`font-bold ${status.photorealisticStatus === 'LOADED' ? 'text-emerald-400' : 'text-slate-400'}`}>
+                {status.photorealisticStatus === 'LOADED' ? 'STREAMING (NYC)' : 'STANDBY (NYC ONLY)'}
               </span>
             </div>
 
             <div className="flex items-center justify-between">
-              <span className="text-slate-400">Current Tileset</span>
-              <span className={`font-bold ${status.photorealisticStatus === 'LOADED' || status.osmStatus === 'LOADED' ? 'text-emerald-400' : 'text-red-400'}`}>
-                {status.photorealisticStatus === 'LOADED' ? 'Photorealistic 3D' : status.osmStatus === 'LOADED' ? 'OSM 3D Buildings' : 'Not Loaded'}
+              <span className="text-slate-400">Active Mesh</span>
+              <span className={`font-bold ${status.photorealisticStatus === 'LOADED' ? 'text-amber-300' : 'text-cyan-400'}`}>
+                {status.photorealisticStatus === 'LOADED' ? '🗽 NYC Photorealistic 3D' : '🏛️ Solid Cadastral OSM 3D'}
               </span>
             </div>
 
