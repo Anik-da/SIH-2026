@@ -59,9 +59,13 @@ export const VerticalPropertyPanel: React.FC<Props> = ({
         </div>
 
         <button
-          onClick={onClose}
+          onClick={(e) => {
+            e.stopPropagation();
+            onClose();
+          }}
           className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-800 hover:text-white"
           title="Close panel"
+          aria-label="Close panel"
         >
           <X className="h-5 w-5" />
         </button>

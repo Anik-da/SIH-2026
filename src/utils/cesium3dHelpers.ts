@@ -59,15 +59,26 @@ export function makeFloorLabel(
   });
 }
 
+export function getGroundElevation(viewer?: Cesium.Viewer, lon = 77.5042, lat = 13.0679): number {
+  if (viewer && !viewer.isDestroyed()) {
+    try {
+      const h = viewer.scene.globe.getHeight(Cesium.Cartographic.fromDegrees(lon, lat));
+      if (h !== undefined && h !== null && h > 100) return h;
+    } catch (_) {}
+  }
+  return 886.0; // Precise Bengaluru plateau ground elevation MSL
+}
+
 export function flyToBuilding(viewer: Cesium.Viewer, building: Building, duration = 2) {
-  const centerCartesian = Cesium.Cartesian3.fromDegrees(building.center.lon, building.center.lat, 25);
-  const boundingSphere = new Cesium.BoundingSphere(centerCartesian, 35);
+  const elev = getGroundElevation(viewer, building.center.lon, building.center.lat);
+  const centerCartesian = Cesium.Cartesian3.fromDegrees(building.center.lon, building.center.lat, elev + 24);
+  const boundingSphere = new Cesium.BoundingSphere(centerCartesian, 60);
 
   viewer.camera.flyToBoundingSphere(boundingSphere, {
     offset: new Cesium.HeadingPitchRange(
-      Cesium.Math.toRadians(35),
+      Cesium.Math.toRadians(40),
       Cesium.Math.toRadians(-28),
-      240 // 240m viewing range so the 3D building and surrounding area are clearly visible!
+      260 // 260m viewing range so the 3D palace is crisply visible from eye level
     ),
     duration,
   });
@@ -80,19 +91,21 @@ export function flyToFloor(
   explodeFactor: number,
   duration = 1.5
 ) {
+  const elev = getGroundElevation(viewer, building.center.lon, building.center.lat);
   const { zMax } = computeExplodedZ(floor, explodeFactor);
-  const centerCartesian = Cesium.Cartesian3.fromDegrees(building.center.lon, building.center.lat, zMax);
-  const boundingSphere = new Cesium.BoundingSphere(centerCartesian, 25);
+  const centerCartesian = Cesium.Cartesian3.fromDegrees(building.center.lon, building.center.lat, elev + zMax);
+  const boundingSphere = new Cesium.BoundingSphere(centerCartesian, 35);
 
   viewer.camera.flyToBoundingSphere(boundingSphere, {
     offset: new Cesium.HeadingPitchRange(
-      Cesium.Math.toRadians(35),
-      Cesium.Math.toRadians(-25),
-      140 // 140m comfortable viewing range for floor level inspection!
+      Cesium.Math.toRadians(40),
+      Cesium.Math.toRadians(-24),
+      170 // 170m focused floor level inspection range
     ),
     duration,
   });
 }
+
 
 export function colorFromRgba(rgba: string): Cesium.Color {
   return Cesium.Color.fromCssColorString(rgba);

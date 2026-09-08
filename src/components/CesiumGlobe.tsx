@@ -17,6 +17,7 @@ import {
   ScreenSpaceEventType,
   Viewer,
   VerticalOrigin,
+  Terrain,
   createWorldTerrainAsync,
   createWorldImageryAsync,
   createOsmBuildingsAsync,
@@ -590,9 +591,10 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
             fullscreenButton: false,
             infoBox: false,
             selectionIndicator: true,
-            terrainProvider: new EllipsoidTerrainProvider(),
+            terrain: Terrain.fromWorldTerrain({ requestVertexNormals: true }),
             baseLayer: false as unknown as undefined,
           });
+
 
           // Prevent render loop exceptions from killing WebGL and showing a blank screen
           viewer.scene.renderError.addEventListener((_scene: any, error: any) => {
@@ -871,15 +873,17 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
           // STEP 7: Sapthagiri NPS University Initial Location Fly-to
           const bldgLon = building ? building.center.lon : SAPTHAGIRI_COORDS.lon;
           const bldgLat = building ? building.center.lat : SAPTHAGIRI_COORDS.lat;
+          const elev = SAPTHAGIRI_COORDS.elevation; // 886m MSL ground elevation
 
           viewer.camera.setView({
-            destination: Cartesian3.fromDegrees(bldgLon, bldgLat, 280),
+            destination: Cartesian3.fromDegrees(bldgLon, bldgLat, elev + 260),
             orientation: {
               heading: CesiumMath.toRadians(40), // 40° Heading
               pitch: CesiumMath.toRadians(-28),   // -28° Pitch for elevated 3D roofs & facades
               roll: 0,
             },
           });
+
 
           if (building) {
             setTimeout(() => {
@@ -1010,15 +1014,16 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
               onSelectBuildingFeature?.({
                 name: 'Sapthagiri NPS University (Main Academic Palace & Senate)',
                 ulpin: 'ULPIN-IN-KA-2026-SNPSU01',
-                lat: 13.0675,
-                lon: 77.5044,
-                height: 45,
-                floors: 10,
-                valuation: '₹285,00,00,000',
-                address: '#14/5, Chikkasandra, Hesaraghatta Main Road, Ward 12, Bengaluru, Karnataka - 560057',
-                description: 'Sapthagiri NPS University Grand Neoclassical Academic Palace with 3 interconnected blocks, central clock tower, and twin skybridges.',
+                lat: 13.0679,
+                lon: 77.5042,
+                height: 48,
+                floors: 12,
+                valuation: '₹340,00,00,000',
+                address: '#14/5, Chikkasandra, Hesaraghatta Main Road, Bengaluru, Karnataka - 560057',
+                description: 'Sapthagiri NPS University Grand Neoclassical Academic Palace with 3 interconnected 12-storey blocks, central clock tower, and twin skybridges.',
                 cesiumFeatureId: 'sapthagiri-nps-univ-b1',
               });
+
               if (entity instanceof Entity) {
                 onSelect?.(entity);
               }

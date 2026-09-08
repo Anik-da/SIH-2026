@@ -285,36 +285,42 @@ function App() {
     return () => unsubscribe();
   }, []);
 
+  const [isPropertyPanelDismissed, setIsPropertyPanelDismissed] = useState(false);
+
   const selectedProperty = useMemo(() => {
+    // If user explicitly dismissed the panel or no floor is selected, close the panel
+    if (isPropertyPanelDismissed || !selectedFloorId) return null;
+
     // 1. Try finding in demoProperties
     const foundDemo = demoProperties.find((p) => p.floorId === selectedFloorId);
     if (foundDemo) return foundDemo;
 
-    // 2. If persistentBuilding is active, synthesize from persistentBuilding and persistentFloors
+    // 2. If persistentBuilding is active, synthesize from persistentBuilding and matching persistentFloors
     if (persistentBuilding) {
-      const flr = persistentFloors.find((f) => f.floorId === selectedFloorId) || persistentFloors[0];
-      const floorNum = flr?.floorNumber || 3;
+      const flr = persistentFloors.find((f) => f.floorId === selectedFloorId);
+      if (!flr) return null;
+      const floorNum = flr.floorNumber || 3;
       return {
         vpid: `VPID-${persistentBuilding.buildingId}-F${String(Math.abs(floorNum)).padStart(2, '0')}`,
-        ulpin: persistentBuilding.ulpin || 'ULPIN-IN-KA-2026-89421',
+        ulpin: persistentBuilding.ulpin || 'ULPIN-IN-KA-2026-SNPSU01',
         buildingId: persistentBuilding.buildingId,
-        parcelId: persistentBuilding.parcelId || 'PARCEL-KA-BLR-2026-001',
-        floorId: flr?.floorId || `FLR-${persistentBuilding.buildingId}-F03`,
+        parcelId: persistentBuilding.parcelId || 'PARCEL-KA-BLR-2026-021',
+        floorId: flr.floorId,
         floorNumber: floorNum,
-        floorLabel: flr?.floorName || `Floor 0${floorNum} (Verified Unit)`,
-        zMin: flr?.zMin ?? (floorNum * 3.5),
-        zMax: flr?.zMax ?? ((floorNum + 1) * 3.5),
-        area: flr?.area || 620,
-        volume: flr?.volume || 1860,
-        status: 'VERIFIED' as const,
-        ownerName: 'Karnataka State Cadastre Registry (Verified Title)',
-        propertyType: 'Residential High-Rise Unit',
+        floorLabel: flr.floorName || `Floor 0${floorNum} (Verified Unit)`,
+        zMin: flr.zMin ?? (floorNum * 3.5),
+        zMax: flr.zMax ?? ((floorNum + 1) * 3.5),
+        area: flr.area || 620,
+        volume: flr.volume || 1860,
+        status: 'valid' as const,
+        ownerName: 'Sapthagiri NPS University Trust',
+        propertyType: 'Academic',
         unitNumber: `Unit ${Math.abs(floorNum)}01`,
       };
     }
 
     return null;
-  }, [selectedFloorId, persistentBuilding, persistentFloors]);
+  }, [selectedFloorId, isPropertyPanelDismissed, persistentBuilding, persistentFloors]);
 
   const handleReady = useCallback((viewer: Viewer) => {
     viewerRef.current = viewer;
@@ -325,6 +331,7 @@ function App() {
   }, []);
 
   const handleSelectFloor = useCallback((floorId: string) => {
+    setIsPropertyPanelDismissed(false);
     setSelectedFloorId(floorId);
     const viewer = viewerRef.current;
     const floor = demoBuilding.floors.find((f) => f.id === floorId);
@@ -332,6 +339,7 @@ function App() {
       flyToFloor(viewer, demoBuilding, floor, explodeState === 'exploded' ? 1 : 0);
     }
   }, [explodeState]);
+
 
   const handleSelectEntity = useCallback((entity: Entity | null) => {
     if (!entity) {
@@ -757,10 +765,14 @@ function App() {
             {/* Right side: Vertical Property Details Panel */}
             <VerticalPropertyPanel
               property={selectedProperty}
-              onClose={() => setSelectedFloorId(null)}
+              onClose={() => {
+                setSelectedFloorId(null);
+                setIsPropertyPanelDismissed(true);
+              }}
               onRunValidation={() => setIsValidationOpen(true)}
               onOpenPassport={() => setIsPassportOpen(true)}
             />
+
 
             {/* Bottom-left: Legend */}
             <div className="absolute bottom-4 left-4 z-10">

@@ -1,6 +1,6 @@
 import type { Building, VerticalProperty, Floor, PropertyType, PropertyStatus, ValidationConflict, AuditLogEntry } from '../types/cadastral';
 
-const PARCEL_CENTER = { lon: 77.5044, lat: 13.0675 };
+const PARCEL_CENTER = { lon: 77.5042, lat: 13.0679 };
 
 const LAT_M = 111320;
 const LON_M = 111320 * Math.cos((PARCEL_CENTER.lat * Math.PI) / 180);
@@ -28,8 +28,11 @@ const floorDefs: Omit<Floor, 'id'>[] = [
   { label: 'Floor 5 — School of Electronics & VLSI Systems Design', shortLabel: 'F5', zMin: 18.0, zMax: 21.6, floorNumber: 5, isUnderground: false },
   { label: 'Floor 6 — Biotechnology & Biomedical Innovation Hub', shortLabel: 'F6', zMin: 21.6, zMax: 25.2, floorNumber: 6, isUnderground: false },
   { label: 'Floor 7 — Postgraduate Studies & Doctoral Scholars Suites', shortLabel: 'F7', zMin: 25.2, zMax: 28.8, floorNumber: 7, isUnderground: false },
-  { label: 'Floor 8 — Chancellor & Vice-Chancellor Executive Secretariat', shortLabel: 'F8', zMin: 28.8, zMax: 32.4, floorNumber: 8, isUnderground: false },
-  { label: 'Floor 9 — Rooftop Astronomical Observatory & Heritage Clock Pavilion', shortLabel: 'F9', zMin: 32.4, zMax: 38.0, floorNumber: 9, isUnderground: false },
+  { label: 'Floor 8 — School of Management & Commerce Executive Wing', shortLabel: 'F8', zMin: 28.8, zMax: 32.4, floorNumber: 8, isUnderground: false },
+  { label: 'Floor 9 — School of Law, Governance & Public Policy', shortLabel: 'F9', zMin: 32.4, zMax: 36.0, floorNumber: 9, isUnderground: false },
+  { label: 'Floor 10 — Academic Council Chamber & Innovation Incubator', shortLabel: 'F10', zMin: 36.0, zMax: 39.6, floorNumber: 10, isUnderground: false },
+  { label: 'Floor 11 — Chancellor & Vice-Chancellor Executive Secretariat', shortLabel: 'F11', zMin: 39.6, zMax: 43.2, floorNumber: 11, isUnderground: false },
+  { label: 'Floor 12 — Rooftop Astronomical Observatory & Heritage Clock Pavilion', shortLabel: 'F12', zMin: 43.2, zMax: 48.0, floorNumber: 12, isUnderground: false },
 ];
 
 const floors: Floor[] = floorDefs.map((f) => ({
@@ -60,7 +63,10 @@ const propertyTypes: Record<number, PropertyType> = {
   6: 'Research Lab' as PropertyType,
   7: 'Academic' as PropertyType,
   8: 'Commercial' as PropertyType,
-  9: 'Institutional' as PropertyType,
+  9: 'Academic' as PropertyType,
+  10: 'Institutional' as PropertyType,
+  11: 'Commercial' as PropertyType,
+  12: 'Institutional' as PropertyType,
 };
 
 const statusByFloor: Record<number, PropertyStatus> = {
@@ -76,6 +82,9 @@ const statusByFloor: Record<number, PropertyStatus> = {
   7: 'valid',
   8: 'valid',
   9: 'valid',
+  10: 'valid',
+  11: 'valid',
+  12: 'valid',
 };
 
 const confidenceByFloor: Record<number, number> = {
@@ -91,6 +100,9 @@ const confidenceByFloor: Record<number, number> = {
   7: 0.99,
   8: 0.99,
   9: 0.99,
+  10: 0.99,
+  11: 0.99,
+  12: 0.99,
 };
 
 const ownersByFloor: Record<number, string> = {
@@ -104,9 +116,13 @@ const ownersByFloor: Record<number, string> = {
   5: 'School of Electronics & VLSI Design',
   6: 'Dept of Biotechnology & Biomedical Sciences',
   7: 'School of Postgraduate & Doctoral Research',
-  8: 'Office of the Chancellor & Vice-Chancellor',
-  9: 'Sapthagiri University Heritage & Observatories Board',
+  8: 'School of Management & Commerce',
+  9: 'School of Law & Public Policy',
+  10: 'Academic Council & Innovations Board',
+  11: 'Office of the Chancellor & Vice-Chancellor',
+  12: 'Sapthagiri University Heritage & Observatories Board',
 };
+
 
 function vpidFor(floor: Floor): string {
   return `VP-SNPSU-${floor.shortLabel}`;
