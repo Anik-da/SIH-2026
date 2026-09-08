@@ -32,6 +32,8 @@ export const UNDERGROUND_COLOR = { cesium: 'rgba(168, 85, 247, 0.55)', hex: '#a8
 export const PARCEL_COLOR = { cesium: 'rgba(148, 163, 184, 0.4)', hex: '#94a3b8' };
 export const GROUND_COLOR = { cesium: 'rgba(120, 113, 108, 0.25)', hex: '#78716c' };
 
-export function statusForProperty(status: PropertyStatus) {
-  return STATUS_COLORS[status];
+export function statusForProperty(status?: PropertyStatus | string) {
+  if (!status) return STATUS_COLORS.valid;
+  const s = String(status).toLowerCase().trim() as PropertyStatus;
+  return STATUS_COLORS[s] || STATUS_COLORS.valid;
 }

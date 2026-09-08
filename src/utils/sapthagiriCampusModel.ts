@@ -11,23 +11,27 @@ import {
 
 /**
  * Sapthagiri NPS University Campus — 3D Neoclassical Architectural Palace
- * Precise location: Chikkasandra, Hesaraghatta Main Road, Bengaluru (13.0645° N, 77.5029° E)
+ * Precise location: #14/5, Chikkasandra, Hesaraghatta Main Road, Bengaluru (13.0675° N, 77.5044° E)
  * Faithfully reconstructed from official architectural elevations and 3D renders:
  * - 3 interconnected grand neoclassical blocks (Block A: West Academic Wing, Block B: Central Senate & Grand Hall, Block C: East Clock Tower Wing)
  * - Classical Corinthian columns, pediments, cathedral arched window bays with rosettes
- * - Iconic 46m Rooftop Clock Tower on Block C with golden finial
+ * - Iconic 46.5m Rooftop Clock Tower on Block C with golden finial
  * - Twin elevated 4-story skybridges (Bridge A-B and Bridge B-C) with arched underpasses
  * - Eastern semicircular domed rotunda portico
  * - 10 illuminated academic floor levels with full vertical cadastre metadata
  */
 
 export const SAPTHAGIRI_COORDS = {
-  lat: 13.0645,
-  lon: 77.5029,
+  lat: 13.0675,
+  lon: 77.5044,
   height: 45,
 };
 
-export function renderSapthagiriCampusModel(viewer: Viewer) {
+export function renderSapthagiriCampusModel(
+  viewer: Viewer,
+  selectedFloorId?: string | null,
+  explodeFactor: number = 0
+) {
   if (!viewer || viewer.isDestroyed()) return;
 
   try {
@@ -40,7 +44,7 @@ export function renderSapthagiriCampusModel(viewer: Viewer) {
     const centerLat = SAPTHAGIRI_COORDS.lat;
     const centerLon = SAPTHAGIRI_COORDS.lon;
 
-    // Degree conversion constants around Bengaluru (lat ~13.06°)
+    // Degree conversion constants around Bengaluru (lat ~13.0675°)
     const LAT_M = 111320;
     const LON_M = 111320 * Math.cos((centerLat * Math.PI) / 180);
 
@@ -59,6 +63,17 @@ export function renderSapthagiriCampusModel(viewer: Viewer) {
       return [p1[0], p1[1], p2[0], p2[1], p3[0], p3[1], p4[0], p4[1]];
     };
 
+    // Parse active floor number from selectedFloorId
+    let activeFloorNum: number | null = null;
+    if (selectedFloorId) {
+      const match = selectedFloorId.match(/(?:F|floor-?)(\d+)/i);
+      if (match) {
+        activeFloorNum = parseInt(match[1], 10);
+      } else if (selectedFloorId.includes('GF')) {
+        activeFloorNum = 0;
+      }
+    }
+
     // Color Palette from Neoclassical Architecture Photos
     const cMarbleCream = Color.fromCssColorString('#fbf8eb');
     const cSandstoneWarm = Color.fromCssColorString('#f3ebd3');
@@ -70,11 +85,12 @@ export function renderSapthagiriCampusModel(viewer: Viewer) {
     const cSkybridge = Color.fromCssColorString('#fef3c7');
     const cLawnGreen = Color.fromCssColorString('#15803d');
     const cPlazaPaving = Color.fromCssColorString('#334155');
+    const cSelectedFloor = Color.fromCssColorString('#0284c7');
 
     // =========================================================================
     // 1. Campus Ground Plaza, Driveways, and Manicured Lawns
     // =========================================================================
-    const lawnCoords = makeBoxCoords(0, 0, 160, 90);
+    const lawnCoords = makeBoxCoords(0, 0, 170, 100);
     viewer.entities.add({
       id: 'sapthagiri-ground-lawn',
       polygon: {
@@ -88,7 +104,7 @@ export function renderSapthagiriCampusModel(viewer: Viewer) {
       },
     });
 
-    const plazaCoords = makeBoxCoords(0, -18, 140, 32);
+    const plazaCoords = makeBoxCoords(0, -20, 150, 36);
     viewer.entities.add({
       id: 'sapthagiri-ground-plaza',
       polygon: {
@@ -105,7 +121,7 @@ export function renderSapthagiriCampusModel(viewer: Viewer) {
     // Floating Campus Marker
     viewer.entities.add({
       id: 'sapthagiri-marker-badge',
-      position: Cartesian3.fromDegrees(centerLon, centerLat - 0.0003, 52),
+      position: Cartesian3.fromDegrees(centerLon, centerLat - 0.0003, 56),
       label: {
         text: '🏛️ SAPTHAGIRI NPS UNIVERSITY\nMain Academic Palace & Senate House',
         font: 'bold 13px Inter, system-ui, sans-serif',
@@ -128,10 +144,10 @@ export function renderSapthagiriCampusModel(viewer: Viewer) {
       {
         id: 'block-a',
         name: 'West Academic Wing (Block A)',
-        cx: -38, // 38m West of center
+        cx: -42, // 42m West of center
         cy: 0,
-        width: 32,
-        depth: 38,
+        width: 34,
+        depth: 40,
         height: 38,
         hasPediment: true,
         hasDome: true,
@@ -142,8 +158,8 @@ export function renderSapthagiriCampusModel(viewer: Viewer) {
         name: 'Central Senate & Grand Hall (Block B)',
         cx: 0, // Center block
         cy: 2,
-        width: 36,
-        depth: 42,
+        width: 38,
+        depth: 44,
         height: 39,
         hasPediment: true,
         hasDome: true,
@@ -153,10 +169,10 @@ export function renderSapthagiriCampusModel(viewer: Viewer) {
       {
         id: 'block-c',
         name: 'East Clock Tower Wing (Block C)',
-        cx: 38, // 38m East of center
+        cx: 42, // 42m East of center
         cy: 0,
-        width: 32,
-        depth: 38,
+        width: 34,
+        depth: 40,
         height: 38,
         hasPediment: true,
         hasClockTower: true,
@@ -168,9 +184,21 @@ export function renderSapthagiriCampusModel(viewer: Viewer) {
     // Render 10 Floors for each Block with Cadastral Volume Layering
     const floorHeight = 3.6;
     for (let f = 1; f <= 10; f++) {
-      const zMin = (f - 1) * floorHeight;
-      const zMax = f * floorHeight;
+      const isSelectedFloor = activeFloorNum === f;
+      const explodeShift = explodeFactor * (f * 4.5);
+      const zMin = (f - 1) * floorHeight + explodeShift;
+      const zMax = f * floorHeight + explodeShift;
       const isOdd = f % 2 === 1;
+
+      let floorMaterial = isSelectedFloor
+        ? cSelectedFloor.withAlpha(0.95)
+        : activeFloorNum !== null
+        ? (isOdd ? cMarbleCream : cSandstoneWarm).withAlpha(0.35) // X-ray mode for other floors
+        : (isOdd ? cMarbleCream : cSandstoneWarm).withAlpha(0.95);
+
+      let outlineColor = isSelectedFloor
+        ? Color.fromCssColorString('#38bdf8')
+        : cGoldTrim.withAlpha(0.6);
 
       blocks.forEach((block) => {
         const boxCoords = makeBoxCoords(block.cx, block.cy, block.width, block.depth);
@@ -181,14 +209,35 @@ export function renderSapthagiriCampusModel(viewer: Viewer) {
             hierarchy: new PolygonHierarchy(Cartesian3.fromDegreesArray(boxCoords)),
             height: zMin,
             extrudedHeight: zMax,
-            material: (isOdd ? cMarbleCream : cSandstoneWarm).withAlpha(0.95),
+            material: floorMaterial,
             outline: true,
-            outlineColor: cGoldTrim.withAlpha(0.6),
-            outlineWidth: 1.5,
+            outlineColor: outlineColor,
+            outlineWidth: isSelectedFloor ? 3 : 1.5,
             shadows: ShadowMode.ENABLED,
           },
         });
       });
+
+      // Show floating label when floor is selected
+      if (isSelectedFloor) {
+        viewer.entities.add({
+          id: `sapthagiri-selected-floor-label-${f}`,
+          position: Cartesian3.fromDegrees(centerLon, centerLat, zMax + 2.5),
+          label: {
+            text: `Sapthagiri NPS University • Floor ${f} • Z:${zMin.toFixed(1)}m-${zMax.toFixed(1)}m`,
+            font: 'bold 12px Inter, sans-serif',
+            fillColor: Color.WHITE,
+            outlineColor: Color.fromCssColorString('#0284c7'),
+            outlineWidth: 3,
+            showBackground: true,
+            backgroundColor: Color.fromCssColorString('#0f172a').withAlpha(0.9),
+            backgroundPadding: new Cartesian2(8, 5),
+            horizontalOrigin: HorizontalOrigin.CENTER,
+            verticalOrigin: VerticalOrigin.BOTTOM,
+            disableDepthTestDistance: Number.POSITIVE_INFINITY,
+          },
+        });
+      }
     }
 
     // =========================================================================
@@ -196,7 +245,7 @@ export function renderSapthagiriCampusModel(viewer: Viewer) {
     // =========================================================================
     blocks.forEach((block) => {
       // A. Front Monumental Arched Cathedral Bay Window (Central Glass Arch)
-      const archCoords = makeBoxCoords(block.cx, block.cy - block.depth / 2 - 0.4, 10, 1.2);
+      const archCoords = makeBoxCoords(block.cx, block.cy - block.depth / 2 - 0.4, 11, 1.2);
       viewer.entities.add({
         id: `sapthagiri-${block.id}-arched-bay-window`,
         polygon: {
@@ -211,7 +260,7 @@ export function renderSapthagiriCampusModel(viewer: Viewer) {
       });
 
       // B. Rosette Medallion above the Arched Window
-      const rosetteCoords = makeBoxCoords(block.cx, block.cy - block.depth / 2 - 0.6, 4.5, 1.2);
+      const rosetteCoords = makeBoxCoords(block.cx, block.cy - block.depth / 2 - 0.6, 5, 1.2);
       viewer.entities.add({
         id: `sapthagiri-${block.id}-rosette-medallion`,
         polygon: {
@@ -259,7 +308,7 @@ export function renderSapthagiriCampusModel(viewer: Viewer) {
       // E. Classical Fluted Pillars / Pilasters along the Front Facade (4 pairs)
       const pillarPositions = [-block.width * 0.4, -block.width * 0.2, block.width * 0.2, block.width * 0.4];
       pillarPositions.forEach((px, idx) => {
-        const pCoords = makeBoxCoords(block.cx + px, block.cy - block.depth / 2 - 0.6, 1.4, 1.4);
+        const pCoords = makeBoxCoords(block.cx + px, block.cy - block.depth / 2 - 0.6, 1.5, 1.5);
         viewer.entities.add({
           id: `sapthagiri-${block.id}-pillar-${idx}`,
           polygon: {
@@ -276,7 +325,7 @@ export function renderSapthagiriCampusModel(viewer: Viewer) {
 
       // F. Rooftop Domes / Neoclassical Cupolas (Block A and Block B)
       if (block.hasDome) {
-        const domeCoords = makeBoxCoords(block.cx, block.cy, 7, 7);
+        const domeCoords = makeBoxCoords(block.cx, block.cy, 7.5, 7.5);
         viewer.entities.add({
           id: `sapthagiri-${block.id}-dome`,
           polygon: {
@@ -295,7 +344,7 @@ export function renderSapthagiriCampusModel(viewer: Viewer) {
     // =========================================================================
     // 4. Iconic Clock Tower on Block C (East Wing)
     // =========================================================================
-    const clockTowerCoords = makeBoxCoords(38, 0, 9, 9);
+    const clockTowerCoords = makeBoxCoords(42, 0, 9.5, 9.5);
     viewer.entities.add({
       id: 'sapthagiri-block-c-clock-tower-pavilion',
       name: 'Sapthagiri Grand Clock Tower',
@@ -312,7 +361,7 @@ export function renderSapthagiriCampusModel(viewer: Viewer) {
     });
 
     // Illuminated Clock Face (Front, Z: 41m..44m)
-    const clockFaceCoords = makeBoxCoords(38, -4.6, 4.2, 0.4);
+    const clockFaceCoords = makeBoxCoords(42, -5.0, 4.5, 0.4);
     viewer.entities.add({
       id: 'sapthagiri-block-c-clock-face',
       polygon: {
@@ -327,13 +376,13 @@ export function renderSapthagiriCampusModel(viewer: Viewer) {
     });
 
     // Golden Pyramidal Spire / Finial on top of Clock Tower
-    const spireCoords = makeBoxCoords(38, 0, 4.5, 4.5);
+    const spireCoords = makeBoxCoords(42, 0, 4.8, 4.8);
     viewer.entities.add({
       id: 'sapthagiri-clock-spire',
       polygon: {
         hierarchy: new PolygonHierarchy(Cartesian3.fromDegreesArray(spireCoords)),
         height: 46.5,
-        extrudedHeight: 50.5,
+        extrudedHeight: 51.0,
         material: cGoldLight,
         outline: true,
         outlineColor: Color.WHITE,
@@ -344,8 +393,8 @@ export function renderSapthagiriCampusModel(viewer: Viewer) {
     // =========================================================================
     // 5. Twin Multi-Level Elevated Skywalk Bridges (Connecting Blocks A-B and B-C)
     // =========================================================================
-    // Bridge A-B: Connects Block A (cx: -38, w: 32 -> right edge: -22) to Block B (cx: 0, w: 36 -> left edge: -18)
-    const bridgeABCoords = makeBoxCoords(-20, 0, 8, 12);
+    // Bridge A-B: Connects Block A (cx: -42, w: 34 -> right edge: -25) to Block B (cx: 0, w: 38 -> left edge: -19)
+    const bridgeABCoords = makeBoxCoords(-22, 0, 9, 13);
     viewer.entities.add({
       id: 'sapthagiri-skybridge-ab',
       name: 'Sapthagiri West Academic Skybridge (Levels 4-8)',
@@ -360,8 +409,8 @@ export function renderSapthagiriCampusModel(viewer: Viewer) {
       },
     });
 
-    // Bridge B-C: Connects Block B (cx: 0, w: 36 -> right edge: 18) to Block C (cx: 38, w: 32 -> left edge: 22)
-    const bridgeBCCoords = makeBoxCoords(20, 0, 8, 12);
+    // Bridge B-C: Connects Block B (cx: 0, w: 38 -> right edge: 19) to Block C (cx: 42, w: 34 -> left edge: 25)
+    const bridgeBCCoords = makeBoxCoords(22, 0, 9, 13);
     viewer.entities.add({
       id: 'sapthagiri-skybridge-bc',
       name: 'Sapthagiri East Chancellor Skybridge (Levels 4-8)',
@@ -380,7 +429,7 @@ export function renderSapthagiriCampusModel(viewer: Viewer) {
     // 6. Grand Ceremonial Entrance Portico & East Circular Rotunda
     // =========================================================================
     // Central Entrance Portico (Block B, Ground Level)
-    const porticoCoords = makeBoxCoords(0, -22, 16, 6);
+    const porticoCoords = makeBoxCoords(0, -24, 18, 7);
     viewer.entities.add({
       id: 'sapthagiri-central-entrance-portico',
       polygon: {
@@ -395,7 +444,7 @@ export function renderSapthagiriCampusModel(viewer: Viewer) {
     });
 
     // Eastern Semicircular Rotunda Canopy (Block C, South-East Portico)
-    const rotundaCoords = makeBoxCoords(44, -20, 10, 10);
+    const rotundaCoords = makeBoxCoords(48, -22, 11, 11);
     viewer.entities.add({
       id: 'sapthagiri-east-rotunda-portico',
       name: 'Sapthagiri Eastern Circular Rotunda',
@@ -411,13 +460,13 @@ export function renderSapthagiriCampusModel(viewer: Viewer) {
     });
 
     // Rotunda Domed Crown
-    const rotundaDomeCoords = makeBoxCoords(44, -20, 7.5, 7.5);
+    const rotundaDomeCoords = makeBoxCoords(48, -22, 8, 8);
     viewer.entities.add({
       id: 'sapthagiri-rotunda-dome',
       polygon: {
         hierarchy: new PolygonHierarchy(Cartesian3.fromDegreesArray(rotundaDomeCoords)),
         height: 9.5,
-        extrudedHeight: 13.0,
+        extrudedHeight: 13.5,
         material: cGoldLight,
         outline: true,
         outlineColor: Color.WHITE,
@@ -425,7 +474,7 @@ export function renderSapthagiriCampusModel(viewer: Viewer) {
       },
     });
 
-    console.log('🏛️ Sapthagiri NPS University 3D Neoclassical Architectural Model loaded at 13.0645°N, 77.5029°E!');
+    console.log('🏛️ Sapthagiri NPS University 3D Neoclassical Architectural Model loaded at 13.0675°N, 77.5044°E!');
   } catch (err) {
     console.error('Failed to render Sapthagiri Campus Model:', err);
   }

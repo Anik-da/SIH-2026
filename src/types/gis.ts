@@ -36,10 +36,10 @@ export interface Coordinates {
 }
 
 export const DEMO_AREA = {
-  name: 'Bengaluru Smart City 3D Cadastral Zone (M.G. Road)',
-  longitude: 77.5946,
-  latitude: 12.9716,
-  height: 950,
+  name: 'Sapthagiri NPS University (3D Neoclassical Palace)',
+  longitude: 77.5044,
+  latitude: 13.0675,
+  height: 350,
 };
 
 export const DEMO_LOCATIONS = [

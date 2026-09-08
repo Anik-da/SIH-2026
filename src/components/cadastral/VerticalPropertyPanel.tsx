@@ -33,7 +33,7 @@ export const VerticalPropertyPanel: React.FC<Props> = ({
 }) => {
   if (!property) return null;
 
-  const statusInfo = statusForProperty(property.status);
+  const statusInfo = statusForProperty(property?.status) || STATUS_COLORS.valid;
 
   return (
     <div className="animate-in slide-in-from-right pointer-events-auto absolute right-4 top-20 z-20 w-96 rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-2xl backdrop-blur-xl transition-all duration-300">

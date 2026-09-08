@@ -145,6 +145,14 @@ function loadViewport3DBuildings(viewer: Viewer) {
             });
 
             if (coordsFlat.length >= 6) {
+              // Do not overwrite our detailed handcrafted Sapthagiri Neoclassical 3D Campus
+              const firstLon = coordsFlat[0];
+              const firstLat = coordsFlat[1];
+              const distToSapthagiri = Math.hypot(firstLon - SAPTHAGIRI_COORDS.lon, firstLat - SAPTHAGIRI_COORDS.lat);
+              if (distToSapthagiri < 0.0015) {
+                return; // Keep handcrafted Sapthagiri palace clean and unobstructed
+              }
+
               const tagHeight = el.tags?.height
                 ? parseFloat(el.tags.height)
                 : el.tags?.['building:levels']
@@ -860,50 +868,27 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
             });
           });
 
-          // STEP 7: India / Bengaluru Initial Location Fly-to
-          const bldgLon = building ? building.center.lon : 77.5946; // Bengaluru Longitude
-          const bldgLat = building ? building.center.lat : 12.9716; // Bengaluru Latitude
+          // STEP 7: Sapthagiri NPS University Initial Location Fly-to
+          const bldgLon = building ? building.center.lon : SAPTHAGIRI_COORDS.lon;
+          const bldgLat = building ? building.center.lat : SAPTHAGIRI_COORDS.lat;
 
           viewer.camera.setView({
-            destination: Cartesian3.fromDegrees(bldgLon, bldgLat, 1200),
+            destination: Cartesian3.fromDegrees(bldgLon, bldgLat, 280),
             orientation: {
-              heading: CesiumMath.toRadians(45), // 45° Heading
-              pitch: CesiumMath.toRadians(-40),   // -40° Pitch for elevated 3D roofs & facades
+              heading: CesiumMath.toRadians(40), // 40° Heading
+              pitch: CesiumMath.toRadians(-28),   // -28° Pitch for elevated 3D roofs & facades
               roll: 0,
             },
           });
 
-          // Check if user allows live browser GPS geolocation
-          if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-              (pos) => {
-                if (!viewer.isDestroyed()) {
-                  const { latitude, longitude } = pos.coords;
-                  viewer.camera.flyTo({
-                    destination: Cartesian3.fromDegrees(longitude, latitude, 650),
-                    orientation: {
-                      heading: CesiumMath.toRadians(45),
-                      pitch: CesiumMath.toRadians(-35),
-                      roll: 0,
-                    },
-                    duration: 2.0,
-                  });
-                }
-              },
-              (err) => {
-                console.info('Live GPS geolocation fallback to Bengaluru:', err.message);
-              },
-              { enableHighAccuracy: true, timeout: 6000, maximumAge: 30000 }
-            );
-          }
-
           if (building) {
             setTimeout(() => {
               if (!viewer.isDestroyed()) {
-                flyToBuilding(viewer, building, 2.0);
+                flyToBuilding(viewer, building, 1.5);
               }
-            }, 1200);
+            }, 600);
           }
+
 
           // Camera telemetry listener
           viewer.camera.changed.addEventListener(() => {
@@ -1012,21 +997,32 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
                 onSelect?.(entity);
               }
             } else if (typeof entity.id === 'string' && entity.id.startsWith('sapthagiri-')) {
+              const floorMatch = entity.id.match(/floor-(\d+)/);
+              if (floorMatch) {
+                const floorNum = parseInt(floorMatch[1], 10);
+                const targetFloor = building?.floors.find(
+                  (f) => f.floorNumber === floorNum || f.id.endsWith(`F${floorNum}`)
+                );
+                if (targetFloor) {
+                  onSelectFloor?.(targetFloor.id);
+                }
+              }
               onSelectBuildingFeature?.({
                 name: 'Sapthagiri NPS University (Main Academic Palace & Senate)',
-                ulpin: 'ULPIN-IN-KA-2026-98124',
-                lat: 13.0645,
-                lon: 77.5029,
+                ulpin: 'ULPIN-IN-KA-2026-SNPSU01',
+                lat: 13.0675,
+                lon: 77.5044,
                 height: 45,
                 floors: 10,
-                valuation: '₹185,00,00,000',
-                address: '#14/5, Chikkasandra, Hesaraghatta Main Road, Ward 12 (Chikkabanavara), Bengaluru, Karnataka - 560057',
+                valuation: '₹285,00,00,000',
+                address: '#14/5, Chikkasandra, Hesaraghatta Main Road, Ward 12, Bengaluru, Karnataka - 560057',
                 description: 'Sapthagiri NPS University Grand Neoclassical Academic Palace with 3 interconnected blocks, central clock tower, and twin skybridges.',
                 cesiumFeatureId: 'sapthagiri-nps-univ-b1',
               });
               if (entity instanceof Entity) {
                 onSelect?.(entity);
               }
+
             } else if (typeof entity.id === 'string' && entity.id.startsWith('city-building-')) {
               const bId = entity.id.replace('city-building-', '');
               const cityB = SURROUNDING_CITY_BUILDINGS.find((b) => b.id === bId);
@@ -1122,26 +1118,71 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // Render 3D Exploded Floor Volumes
+    // Render 3D Floor Volumes & Sapthagiri Neoclassical Palace
     useEffect(() => {
       const viewer = viewerRef.current;
       if (!viewer || !building) return;
+
+      const isSapthagiri =
+        building.id.includes('SNPSU') ||
+        building.id === 'BLDG-BLR-021' ||
+        building.name.includes('Sapthagiri');
 
       // Remove existing custom 3D floor entities, labels, pins, buildings & utility pipes
       const toRemove = viewer.entities.values.filter(
         (e) =>
           typeof e.id === 'string' &&
-          (e.id.includes('floor') ||
+          (e.id.includes('floor-') ||
             e.id.includes('label') ||
-            e.id.includes('building') ||
             e.id.includes('city-building') ||
             e.id.includes('solid-bim') ||
             e.id.includes('parcel') ||
-            e.id.includes('utility'))
+            e.id.includes('utility') ||
+            (!isSapthagiri && e.id.includes('building')))
       );
       toRemove.forEach((e) => viewer.entities.remove(e));
 
-      // 1. Parcel 2D Ground Footprint Outline
+      const explodeFactor = explodeState === 'exploded' ? 1.2 : 0;
+
+      // When building is Sapthagiri NPS University, render the true 3D Neoclassical Architectural Campus
+      if (isSapthagiri) {
+        renderSapthagiriCampusModel(viewer, selectedFloorId, explodeFactor);
+
+        // Sub-surface clean campus utilities if toggled (parallel perimeter infrastructure)
+        if (showUtilities && showUnderground) {
+          const centerLon = building.center.lon;
+          const centerLat = building.center.lat;
+
+          // Water Main line along perimeter trench (-5m)
+          viewer.entities.add({
+            id: 'utility-water-perimeter',
+            polyline: {
+              positions: Cartesian3.fromDegreesArrayHeights([
+                centerLon - 0.0008, centerLat - 0.0006, -5,
+                centerLon + 0.0008, centerLat - 0.0006, -5,
+              ]),
+              width: 4,
+              material: Color.fromCssColorString('#06b6d4'),
+            },
+          });
+
+          // High-Voltage Line along perimeter trench (-10m)
+          viewer.entities.add({
+            id: 'utility-electric-perimeter',
+            polyline: {
+              positions: Cartesian3.fromDegreesArrayHeights([
+                centerLon - 0.0008, centerLat - 0.0008, -10,
+                centerLon + 0.0008, centerLat - 0.0008, -10,
+              ]),
+              width: 4,
+              material: Color.fromCssColorString('#f59e0b'),
+            },
+          });
+        }
+        return;
+      }
+
+      // Fallback for other standard building parcels
       const parcelPositions = footprintToCartesian(building.footprint, 0);
       viewer.entities.add({
         id: 'parcel-outline',
@@ -1153,9 +1194,6 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
           outlineWidth: 2,
         },
       });
-
-      // 2. 3D Interactive Floor Extruded Volumes (Rendered AT ALL TIMES)
-      const explodeFactor = explodeState === 'exploded' ? 1.2 : 0;
 
       building.floors.forEach((floor: Floor) => {
         const prop = properties.find((p) => p.floorId === floor.id);
@@ -1172,10 +1210,6 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
         let color: Color;
 
         if (isRescueModeActive) {
-          // DISASTER RESCUE VIEW COLOR MAPPING
-          // High-risk (Floor 03): RED (#ef4444)
-          // Medium-risk (Floor 04): AMBER (#f59e0b)
-          // Safe / Other: GREEN (#10b981)
           if (floor.floorNumber === 3 || floor.id.includes('F3') || floor.id.includes('F03')) {
             color = Color.fromCssColorString('#ef4444').withAlpha(0.95);
           } else if (floor.floorNumber === 4 || floor.id.includes('F4') || floor.id.includes('F04')) {
@@ -1186,12 +1220,11 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
         } else if (isSelected) {
           color = Color.fromCssColorString('#0284c7').withAlpha(0.92);
         } else if (selectedFloorId) {
-          // X-Ray Isolation Mode: non-selected floors fade to 20% alpha
-          color = colorFromRgba(STATUS_COLORS[prop.status].cesium).withAlpha(0.2);
+          color = colorFromRgba(STATUS_COLORS[prop.status]?.cesium || STATUS_COLORS.valid.cesium).withAlpha(0.2);
         } else if (floor.isUnderground) {
           color = colorFromRgba(UNDERGROUND_COLOR.cesium).withAlpha(0.85);
         } else {
-          color = colorFromRgba(STATUS_COLORS[prop.status].cesium).withAlpha(0.85);
+          color = colorFromRgba(STATUS_COLORS[prop.status]?.cesium || STATUS_COLORS.valid.cesium).withAlpha(0.85);
         }
 
         viewer.entities.add({
@@ -1210,7 +1243,6 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
           },
         });
 
-        // Render 3D Floor Label when selected or exploded or in disaster mode
         if (isSelected || explodeState === 'exploded' || isRescueModeActive) {
           const rescueBadge = isRescueModeActive
             ? (floor.floorNumber === 3 || floor.id.includes('F3') || floor.id.includes('F03'))
@@ -1228,52 +1260,8 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
           );
         }
       });
+    }, [building, properties, explodeState, selectedFloorId, showUnderground, showUtilities, isRescueModeActive]);
 
-        // 3. Sub-surface Utility Infrastructure Lines ($Z < 0$)
-        if (showUtilities && showUnderground) {
-          const centerLon = building.center.lon;
-          const centerLat = building.center.lat;
-
-          // Water Main (Cyan, -5m)
-          viewer.entities.add({
-            id: 'utility-water',
-            polyline: {
-              positions: Cartesian3.fromDegreesArrayHeights([
-                centerLon - 0.001, centerLat - 0.0005, -5,
-                centerLon + 0.001, centerLat + 0.0005, -5,
-              ]),
-              width: 5,
-              material: Color.fromCssColorString('#06b6d4'),
-            },
-          });
-
-          // Electric Cable Grid (Amber, -10m)
-          viewer.entities.add({
-            id: 'utility-electric',
-            polyline: {
-              positions: Cartesian3.fromDegreesArrayHeights([
-                centerLon - 0.0008, centerLat + 0.0008, -10,
-                centerLon + 0.0008, centerLat - 0.0008, -10,
-              ]),
-              width: 4,
-              material: Color.fromCssColorString('#f59e0b'),
-            },
-          });
-
-          // Fiber Optic Transit Line (Purple, -15m)
-          viewer.entities.add({
-            id: 'utility-fiber',
-            polyline: {
-              positions: Cartesian3.fromDegreesArrayHeights([
-                centerLon - 0.0012, centerLat, -15,
-                centerLon + 0.0012, centerLat, -15,
-              ]),
-              width: 4,
-              material: Color.fromCssColorString('#a855f7'),
-            },
-          });
-        }
-      }, [building, properties, explodeState, selectedFloorId, showUnderground, showUtilities, isRescueModeActive]);
 
     // Handle Sub-surface Ground Translucency (Underground Mode)
     useEffect(() => {

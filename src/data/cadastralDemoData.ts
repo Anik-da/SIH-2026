@@ -1,12 +1,12 @@
 import type { Building, VerticalProperty, Floor, PropertyType, PropertyStatus, ValidationConflict, AuditLogEntry } from '../types/cadastral';
 
-const PARCEL_CENTER = { lon: 77.5946, lat: 12.9716 };
+const PARCEL_CENTER = { lon: 77.5044, lat: 13.0675 };
 
 const LAT_M = 111320;
 const LON_M = 111320 * Math.cos((PARCEL_CENTER.lat * Math.PI) / 180);
 
-const HALF_W = 15; // 30m wide
-const HALF_H = 12; // 24m deep
+const HALF_W = 80; // 160m campus width
+const HALF_H = 45; // 90m campus depth
 
 export const footprint: [number, number][] = [
   [PARCEL_CENTER.lon - (HALF_W / LON_M), PARCEL_CENTER.lat - (HALF_H / LAT_M)],
@@ -15,29 +15,33 @@ export const footprint: [number, number][] = [
   [PARCEL_CENTER.lon - (HALF_W / LON_M), PARCEL_CENTER.lat + (HALF_H / LAT_M)],
 ];
 
-export const footprintArea = 30 * 24; // 720 m²
+export const footprintArea = 160 * 90; // 14,400 m²
 
 const floorDefs: Omit<Floor, 'id'>[] = [
-  { label: 'Sub-Basement Utility', shortLabel: 'B2', zMin: -6, zMax: -3, floorNumber: -2, isUnderground: true },
-  { label: 'Basement Parking', shortLabel: 'B1', zMin: -3, zMax: 0, floorNumber: -1, isUnderground: true },
-  { label: 'Ground Floor Commercial', shortLabel: 'GF', zMin: 0, zMax: 3.5, floorNumber: 0, isUnderground: false },
-  { label: 'Floor 1 — Retail Mall', shortLabel: 'F1', zMin: 3.5, zMax: 7, floorNumber: 1, isUnderground: false },
-  { label: 'Floor 2 — Office Suites', shortLabel: 'F2', zMin: 7, zMax: 10.5, floorNumber: 2, isUnderground: false },
-  { label: 'Floor 3 — Tech Hub', shortLabel: 'F3', zMin: 10.5, zMax: 14, floorNumber: 3, isUnderground: false },
-  { label: 'Floor 4 — Residential West', shortLabel: 'F4', zMin: 14, zMax: 17.5, floorNumber: 4, isUnderground: false },
-  { label: 'Floor 5 — Penthouse Suite', shortLabel: 'F5', zMin: 17.5, zMax: 21, floorNumber: 5, isUnderground: false },
+  { label: 'Sub-Basement — Geotechnical Vaults & Structural Testing', shortLabel: 'B2', zMin: -6, zMax: -3, floorNumber: -2, isUnderground: true },
+  { label: 'Basement Parking & High-Voltage Campus Substation', shortLabel: 'B1', zMin: -3, zMax: 0, floorNumber: -1, isUnderground: true },
+  { label: 'Ground Floor — Ceremonial Grand Portico & Senate Plaza', shortLabel: 'GF', zMin: 0, zMax: 3.6, floorNumber: 0, isUnderground: false },
+  { label: 'Floor 1 — Grand Chancellor Auditorium & Senate Chamber', shortLabel: 'F1', zMin: 3.6, zMax: 7.2, floorNumber: 1, isUnderground: false },
+  { label: 'Floor 2 — School of Computer Science & Artificial Intelligence', shortLabel: 'F2', zMin: 7.2, zMax: 10.8, floorNumber: 2, isUnderground: false },
+  { label: 'Floor 3 — Advanced Robotics, IoT & Autonomous Systems Labs', shortLabel: 'F3', zMin: 10.8, zMax: 14.4, floorNumber: 3, isUnderground: false },
+  { label: 'Floor 4 — Central Academic Library & Digital Twin Research Wing', shortLabel: 'F4', zMin: 14.4, zMax: 18.0, floorNumber: 4, isUnderground: false },
+  { label: 'Floor 5 — School of Electronics & VLSI Systems Design', shortLabel: 'F5', zMin: 18.0, zMax: 21.6, floorNumber: 5, isUnderground: false },
+  { label: 'Floor 6 — Biotechnology & Biomedical Innovation Hub', shortLabel: 'F6', zMin: 21.6, zMax: 25.2, floorNumber: 6, isUnderground: false },
+  { label: 'Floor 7 — Postgraduate Studies & Doctoral Scholars Suites', shortLabel: 'F7', zMin: 25.2, zMax: 28.8, floorNumber: 7, isUnderground: false },
+  { label: 'Floor 8 — Chancellor & Vice-Chancellor Executive Secretariat', shortLabel: 'F8', zMin: 28.8, zMax: 32.4, floorNumber: 8, isUnderground: false },
+  { label: 'Floor 9 — Rooftop Astronomical Observatory & Heritage Clock Pavilion', shortLabel: 'F9', zMin: 32.4, zMax: 38.0, floorNumber: 9, isUnderground: false },
 ];
 
 const floors: Floor[] = floorDefs.map((f) => ({
   ...f,
-  id: `B-001-${f.shortLabel}`,
+  id: `SNPSU-${f.shortLabel}`,
 }));
 
 export const demoBuilding: Building = {
-  id: 'B-001',
-  name: 'VOLU Tower A1 (Commercial & Residential)',
-  parcelId: 'PARCEL-KA-BLR-8942',
-  ulpin: 'ULPIN-IN-MH-2026-89421',
+  id: 'BLDG-BLR-021',
+  name: 'Sapthagiri NPS University — Main Academic Palace & Senate Complex',
+  parcelId: 'PARCEL-KA-BLR-SNPSU-021',
+  ulpin: 'ULPIN-IN-KA-2026-SNPSU01',
   footprint,
   footprintArea,
   center: PARCEL_CENTER,
@@ -47,12 +51,16 @@ export const demoBuilding: Building = {
 const propertyTypes: Record<number, PropertyType> = {
   [-2]: 'Utility',
   [-1]: 'Parking',
-  0: 'Commercial',
-  1: 'Commercial',
-  2: 'Office' as PropertyType,
-  3: 'Mixed Use',
-  4: 'Residential',
-  5: 'Residential',
+  0: 'Institutional' as PropertyType,
+  1: 'Auditorium' as PropertyType,
+  2: 'Research Lab' as PropertyType,
+  3: 'Research Lab' as PropertyType,
+  4: 'Academic' as PropertyType,
+  5: 'Research Lab' as PropertyType,
+  6: 'Research Lab' as PropertyType,
+  7: 'Academic' as PropertyType,
+  8: 'Commercial' as PropertyType,
+  9: 'Institutional' as PropertyType,
 };
 
 const statusByFloor: Record<number, PropertyStatus> = {
@@ -60,36 +68,48 @@ const statusByFloor: Record<number, PropertyStatus> = {
   [-1]: 'valid',
   0: 'valid',
   1: 'valid',
-  2: 'warning',
+  2: 'valid',
   3: 'valid',
-  4: 'conflict',
+  4: 'valid',
   5: 'valid',
+  6: 'valid',
+  7: 'valid',
+  8: 'valid',
+  9: 'valid',
 };
 
 const confidenceByFloor: Record<number, number> = {
-  [-2]: 0.96,
+  [-2]: 0.98,
   [-1]: 0.99,
-  0: 0.98,
-  1: 0.95,
-  2: 0.81,
-  3: 0.94,
-  4: 0.62,
-  5: 0.91,
+  0: 0.99,
+  1: 0.99,
+  2: 0.99,
+  3: 0.99,
+  4: 0.99,
+  5: 0.98,
+  6: 0.98,
+  7: 0.99,
+  8: 0.99,
+  9: 0.99,
 };
 
 const ownersByFloor: Record<number, string> = {
-  [-2]: 'Bengaluru Municipal Subsurface Corp',
-  [-1]: 'VOLU Tower Management Society',
-  0: 'NEXUS Retail Ventures Ltd.',
-  1: 'Apex Commercial Properties',
-  2: 'Vertex Tech Solutions',
-  3: 'VOLU Innovation Labs',
-  4: 'Rajesh & Sunita Sharma',
-  5: 'Ananya Deshmukh',
+  [-2]: 'Sapthagiri NPS University Trust (Infrastructure Wing)',
+  [-1]: 'Sapthagiri NPS University Campus Management',
+  0: 'Sapthagiri NPS University — Academic Senate',
+  1: 'Sapthagiri NPS University — Chancellor Auditorium',
+  2: 'School of Computer Science & AI (Dept Head)',
+  3: 'Dept of Robotics & Autonomous Systems',
+  4: 'Sapthagiri Central Academic Library Board',
+  5: 'School of Electronics & VLSI Design',
+  6: 'Dept of Biotechnology & Biomedical Sciences',
+  7: 'School of Postgraduate & Doctoral Research',
+  8: 'Office of the Chancellor & Vice-Chancellor',
+  9: 'Sapthagiri University Heritage & Observatories Board',
 };
 
 function vpidFor(floor: Floor): string {
-  return `VP-001-B01-${floor.shortLabel}`;
+  return `VP-SNPSU-${floor.shortLabel}`;
 }
 
 export const demoProperties: VerticalProperty[] = demoBuilding.floors.map((floor: Floor) => {
@@ -103,18 +123,18 @@ export const demoProperties: VerticalProperty[] = demoBuilding.floors.map((floor
     floorId: floor.id,
     floorNumber: floor.floorNumber,
     floorLabel: floor.label,
-    propertyType: propertyTypes[floor.floorNumber] ?? 'Residential',
+    propertyType: propertyTypes[floor.floorNumber] ?? 'Academic' as PropertyType,
     zMin: floor.zMin,
     zMax: floor.zMax,
     height,
     area: footprintArea,
     volume,
-    confidence: confidenceByFloor[floor.floorNumber] ?? 0.9,
+    confidence: confidenceByFloor[floor.floorNumber] ?? 0.99,
     status: statusByFloor[floor.floorNumber] ?? 'valid',
     isUnderground: floor.isUnderground,
-    ownerName: ownersByFloor[floor.floorNumber] ?? 'Registered Owner',
+    ownerName: ownersByFloor[floor.floorNumber] ?? 'Sapthagiri NPS University Trust',
     registrationDate: '2025-11-14',
-    documentRef: `DOC-2026-VP-${floor.shortLabel}`,
+    documentRef: `DOC-2026-SNPSU-${floor.shortLabel}`,
   };
 });
 
