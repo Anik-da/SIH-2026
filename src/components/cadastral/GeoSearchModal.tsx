@@ -11,7 +11,7 @@ interface Props {
 }
 
 const GLOBAL_LOCATIONS = [
-  { name: 'Sapthagiri NPS University Campus, Bengaluru', type: 'Institutional 3D Cadastre (Chikkasandra)', lat: 13.0645, lon: 77.5029, height: 1100 },
+  { name: '🎓 Sapthagiri NPS University (3D Classical Palace)', type: 'Institutional 3D Digital Twin (Chikkasandra)', lat: 13.0645, lon: 77.5029, height: 280 },
   { name: 'Bengaluru, Karnataka, India', type: 'Indian Cadastral City', lat: 12.9716, lon: 77.5946, height: 1200 },
   { name: 'Mumbai, Maharashtra, India', type: 'Indian Cadastral City', lat: 19.0760, lon: 72.8777, height: 1200 },
   { name: 'New Delhi, India', type: 'Indian Capital City', lat: 28.6139, lon: 77.2090, height: 1200 },

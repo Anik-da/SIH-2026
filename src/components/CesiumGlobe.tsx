@@ -48,6 +48,7 @@ import { SURROUNDING_CITY_BUILDINGS, footprint } from '../data/cadastralDemoData
 
 import { applySensorMode, type SensorMode } from '../utils/godsEyeShaders';
 import { getFormattedAddress } from '../utils/addressLookup';
+import { renderSapthagiriCampusModel, SAPTHAGIRI_COORDS } from '../utils/sapthagiriCampusModel';
 
 export const CESIUM_ION_TOKEN =
   (import.meta.env.VITE_CESIUM_ION_ACCESS_TOKEN as string | undefined) ||
@@ -662,6 +663,8 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
             // Real OpenStreetMap 2D Footprint Extrusions for detailed local structures
             if (!viewer.isDestroyed()) {
               loadViewport3DBuildings(viewer);
+              // Render Sapthagiri NPS University Grand Neoclassical Campus 3D Model
+              renderSapthagiriCampusModel(viewer);
               viewer.camera.percentageChanged = 0.05;
               viewer.camera.changed.addEventListener(() => {
                 if (!viewer.isDestroyed()) {
@@ -856,6 +859,22 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
                 address: getFormattedAddress(lat, lon),
                 description: '3D Building structure extruded from real OpenStreetMap cadastral footprint.',
                 cesiumFeatureId: entity.id,
+              });
+              if (entity instanceof Entity) {
+                onSelect?.(entity);
+              }
+            } else if (typeof entity.id === 'string' && entity.id.startsWith('sapthagiri-')) {
+              onSelectBuildingFeature?.({
+                name: 'Sapthagiri NPS University (Main Academic Palace & Senate)',
+                ulpin: 'ULPIN-IN-KA-2026-98124',
+                lat: 13.0645,
+                lon: 77.5029,
+                height: 45,
+                floors: 10,
+                valuation: '₹185,00,00,000',
+                address: '#14/5, Chikkasandra, Hesaraghatta Main Road, Ward 12 (Chikkabanavara), Bengaluru, Karnataka - 560057',
+                description: 'Sapthagiri NPS University Grand Neoclassical Academic Palace with 3 interconnected blocks, central clock tower, and twin skybridges.',
+                cesiumFeatureId: 'sapthagiri-nps-univ-b1',
               });
               if (entity instanceof Entity) {
                 onSelect?.(entity);

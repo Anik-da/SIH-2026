@@ -200,8 +200,8 @@ export const FloorplanTo3DModal: React.FC<Props> = ({
         aboveGroundFloors,
         basementFloors,
         floorHeight,
-        lat: 12.9716,
-        lon: 77.5946,
+        lat: buildingName.includes('Sapthagiri') ? 13.0645 : 12.9716,
+        lon: buildingName.includes('Sapthagiri') ? 77.5029 : 77.5946,
         polygonVertices: vertices,
       });
 
@@ -364,6 +364,34 @@ export const FloorplanTo3DModal: React.FC<Props> = ({
                     Or select pre-loaded CAD floorplan:
                   </span>
                   <div className="grid grid-cols-3 gap-2">
+                    <button
+                      onClick={() => {
+                        setBuildingName('Sapthagiri NPS University (Grand Academic Palace)');
+                        setPreviewUrl('/assets/sapthagiri/sapthagiri_perspective.png');
+                        setAboveGroundFloors(10);
+                        setBasementFloors(2);
+                        setFloorHeight(3.6);
+                        setVertices([
+                          { x: 0.05, y: 0.15 },
+                          { x: 0.32, y: 0.15 },
+                          { x: 0.36, y: 0.28 },
+                          { x: 0.64, y: 0.28 },
+                          { x: 0.68, y: 0.15 },
+                          { x: 0.95, y: 0.15 },
+                          { x: 0.95, y: 0.85 },
+                          { x: 0.68, y: 0.85 },
+                          { x: 0.64, y: 0.72 },
+                          { x: 0.36, y: 0.72 },
+                          { x: 0.32, y: 0.85 },
+                          { x: 0.05, y: 0.85 },
+                        ]);
+                        setIsOutlineApproved(true);
+                      }}
+                      className="p-2.5 rounded-xl bg-cyan-950/50 border border-cyan-500/50 hover:border-cyan-400 text-[11px] text-cyan-200 font-extrabold transition text-center col-span-3 flex items-center justify-center gap-2 shadow-lg shadow-cyan-950/50 hover:bg-cyan-900/40"
+                    >
+                      <Building className="w-3.5 h-3.5 text-cyan-400" />
+                      🏛️ Sapthagiri NPS University (10-Floor Neoclassical Palace)
+                    </button>
                     <button
                       onClick={() => {
                         setBuildingName('Residential 3BHK Tower Wing');

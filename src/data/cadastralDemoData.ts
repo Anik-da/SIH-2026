@@ -365,6 +365,9 @@ export interface CityBuildingData {
 }
 
 export const SURROUNDING_CITY_BUILDINGS: CityBuildingData[] = [
+  // Institutional Campus Twin
+  { id: 'sapthagiri-nps-univ-b1', name: 'Sapthagiri NPS University (Main Academic Palace & Senate)', ulpin: 'ULPIN-IN-KA-2026-98124', center: { lat: 13.0645, lon: 77.5029 }, width: 110, depth: 45, height: 45, floors: 10, valuation: '₹185,00,00,000', ownerName: 'Sri Srinivasa Educational Trust / NPS', propertyType: 'Institutional' },
+
   // Commercial & Major High-Rise Towers
   { id: 'B-002', name: 'UB City Commercial Tower B', ulpin: 'ULPIN-IN-KA-2026-98121', center: { lat: 12.9719, lon: 77.5958 }, width: 28, depth: 22, height: 42, floors: 12, valuation: '₹14,50,00,000', ownerName: 'Vittal Mallya Realty Trust', propertyType: 'Commercial' },
   { id: 'B-003', name: 'Prestige Meridian Tower A', ulpin: 'ULPIN-IN-KA-2026-98122', center: { lat: 12.9725, lon: 77.5938 }, width: 24, depth: 26, height: 36, floors: 10, valuation: '₹9,80,00,000', ownerName: 'Prestige Estates Projects Ltd.', propertyType: 'Office' },

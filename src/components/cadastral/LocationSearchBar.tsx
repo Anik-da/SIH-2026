@@ -24,8 +24,9 @@ interface Props {
 }
 
 const QUICK_PRESETS = [
-  { name: '🗽 New York City (Photorealistic 3D Mesh)', lat: 40.7128, lon: -74.0060, height: 1000 },
+  { name: '🎓 Sapthagiri NPS University (3D Classical Palace)', lat: 13.0645, lon: 77.5029, height: 260 },
   { name: '🏢 Bengaluru Central (M.G. Road)', lat: 12.9716, lon: 77.5946, height: 750 },
+  { name: '🗽 New York City (Photorealistic 3D Mesh)', lat: 40.7128, lon: -74.0060, height: 1000 },
   { name: '🏛️ New Delhi (Connaught Place)', lat: 28.6304, lon: 77.2167, height: 750 },
   { name: '🏙️ Mumbai (Bandra-Kurla Complex)', lat: 19.0657, lon: 72.8679, height: 750 },
   { name: '💻 Hyderabad (HITEC City)', lat: 17.4504, lon: 78.3772, height: 750 },

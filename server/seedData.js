@@ -542,7 +542,7 @@ export const SEED_BUILDINGS = [
   {
     buildingId: "BLDG-BLR-021",
     cesiumFeatureId: "sapthagiri-nps-univ-b1",
-    name: "Sapthagiri NPS University (Main Academic & Admin Block)",
+    name: "Sapthagiri NPS University (Main Academic Palace & Senate)",
     address: "#14/5, Chikkasandra, Hesaraghatta Main Road, Ward 12 (Chikkabanavara), Bengaluru, Karnataka - 560057",
     city: "Bengaluru",
     district: "Bengaluru Urban",
@@ -550,18 +550,22 @@ export const SEED_BUILDINGS = [
     latitude: 13.0645,
     longitude: 77.5029,
     buildingType: "institutional",
-    floorCount: 7,
-    basementCount: 1,
-    buildingHeight: 28,
+    floorCount: 10,
+    basementCount: 2,
+    buildingHeight: 45,
     buildingStatus: "OCCUPIED",
     parcelId: "PARCEL-KA-BLR-2026-021",
     ulpin: "ULPIN-IN-KA-2026-98124",
     ulpinStatus: "VERIFIED",
-    dataSource: "PUBLIC_WEB",
-    sourceUrls: ["https://snpsu.edu.in", "https://bhuvan.nrsc.gov.in/cadastre/sapthagiri"],
+    dataSource: "BBMP_EAISTHI",
+    sourceUrls: [
+      "https://snpsu.edu.in",
+      "/assets/sapthagiri/sapthagiri_perspective.png",
+      "/assets/sapthagiri/sapthagiri_elevation_wide.png"
+    ],
     sourceCollectedAt: "2026-09-06T09:00:00.000Z",
     lastVerifiedAt: "2026-09-06T09:05:00.000Z",
-    confidence: 0.95,
+    confidence: 0.98,
     verificationStatus: "VERIFIED",
     createdAt: "2026-09-06T09:00:00.000Z",
     updatedAt: "2026-09-06T09:05:00.000Z"
@@ -886,8 +890,8 @@ export function generateFloorsForBuilding(bld) {
       propertyCount: isGround ? 4 : 8,
       source: bld.dataSource === 'BBMP_EAISTHI' ? 'OFFICIAL_BLUEPRINT' : 'DERIVED',
       confidence: bld.confidence,
-      geometryAvailable: bld.cesiumFeatureId === 'solid-bim-building-1',
-      has3DGeometry: bld.cesiumFeatureId === 'solid-bim-building-1',
+      geometryAvailable: bld.cesiumFeatureId === 'solid-bim-building-1' || bld.cesiumFeatureId === 'sapthagiri-nps-univ-b1',
+      has3DGeometry: bld.cesiumFeatureId === 'solid-bim-building-1' || bld.cesiumFeatureId === 'sapthagiri-nps-univ-b1',
       status: "ACTIVE"
     });
   }
