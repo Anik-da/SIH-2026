@@ -101,6 +101,7 @@ function App() {
   const [is3D, setIs3D] = useState(true);
   const [isMeasuring, setIsMeasuring] = useState(false);
   const [measureInfo, setMeasureInfo] = useState<string | null>(null);
+  const [isOrbiting360, setIsOrbiting360] = useState(false);
 
   // Cadastral 3D State
   const [userRole, setUserRole] = useState<UserRole>('ADMIN');
@@ -367,6 +368,10 @@ function App() {
   const handleZoomOut = useCallback(() => globeRef.current?.zoomOut(), []);
   const handleResetNorth = useCallback(() => globeRef.current?.resetNorth(), []);
   const handleFullscreen = useCallback(() => globeRef.current?.toggleFullscreen(), []);
+  const handleToggle360Orbit = useCallback(() => {
+    const isNowOrbiting = globeRef.current?.toggleAutoRotate360() ?? false;
+    setIsOrbiting360(isNowOrbiting);
+  }, []);
 
   const handleToggle2D3D = useCallback(() => {
     const newMode = !is3D;
@@ -718,6 +723,8 @@ function App() {
                 onRotateLeft={() => globeRef.current?.rotateLeft()}
                 onRotateRight={() => globeRef.current?.rotateRight()}
                 onTiltView={() => globeRef.current?.tiltView()}
+                onToggle360Orbit={handleToggle360Orbit}
+                isOrbiting360={isOrbiting360}
                 activeSensorMode={activeSensorMode}
                 onSelectSensorMode={handleSelectSensorMode}
               />
@@ -768,6 +775,8 @@ function App() {
             onGoToDemo={handleGoToDemo}
             onResetView={handleResetView}
             onSelectLocation={(lat, lon, height, name) => globeRef.current?.flyToLocation(lat, lon, height, name)}
+            onToggle360Orbit={handleToggle360Orbit}
+            isOrbiting360={isOrbiting360}
           />
           <CoordinateDisplay coordinates={coordinates} />
           {isMeasuring && (

@@ -16,6 +16,10 @@ export interface CesiumGlobeHandle {
   flyToLocation: (lat: number, lon: number, height?: number, labelText?: string) => void;
   setSensorMode: (mode: SensorMode) => void;
   flyToConflictVolume: (minZ: number, maxZ: number) => void;
+  startAutoRotate360: () => void;
+  stopAutoRotate360: () => void;
+  toggleAutoRotate360: () => boolean;
+  isAutoRotate360: () => boolean;
 }
 
 export type { Viewer, Entity };

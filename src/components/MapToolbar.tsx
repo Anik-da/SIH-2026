@@ -15,6 +15,8 @@ interface MapToolbarProps {
   onRotateLeft?: () => void;
   onRotateRight?: () => void;
   onTiltView?: () => void;
+  onToggle360Orbit?: () => void;
+  isOrbiting360?: boolean;
   activeSensorMode?: SensorMode;
   onSelectSensorMode?: (mode: SensorMode) => void;
 }
@@ -39,6 +41,8 @@ export default function MapToolbar({
   onRotateLeft,
   onRotateRight,
   onTiltView,
+  onToggle360Orbit,
+  isOrbiting360 = false,
   activeSensorMode = 'NORMAL',
   onSelectSensorMode,
 }: MapToolbarProps) {
@@ -48,8 +52,9 @@ export default function MapToolbar({
     { icon: Home, label: 'Home', onClick: onHome },
     { icon: ZoomIn, label: 'Zoom In', onClick: onZoomIn },
     { icon: ZoomOut, label: 'Zoom Out', onClick: onZoomOut },
-    { icon: RotateCcw, label: 'Rotate 45° Left', onClick: onRotateLeft || (() => {}) },
-    { icon: RotateCw, label: 'Rotate 45° Right', onClick: onRotateRight || (() => {}) },
+    { icon: RotateCw, label: isOrbiting360 ? 'Stop 360° Orbit' : 'Auto 360° Orbit', onClick: onToggle360Orbit || (() => {}), active: isOrbiting360 },
+    { icon: RotateCcw, label: 'Orbit 45° Left', onClick: onRotateLeft || (() => {}) },
+    { icon: RotateCw, label: 'Orbit 45° Right', onClick: onRotateRight || (() => {}) },
     { icon: Eye, label: 'Change 3D Pitch / Tilt', onClick: onTiltView || (() => {}) },
     { icon: Compass, label: 'Reset North', onClick: onResetNorth },
     { icon: Ruler, label: 'Measure', onClick: onToggleMeasure, active: isMeasuring },

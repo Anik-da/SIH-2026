@@ -31,6 +31,8 @@ import {
   UrlTemplateImageryProvider,
   Cartesian2,
   DistanceDisplayCondition,
+  CameraEventType,
+  KeyboardEventModifier,
 } from 'cesium';
 import type { CesiumGlobeHandle } from './cesium.types';
 import type { ThreeCityStatus } from './cadastral/ThreeCityStatusHUD';
@@ -161,20 +163,21 @@ function loadViewport3DBuildings(viewer: Viewer) {
                   ? Color.fromCssColorString('#0284c7')
                   : Color.fromCssColorString('#f1f5f9');
 
-              viewer.entities.add({
-                id: `real-osm-building-${el.id}`,
-                polygon: {
-                  hierarchy: new PolygonHierarchy(Cartesian3.fromDegreesArray(coordsFlat)),
-                  heightReference: HeightReference.CLAMP_TO_GROUND,
-                  extrudedHeightReference: HeightReference.RELATIVE_TO_GROUND,
-                  extrudedHeight: tagHeight,
-                  material: matColor,
-                  outline: true,
-                  outlineColor: Color.fromCssColorString('#0284c7'),
-                  outlineWidth: 1.5,
-                  shadows: ShadowMode.ENABLED,
-                },
-              });
+              try {
+                viewer.entities.add({
+                  id: `real-osm-building-${el.id}`,
+                  polygon: {
+                    hierarchy: new PolygonHierarchy(Cartesian3.fromDegreesArray(coordsFlat)),
+                    height: 0,
+                    extrudedHeight: tagHeight,
+                    material: matColor,
+                    outline: true,
+                    outlineColor: Color.fromCssColorString('#0284c7'),
+                    outlineWidth: 1.5,
+                    shadows: ShadowMode.ENABLED,
+                  },
+                });
+              } catch (_) {}
             }
           }
         });
@@ -271,6 +274,77 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
     const [demoMode, setDemoMode] = useState(!HAS_TOKEN);
     const handlerRef = useRef<ScreenSpaceEventHandler | null>(null);
 
+    const isAutoOrbitingRef = useRef(false);
+    const removeOrbitListenerRef = useRef<(() => void) | null>(null);
+
+    const getCameraFocalPoint = (): Cartesian3 | null => {
+      const viewer = viewerRef.current;
+      if (!viewer || viewer.isDestroyed()) return null;
+      try {
+        const canvas = viewer.scene.canvas;
+        const centerRay = viewer.camera.getPickRay(
+          new Cartesian2(canvas.clientWidth / 2, canvas.clientHeight / 2)
+        );
+        if (!centerRay) return null;
+        let pick = viewer.scene.globe.pick(centerRay, viewer.scene);
+        if (!pick) {
+          pick = viewer.camera.pickEllipsoid(
+            new Cartesian2(canvas.clientWidth / 2, canvas.clientHeight / 2),
+            viewer.scene.globe.ellipsoid
+          );
+        }
+        return pick || null;
+      } catch (_) {
+        return null;
+      }
+    };
+
+    const stopAutoRotate360 = () => {
+      isAutoOrbitingRef.current = false;
+      if (removeOrbitListenerRef.current) {
+        removeOrbitListenerRef.current();
+        removeOrbitListenerRef.current = null;
+      }
+    };
+
+    const startAutoRotate360 = () => {
+      const viewer = viewerRef.current;
+      if (!viewer || viewer.isDestroyed() || isAutoOrbitingRef.current) return;
+      isAutoOrbitingRef.current = true;
+      let lastTime = performance.now();
+
+      const orbitTick = () => {
+        if (!isAutoOrbitingRef.current || !viewer || viewer.isDestroyed()) return;
+        const now = performance.now();
+        const dt = Math.min((now - lastTime) / 1000, 0.1);
+        lastTime = now;
+
+        const focal = getCameraFocalPoint();
+        const speed = CesiumMath.toRadians(20); // 20 deg/sec = 18 sec for full 360-degree orbit
+        if (focal) {
+          viewer.camera.rotate(focal, speed * dt);
+        } else {
+          viewer.camera.rotateRight(speed * dt);
+        }
+      };
+
+      const removeListener = viewer.scene.preRender.addEventListener(orbitTick);
+      removeOrbitListenerRef.current = () => {
+        removeListener();
+        isAutoOrbitingRef.current = false;
+      };
+    };
+
+    const toggleAutoRotate360 = (): boolean => {
+      if (isAutoOrbitingRef.current) {
+        stopAutoRotate360();
+        return false;
+      } else {
+        startAutoRotate360();
+        return true;
+      }
+    };
+
     useImperativeHandle(ref, (): CesiumGlobeHandle => ({
       getViewer: () => viewerRef.current,
       flyToDemoArea: () => {
@@ -347,13 +421,27 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
       rotateLeft: () => {
         const viewer = viewerRef.current;
         if (!viewer) return;
-        viewer.camera.rotateLeft(CesiumMath.toRadians(45));
+        const focal = getCameraFocalPoint();
+        if (focal) {
+          viewer.camera.rotate(focal, CesiumMath.toRadians(-45));
+        } else {
+          viewer.camera.rotateLeft(CesiumMath.toRadians(45));
+        }
       },
       rotateRight: () => {
         const viewer = viewerRef.current;
         if (!viewer) return;
-        viewer.camera.rotateRight(CesiumMath.toRadians(45));
+        const focal = getCameraFocalPoint();
+        if (focal) {
+          viewer.camera.rotate(focal, CesiumMath.toRadians(45));
+        } else {
+          viewer.camera.rotateRight(CesiumMath.toRadians(45));
+        }
       },
+      startAutoRotate360,
+      stopAutoRotate360,
+      toggleAutoRotate360,
+      isAutoRotate360: () => isAutoOrbitingRef.current,
       tiltView: () => {
         const viewer = viewerRef.current;
         if (!viewer) return;
@@ -494,23 +582,18 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
             fullscreenButton: false,
             infoBox: false,
             selectionIndicator: true,
-            terrainProvider: undefined,
+            terrainProvider: new EllipsoidTerrainProvider(),
             baseLayer: false as unknown as undefined,
           });
 
-          // 1. World Terrain Provider
-          updateStatus({ terrainStatus: 'LOADING' });
-          createWorldTerrainAsync()
-            .then((terrain) => {
-              if (!viewer.isDestroyed()) {
-                viewer.terrainProvider = terrain;
-                updateStatus({ terrainStatus: 'LOADED' });
-              }
-            })
-            .catch((err) => {
-              console.error('Failed to load world terrain', err);
-              updateStatus({ terrainStatus: 'FAILED', lastError: `Terrain Error: ${err.message || String(err)}` });
-            });
+          // Prevent render loop exceptions from killing WebGL and showing a blank screen
+          viewer.scene.renderError.addEventListener((_scene: any, error: any) => {
+            console.error('Cesium Render Error caught (auto-recovering render loop):', error);
+            viewer.useDefaultRenderLoop = true;
+          });
+
+          // 1. Terrain Provider (Ellipsoid surface for exact meter-level BIM & Cadastral height alignment)
+          updateStatus({ terrainStatus: 'LOADED' });
 
           // 2. World Imagery Provider (Single Clean High-Res Satellite Map Layer for Zero Cracks & Double Labels)
           updateStatus({ imageryStatus: 'LOADING' });
@@ -625,6 +708,9 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
               photorealisticTileset = await createGooglePhotorealistic3DTileset();
               if (!viewer.isDestroyed()) {
                 photorealisticTileset.show = false; // Default false for Indian Cadastral Hub
+                photorealisticTileset.tileFailed?.addEventListener?.((tileErr: any) => {
+                  console.warn('Photorealistic 3D Tile load error suppressed:', tileErr);
+                });
                 viewer.scene.primitives.add(photorealisticTileset);
                 console.log('Google Photorealistic 3D Tiles loaded (active exclusively for New York)!');
               }
@@ -636,6 +722,9 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
             try {
               osmBuildings = await createOsmBuildingsAsync();
               if (!viewer.isDestroyed()) {
+                osmBuildings.tileFailed?.addEventListener?.((tileErr: any) => {
+                  console.warn('OSM 3D Tile load error suppressed:', tileErr);
+                });
                 osmBuildings.maximumScreenSpaceError = 4; // High LOD crisp solid 3D structures
                 osmBuildings.style = new Cesium3DTileStyle({
                   color: {
@@ -664,7 +753,11 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
             if (!viewer.isDestroyed()) {
               loadViewport3DBuildings(viewer);
               // Render Sapthagiri NPS University Grand Neoclassical Campus 3D Model
-              renderSapthagiriCampusModel(viewer);
+              try {
+                renderSapthagiriCampusModel(viewer);
+              } catch (e) {
+                console.warn('Sapthagiri Campus Render Exception:', e);
+              }
               viewer.camera.percentageChanged = 0.05;
               viewer.camera.changed.addEventListener(() => {
                 if (!viewer.isDestroyed()) {
@@ -689,9 +782,51 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
           if (viewer.scene.skyAtmosphere) viewer.scene.skyAtmosphere.show = true;
           viewer.scene.fog.enabled = true;
 
-          // Prevent camera from going under terrain/inside globe
-          viewer.scene.screenSpaceCameraController.minimumZoomDistance = 75;
-          viewer.scene.globe.depthTestAgainstTerrain = true;
+          // Depth test disabled against terrain to prevent buildings from clipping/vanishing
+          viewer.scene.globe.depthTestAgainstTerrain = false;
+
+          // =========================================================================
+          // 360-DEGREE ROTATION & ORBIT CONTROLLER CONFIGURATION
+          // =========================================================================
+          const controller = viewer.scene.screenSpaceCameraController;
+          controller.enableRotate = true;
+          controller.enableTilt = true;
+          controller.enableLook = true;
+          controller.enableZoom = true;
+          controller.enableCollisionDetection = false;
+          controller.minimumZoomDistance = 15;
+          controller.maximumZoomDistance = 35_000_000;
+          controller.inertiaSpin = 0.88;
+          controller.inertiaTranslate = 0.88;
+          controller.inertiaZoom = 0.8;
+
+          // 1. ZOOM: Restrict strictly to Mouse Wheel and Pinch!
+          // (CRITICAL: Default Cesium maps Right-Click Drag to Zoom, which makes users feel they can "only drag on front and back"!)
+          controller.zoomEventTypes = [
+            CameraEventType.WHEEL,
+            CameraEventType.PINCH,
+          ];
+
+          // 2. 360-DEGREE TILT & ORBIT: Right-Drag, Middle-Drag, Shift+LeftDrag, Ctrl+LeftDrag
+          // Right-clicking and dragging now freely tilts and orbits 360 degrees in any direction!
+          controller.tiltEventTypes = [
+            CameraEventType.RIGHT_DRAG,
+            CameraEventType.MIDDLE_DRAG,
+            { eventType: CameraEventType.LEFT_DRAG, modifier: KeyboardEventModifier.SHIFT },
+            { eventType: CameraEventType.LEFT_DRAG, modifier: KeyboardEventModifier.CTRL },
+            { eventType: CameraEventType.RIGHT_DRAG, modifier: KeyboardEventModifier.CTRL },
+          ];
+
+          // 3. 360-DEGREE PAN / GLOBE ROTATION: Left-Drag
+          controller.rotateEventTypes = [
+            CameraEventType.LEFT_DRAG,
+          ];
+
+          // 4. FREE LOOK / FIRST-PERSON CAMERA: Alt-Drag
+          controller.lookEventTypes = [
+            { eventType: CameraEventType.LEFT_DRAG, modifier: KeyboardEventModifier.ALT },
+            { eventType: CameraEventType.RIGHT_DRAG, modifier: KeyboardEventModifier.ALT },
+          ];
 
           // Ingest 3D Urban Place & Locality Labels for key landmarks (Stays visible at ALL zoom levels)
           const PLACE_LABELS = [
@@ -715,7 +850,7 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
                 outlineWidth: 4,
                 style: LabelStyle.FILL_AND_OUTLINE,
                 verticalOrigin: VerticalOrigin.BOTTOM,
-                heightReference: HeightReference.RELATIVE_TO_GROUND,
+                heightReference: HeightReference.NONE,
                 disableDepthTestDistance: Number.POSITIVE_INFINITY,
                 eyeOffset: new Cartesian3(0, 0, -100),
                 distanceDisplayCondition: new DistanceDisplayCondition(0, 500000),
@@ -805,12 +940,25 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
 
       viewerRef.current = viewer;
 
-      // Enable depth testing for 3D floors
-      viewer.scene.globe.depthTestAgainstTerrain = true;
+      // Keep depthTestAgainstTerrain disabled so all 3D floors and models remain visible
+      viewer.scene.globe.depthTestAgainstTerrain = false;
 
       // Coordinate tracking via mouse movement
       const handler = new ScreenSpaceEventHandler(viewer.scene.canvas);
       handlerRef.current = handler;
+
+      // Automatically pause continuous auto-orbit whenever user manually interacts
+      handler.setInputAction(() => {
+        stopAutoRotate360();
+      }, ScreenSpaceEventType.LEFT_DOWN);
+
+      handler.setInputAction(() => {
+        stopAutoRotate360();
+      }, ScreenSpaceEventType.RIGHT_DOWN);
+
+      handler.setInputAction(() => {
+        stopAutoRotate360();
+      }, ScreenSpaceEventType.MIDDLE_DOWN);
 
       handler.setInputAction((movement: ScreenSpaceEventHandler.MotionEvent) => {
         const cartesian = viewer.camera.pickEllipsoid(
@@ -963,11 +1111,13 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
       onReady?.(viewer);
 
       return () => {
+        stopAutoRotate360();
         handler.destroy();
         handlerRef.current = null;
         if (viewer && !viewer.isDestroyed()) {
-          viewer.entities.removeAll();
+          viewer.destroy();
         }
+        viewerRef.current = null;
       };
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
