@@ -1,5 +1,6 @@
 import React from 'react';
 import { Building2, ArrowRight, ShieldCheck, MapPin } from 'lucide-react';
+import { getFormattedAddress } from '../../utils/addressLookup';
 
 interface Props {
   isOpen: boolean;
@@ -10,6 +11,7 @@ interface Props {
   valuation?: string;
   lat?: number;
   lon?: number;
+  address?: string;
 }
 
 export const RealFinderCardPopup: React.FC<Props> = ({
@@ -19,13 +21,16 @@ export const RealFinderCardPopup: React.FC<Props> = ({
   buildingName = 'B1-A Commercial Skyscraper',
   ulpin = 'ULPIN-IN-MH-2026-89421',
   valuation = '₹1,28,35,000',
-  lat = 31.2397,
-  lon = 121.4998,
+  lat = 12.9716,
+  lon = 77.5946,
+  address,
 }) => {
   if (!isOpen) return null;
 
+  const displayAddress = getFormattedAddress(lat, lon, address);
+
   return (
-    <div className="pointer-events-auto absolute bottom-24 left-1/2 z-30 -translate-x-1/2 rounded-2xl border border-cyan-500/40 bg-slate-900/95 p-4 shadow-2xl backdrop-blur-xl transition-all duration-300 w-80">
+    <div className="pointer-events-auto absolute bottom-24 left-1/2 z-30 -translate-x-1/2 rounded-2xl border border-cyan-500/40 bg-slate-900/95 p-4 shadow-2xl backdrop-blur-xl transition-all duration-300 w-84">
       <div className="flex items-center justify-between mb-2">
         <span className="flex items-center gap-1.5 rounded-full bg-cyan-500/20 px-2.5 py-0.5 text-[11px] font-bold text-cyan-300 border border-cyan-500/40">
           <Building2 className="h-3 w-3" /> 3D Digital Twin
@@ -36,9 +41,17 @@ export const RealFinderCardPopup: React.FC<Props> = ({
       </div>
 
       <h3 className="text-sm font-bold text-slate-100">{buildingName}</h3>
-      <p className="flex items-center gap-1 text-[11px] text-slate-400 mt-0.5">
-        <MapPin className="h-3 w-3 text-cyan-400" /> {lat.toFixed(4)}° N, {lon.toFixed(4)}° E · {ulpin}
-      </p>
+
+      {/* Human-Readable Address Display */}
+      <div className="mt-1 flex items-start gap-1.5 text-xs text-cyan-300 bg-cyan-950/40 p-2 rounded-xl border border-cyan-500/20">
+        <MapPin className="h-3.5 w-3.5 text-cyan-400 shrink-0 mt-0.5" />
+        <div className="leading-snug">
+          <span className="font-semibold text-slate-200 text-[11px]">{displayAddress}</span>
+          <span className="block font-mono text-[10px] text-slate-400 mt-0.5">
+            {lat.toFixed(4)}° N, {lon.toFixed(4)}° E &bull; {ulpin === 'Not available from source' ? 'Unmapped Cadastral Footprint' : ulpin}
+          </span>
+        </div>
+      </div>
 
       {ulpin === 'Not available from source' ? (
         <div className="mt-2.5 rounded-xl border border-amber-500/30 bg-amber-500/10 p-2 text-[11px] text-amber-300 font-sans">

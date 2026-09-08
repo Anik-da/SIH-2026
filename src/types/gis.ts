@@ -36,33 +36,47 @@ export interface Coordinates {
 }
 
 export const DEMO_AREA = {
-  name: 'Shanghai 3D Photorealistic Twin (Image 1)',
-  longitude: 121.4998,
-  latitude: 31.2397,
-  height: 1200,
+  name: 'Bengaluru Smart City 3D Cadastral Zone (M.G. Road)',
+  longitude: 77.5946,
+  latitude: 12.9716,
+  height: 950,
 };
 
 export const DEMO_LOCATIONS = [
   {
-    id: 'shanghai',
-    name: '🏙️ Shanghai 3D Digital Twin (Matching Image)',
-    longitude: 121.4998,
-    latitude: 31.2397,
-    height: 1100,
-  },
-  {
-    id: 'nyc',
-    name: '🗽 New York City 3D Skyscraper Mesh',
-    longitude: -74.0060,
-    latitude: 40.7128,
-    height: 1200,
+    id: 'live_gps',
+    name: '📍 My Current Live GPS Location',
+    longitude: 77.5946,
+    latitude: 12.9716,
+    height: 600,
   },
   {
     id: 'bengaluru',
-    name: '🇮🇳 Bengaluru Cadastral Twin',
+    name: '🇮🇳 Bengaluru Central (M.G. Road & Ward 110)',
     longitude: 77.5946,
     latitude: 12.9716,
-    height: 1200,
+    height: 950,
+  },
+  {
+    id: 'delhi',
+    name: '🇮🇳 New Delhi (Connaught Place & Barakhamba)',
+    longitude: 77.2167,
+    latitude: 28.6304,
+    height: 950,
+  },
+  {
+    id: 'mumbai',
+    name: '🇮🇳 Mumbai (Bandra-Kurla Complex Financial Hub)',
+    longitude: 72.8679,
+    latitude: 19.0657,
+    height: 950,
+  },
+  {
+    id: 'hyderabad',
+    name: '🇮🇳 Hyderabad (HITEC City Cyber Towers)',
+    longitude: 78.3772,
+    latitude: 17.4504,
+    height: 950,
   },
 ];
 

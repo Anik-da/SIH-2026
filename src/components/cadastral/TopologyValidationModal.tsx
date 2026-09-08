@@ -92,17 +92,32 @@ export const TopologyValidationModal: React.FC<Props> = ({
                   </span>
                 </div>
 
-                <button
-                  onClick={() => onResolveConflict(conflict.id)}
-                  className={`flex items-center gap-1 rounded-lg px-3 py-1 text-xs font-semibold transition-all ${
-                    conflict.resolved
-                      ? 'bg-slate-800 text-slate-400 cursor-not-allowed'
-                      : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/30'
-                  }`}
-                >
-                  <CheckCircle className="h-3.5 w-3.5" />
-                  {conflict.resolved ? 'Resolved' : 'Mark Resolved'}
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      onClose();
+                      if ((conflict as any).onFlyTo) {
+                        (conflict as any).onFlyTo();
+                      }
+                    }}
+                    className="flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 hover:bg-cyan-500/30 transition-all"
+                  >
+                    <Box className="h-3.5 w-3.5" />
+                    Inspect 3D Volume
+                  </button>
+
+                  <button
+                    onClick={() => onResolveConflict(conflict.id)}
+                    className={`flex items-center gap-1 rounded-lg px-3 py-1 text-xs font-semibold transition-all ${
+                      conflict.resolved
+                        ? 'bg-slate-800 text-slate-400 cursor-not-allowed'
+                        : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/30'
+                    }`}
+                  >
+                    <CheckCircle className="h-3.5 w-3.5" />
+                    {conflict.resolved ? 'Resolved' : 'Mark Resolved'}
+                  </button>
+                </div>
               </div>
 
               <p className="mt-2 text-xs text-slate-300">{conflict.description}</p>

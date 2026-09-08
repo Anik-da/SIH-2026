@@ -5,6 +5,7 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   buildingName?: string;
+  address?: string;
 }
 
 interface Unit {
@@ -31,7 +32,12 @@ const DEMO_UNITS: Unit[] = [
   { id: 'u102', number: 'UNIT 102', floor: 'Floor 1', type: 'Lobby Cafe & Office Space', sqft: 1400, rent: 68000, status: 'Notice', color: 'bg-amber-500' },
 ];
 
-export const RealFinderInspectModal: React.FC<Props> = ({ isOpen, onClose, buildingName = 'B1-A Commercial Skyscraper' }) => {
+export const RealFinderInspectModal: React.FC<Props> = ({
+  isOpen,
+  onClose,
+  buildingName = 'B1-A Commercial Skyscraper',
+  address = 'M.G. Road, Ward 110 (Sampangiram Nagar), Bengaluru, Karnataka - 560001',
+}) => {
   const [selectedUnit, setSelectedUnit] = useState<Unit>(DEMO_UNITS[6]); // Unit 201 default
   const [activeFilter, setActiveFilter] = useState<'ALL' | 'Occupied' | 'Vacant' | 'Notice'>('ALL');
 
@@ -50,9 +56,9 @@ export const RealFinderInspectModal: React.FC<Props> = ({ isOpen, onClose, build
             </div>
             <div>
               <h2 className="text-sm font-bold text-slate-100">{buildingName}</h2>
-              <p className="flex items-center gap-1 text-[11px] text-slate-400">
+              <p className="flex items-center gap-1 text-[11px] text-cyan-300 font-medium">
                 <MapPin className="h-3 w-3 text-cyan-400" />
-                ULPIN: ULPIN-IN-MH-2026-89421 · 24412 Star Valley Dr
+                {address} &bull; ULPIN: ULPIN-IN-MH-2026-89421
               </p>
             </div>
           </div>

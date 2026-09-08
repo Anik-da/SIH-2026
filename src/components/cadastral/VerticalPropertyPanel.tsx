@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 
 import { DataProvenanceBadge } from '../common/DataProvenanceBadge';
+import { SourceBadge } from '../common/SourceBadge';
 
 interface Props {
   property: VerticalProperty | null;
@@ -39,10 +40,11 @@ export const VerticalPropertyPanel: React.FC<Props> = ({
       {/* Header */}
       <div className="flex items-start justify-between border-b border-slate-800 pb-4">
         <div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 flex-wrap mb-1">
             <span className="rounded-md bg-cyan-500/10 px-2 py-0.5 text-xs font-semibold text-cyan-400">
               {property.isUnderground ? 'SUB-SURFACE' : 'VERTICAL UNIT'}
             </span>
+            <SourceBadge badge={property.sourceBadge || 'OFFICIAL'} size="sm" />
             <span className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-medium ${statusInfo.bg} ${statusInfo.text}`}>
               {property.status === 'valid' && <CheckCircle2 className="h-3 w-3" />}
               {property.status === 'warning' && <AlertTriangle className="h-3 w-3" />}

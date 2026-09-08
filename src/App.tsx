@@ -37,13 +37,24 @@ import { RealFinderHUD } from './components/cadastral/RealFinderHUD';
 import { ThreeCityStatusHUD, type ThreeCityStatus } from './components/cadastral/ThreeCityStatusHUD';
 import { RealFinderInspectModal } from './components/cadastral/RealFinderInspectModal';
 import { RealFinderCardPopup } from './components/cadastral/RealFinderCardPopup';
+import { BuildingStackExplorerModal } from './components/cadastral/BuildingStackExplorerModal';
 import { StitchNavigationDrawer, PageId } from './components/navigation/StitchNavigationDrawer';
 import { AuthModal } from './components/auth/AuthModal';
 
 import { LandingPage } from './components/landing/LandingPage';
 import { LoginPage } from './components/landing/LoginPage';
 import GeoJsonImporterModal from './components/cadastral/GeoJsonImporterModal';
+
+import { buildingApiClient } from './services/api/buildingApiClient';
+import { BuildingInformationPanel } from './components/cadastral/BuildingInformationPanel';
+import { FloorPanel } from './components/cadastral/FloorPanel';
+import type { MongoBuildingDocument, MongoFloorDocument } from './types/mongodbBuilding';
 import CreateBuildingModal from './components/cadastral/CreateBuildingModal';
+import { DocumentVerificationModal } from './components/cadastral/DocumentVerificationModal';
+import { AdminManagementModal } from './components/cadastral/AdminManagementModal';
+import { GovtDataSourcesModal } from './components/datasources/GovtDataSourcesModal';
+import { PublicVerifyPage } from './components/cadastral/PublicVerifyPage';
+import { FloorplanTo3DModal } from './components/cadastral/FloorplanTo3DModal';
 
 import { DEFAULT_LAYERS, DEMO_AREA } from './types/gis';
 import type { Coordinates, LayerConfig, SelectionInfo } from './types/gis';
@@ -125,9 +136,52 @@ function App() {
     height: number;
     floors: number;
     valuation: string;
+    address?: string;
+    cesiumFeatureId?: string;
   } | null>(null);
 
+  const [persistentBuilding, setPersistentBuilding] = useState<MongoBuildingDocument | null>(null);
+  const [persistentFloors, setPersistentFloors] = useState<MongoFloorDocument[]>([]);
+  const [isBuildingPanelOpen, setIsBuildingPanelOpen] = useState(false);
+  const [isFloorPanelOpen, setIsFloorPanelOpen] = useState(false);
+  const [isStackExplorerOpen, setIsStackExplorerOpen] = useState(false);
+
+  const [isDocumentVerificationOpen, setIsDocumentVerificationOpen] = useState(false);
+  const [isAdminManagementOpen, setIsAdminManagementOpen] = useState(false);
+  const [isGovtDataSourcesOpen, setIsGovtDataSourcesOpen] = useState(false);
+  const [isFloorplanTo3DOpen, setIsFloorplanTo3DOpen] = useState(false);
+  const [isRescueModeActive, setIsRescueModeActive] = useState(false);
+  const [isPublicVerifyView, setIsPublicVerifyView] = useState(false);
+  const [publicVerifyId, setPublicVerifyId] = useState<string | null>(null);
+
   const [authUser, setAuthUser] = useState<User | null>(null);
+
+  // Pre-load default sample building & floor data and check initial URL route
+  useEffect(() => {
+    // Check if user directly loaded a /verify URL (e.g. from QR scan)
+    if (typeof window !== 'undefined' && window.location.pathname.includes('/verify')) {
+      const parts = window.location.pathname.split('/verify/');
+      const id = parts[1] || '';
+      if (id) {
+        setPublicVerifyId(decodeURIComponent(id.split('/')[0].split('?')[0]));
+      }
+      setIsPublicVerifyView(true);
+    }
+
+    async function initSampleData() {
+      try {
+        const bldg = await buildingApiClient.getBuildingById('BLDG-BLR-001');
+        if (bldg) {
+          setPersistentBuilding(bldg);
+          const flrs = await buildingApiClient.getFloors(bldg.buildingId);
+          setPersistentFloors(flrs);
+        }
+      } catch (err) {
+        console.warn('Initial seed load info:', err);
+      }
+    }
+    initSampleData();
+  }, []);
 
   const [threeCityStatus, setThreeCityStatus] = useState<ThreeCityStatus>({
     photorealisticStatus: 'IDLE',
@@ -157,6 +211,10 @@ function App() {
       case 'globe':
         setViewMode('app');
         break;
+      case 'data_sources':
+        setViewMode('app');
+        setIsGovtDataSourcesOpen(true);
+        break;
       case 'search':
         setViewMode('app');
         setIsSearchOpen(true);
@@ -173,6 +231,17 @@ function App() {
         setViewMode('app');
         setIsPassportOpen(true);
         break;
+      case 'doc_verify':
+        setViewMode('app');
+        setIsDocumentVerificationOpen(true);
+        break;
+      case 'public_verify':
+        setIsPublicVerifyView(true);
+        break;
+      case 'admin_console':
+        setViewMode('app');
+        setIsAdminManagementOpen(true);
+        break;
       case 'emergency':
         setViewMode('app');
         setIsEmergencyOpen(true);
@@ -184,6 +253,10 @@ function App() {
       case 'blueprint':
         setViewMode('app');
         setIsBlueprintOpen(true);
+        break;
+      case 'floorplan_3d':
+        setViewMode('app');
+        setIsFloorplanTo3DOpen(true);
         break;
       case 'presentation':
         setViewMode('app');
@@ -423,6 +496,19 @@ function App() {
 
   const activeConflictCount = conflicts.filter((c) => !c.resolved).length;
 
+  // Render Public Property Passport Verification Page
+  if (isPublicVerifyView) {
+    return (
+      <PublicVerifyPage
+        identifier={publicVerifyId || undefined}
+        onBack={() => {
+          setIsPublicVerifyView(false);
+          setPublicVerifyId(null);
+        }}
+      />
+    );
+  }
+
   // Render Landing Page View
   if (viewMode === 'landing') {
     return (
@@ -472,6 +558,12 @@ function App() {
         onToggleRealFinderHud={() => setShowRealFinderHud((prev) => !prev)}
         onOpenGeoJsonImporter={() => setIsGeoJsonImporterOpen(true)}
         onOpenCreateBuilding={() => setIsCreateBuildingOpen(true)}
+        onOpenGovtDataSources={() => setIsGovtDataSourcesOpen(true)}
+        onOpenFloorplanTo3D={() => setIsFloorplanTo3DOpen(true)}
+        onOpenBlueprint={() => setIsBlueprintOpen(true)}
+        onOpenStackExplorer={() => setIsStackExplorerOpen(true)}
+        isRescueModeActive={isRescueModeActive}
+        onToggleRescueMode={() => setIsRescueModeActive((prev) => !prev)}
       />
 
       {/* Main 3D GIS & Cadastral Area */}
@@ -486,16 +578,87 @@ function App() {
           showUtilities={showUtilities}
           customGeoJson={importedGeoJson}
           userCreatedBuildings={userCreatedBuildings}
+          isRescueModeActive={isRescueModeActive}
           onCoordinatesChange={handleCoordinates}
           onSelect={handleSelectEntity}
           onSelectFloor={handleSelectFloor}
           onStatusUpdate={setThreeCityStatus}
-          onSelectBuildingFeature={(bData) => {
+          onSelectBuildingFeature={async (bData) => {
             setSelectedBuildingFeature(bData);
-            setIsRealFinderCardOpen(true);
+            setIsRealFinderCardOpen(false); // Do not open duplicate center card; open right inspector only
+
+            // Cache-First MongoDB Building Intelligence Lookup with spatial proximity
+            const cFeatureId = bData.cesiumFeatureId || 'solid-bim-building-1';
+            const mongoDoc = await buildingApiClient.getBuildingByCesiumId(cFeatureId, bData.lat, bData.lon);
+            setPersistentBuilding(mongoDoc);
+            if (mongoDoc) {
+              setSelectedBuildingFeature({
+                ...bData,
+                name: mongoDoc.name,
+                ulpin: mongoDoc.ulpin,
+                height: mongoDoc.buildingHeight,
+                floors: mongoDoc.floorCount,
+                address: mongoDoc.address,
+              });
+              const floors = await buildingApiClient.getFloors(mongoDoc.buildingId);
+              setPersistentFloors(floors);
+            } else {
+              setPersistentFloors([]);
+            }
+            setIsBuildingPanelOpen(true);
           }}
           onReady={handleReady}
+          activeSensorMode={activeSensorMode}
         />
+
+        {/* Persistent Building Intelligence Panel (MongoDB Integrated) */}
+        {isBuildingPanelOpen && (
+          <BuildingInformationPanel
+            building={persistentBuilding}
+            cesiumFeatureId={selectedBuildingFeature?.cesiumFeatureId || 'solid-bim-building-1'}
+            isIngested={Boolean(persistentBuilding)}
+            onViewFloors={() => setIsFloorPanelOpen(true)}
+            onViewSources={() => setIsGovtDataSourcesOpen(true)}
+            onViewVerticalProperties={() => setIsPagesDrawerOpen(true)}
+            onOpenPassport={() => setIsPassportOpen(true)}
+            onRunValidation={() => setIsValidationOpen(true)}
+            onDiscoverBuilding={async (bId, cId) => {
+              const ingested = await buildingApiClient.discoverBuilding(
+                bId,
+                cId,
+                selectedBuildingFeature?.lat,
+                selectedBuildingFeature?.lon
+              );
+              setPersistentBuilding(ingested);
+              const floors = await buildingApiClient.getFloors(ingested.buildingId);
+              setPersistentFloors(floors);
+            }}
+            onClose={() => setIsBuildingPanelOpen(false)}
+          />
+        )}
+
+        {/* Floor Breakdown & 3D Geometry Panel */}
+        {isFloorPanelOpen && persistentBuilding && (
+          <FloorPanel
+            building={persistentBuilding}
+            floors={persistentFloors}
+            selectedFloorId={selectedFloorId}
+            explodeState={explodeState}
+            onSelectFloor3D={(flr) => {
+              if (flr.has3DGeometry) {
+                handleSelectFloor(flr.floorId);
+              }
+            }}
+            onExplodeToggle={(isExploded) => setExplodeState(isExploded ? 'exploded' : 'collapsed')}
+            onIsolateFloor={(flrId) => {
+              if (flrId) handleSelectFloor(flrId);
+            }}
+            onOpenVerticalProperty={() => setIsPagesDrawerOpen(true)}
+            onOpenValidation={() => setIsValidationOpen(true)}
+            onOpenPassport={() => setIsPassportOpen(true)}
+            onClose={() => setIsFloorPanelOpen(false)}
+          />
+        )}
 
         {showRealFinderHud ? (
           /* RealFinder & 51WORLD Live 3D Overlay HUD (Mutually Exclusive for ZERO overlap) */
@@ -506,21 +669,7 @@ function App() {
         ) : (
           /* Standard 3D CAD & GIS Platform Toolbars */
           <>
-            {/* Top-Center Floating Glassmorphic Stitch Command Dock */}
-            <div className="absolute top-4 left-1/2 z-20 -translate-x-1/2">
-              <StitchControlDock
-                explodeState={explodeState}
-                showUnderground={showUnderground}
-                showUtilities={showUtilities}
-                onToggleExplode={() => setExplodeState((prev) => (prev === 'exploded' ? 'collapsed' : 'exploded'))}
-                onToggleUnderground={() => setShowUnderground((prev) => !prev)}
-                onToggleUtilities={() => setShowUtilities((prev) => !prev)}
-                onOpenAnalytics={() => setIsAnalyticsOpen(true)}
-                onOpenBlueprint={() => setIsBlueprintOpen(true)}
-              />
-            </div>
-
-            {/* Smart City Digital Twin Telemetry & Analytics HUD */}
+            {/* Smart City Digital Twin Telemetry & Analytics HUD (Clean, Centered Pill) */}
             <SmartCityHUD
               onOpenAnalytics={() => setIsAnalyticsOpen(true)}
               onOpenValidation={() => setIsValidationOpen(true)}
@@ -546,19 +695,29 @@ function App() {
               />
             </div>
 
-            {/* Left side: Vertical Floor Selector */}
+            {/* Left side: Vertical Floor Selector (Dynamically Bounded to MongoDB Floor Count) */}
             <VerticalFloorSlider
-              floors={demoBuilding.floors}
+              floors={persistentFloors.length > 0 ? persistentFloors.map((f) => ({
+                id: f.floorId,
+                label: f.floorName,
+                shortLabel: f.floorNumber < 0 ? `B${Math.abs(f.floorNumber)}` : f.floorNumber === 1 ? 'G' : `F${f.floorNumber}`,
+                zMin: f.zMin,
+                zMax: f.zMax,
+                floorNumber: f.floorNumber,
+                isUnderground: f.floorNumber < 0,
+              })) : demoBuilding.floors}
               selectedFloorId={selectedFloorId}
               showUnderground={showUnderground}
               onSelect={handleSelectFloor}
             />
 
-            {/* Right side: Layer Manager + Selection */}
-            <div className="absolute right-4 top-4 z-10 flex flex-col gap-3">
-              <LayerManager layers={layers} onToggle={handleToggleLayer} />
-              <SelectionManager selection={selection} onClear={handleClearSelection} />
-            </div>
+            {/* Right side: Layer Manager + Selection (Hidden when building/floor inspector is open) */}
+            {!isBuildingPanelOpen && !isFloorPanelOpen && (
+              <div className="absolute right-4 top-4 z-10 flex flex-col gap-3">
+                <LayerManager layers={layers} onToggle={handleToggleLayer} />
+                <SelectionManager selection={selection} onClear={handleClearSelection} />
+              </div>
+            )}
 
             {/* Right side: Vertical Property Details Panel */}
             <VerticalPropertyPanel
@@ -595,7 +754,7 @@ function App() {
           <p className="text-[10px] text-slate-500">
             VOLU-CAD 3D Vertical Cadastre System.
             <br />
-            Study area: {DEMO_AREA.name}
+            Active Zone: {DEMO_AREA.name}
           </p>
         </div>
       </div>
@@ -654,7 +813,42 @@ function App() {
       <EmergencyPlanningModal
         building={demoBuilding}
         isOpen={isEmergencyOpen}
+        isRescueModeActive={isRescueModeActive}
+        onToggleRescueMode={(active) => setIsRescueModeActive(active)}
         onClose={() => setIsEmergencyOpen(false)}
+      />
+
+      <FloorplanTo3DModal
+        isOpen={isFloorplanTo3DOpen}
+        onClose={() => setIsFloorplanTo3DOpen(false)}
+        onBuildingGenerated={(data) => {
+          setPersistentBuilding(data.building);
+          setPersistentFloors(data.floors);
+          setUserCreatedBuildings((prev) => [
+            ...prev,
+            {
+              id: data.building.buildingId,
+              name: data.building.name,
+              lat: data.building.latitude || 12.9716,
+              lon: data.building.longitude || 77.5946,
+              floors: data.floors.length,
+              height: data.building.buildingHeight || 24,
+              width: 35,
+              depth: 35,
+              ulpin: data.building.ulpin,
+            },
+          ]);
+          if (data.selectedFloorId) {
+            handleSelectFloor(data.selectedFloorId);
+          }
+          globeRef.current?.flyToLocation(data.building.latitude || 12.9716, data.building.longitude || 77.5946, 250);
+        }}
+        onOpenPublicVerification={(identifier) => {
+          setPublicVerifyId(identifier);
+          setIsFloorplanTo3DOpen(false);
+          setIsPublicVerifyView(true);
+        }}
+        onToggleRescueMode={(active) => setIsRescueModeActive(active)}
       />
 
       <AuditLogDrawer
@@ -682,15 +876,26 @@ function App() {
         buildingName={selectedBuildingFeature?.name || 'B1-A Commercial Skyscraper'}
         ulpin={selectedBuildingFeature?.ulpin || 'ULPIN-IN-MH-2026-89421'}
         valuation={selectedBuildingFeature?.valuation || '₹1,28,35,000'}
-        lat={selectedBuildingFeature?.lat || 31.2397}
-        lon={selectedBuildingFeature?.lon || 121.4998}
+        lat={selectedBuildingFeature?.lat || 12.9716}
+        lon={selectedBuildingFeature?.lon || 77.5946}
+        address={selectedBuildingFeature?.address}
       />
+
+      {/* 3D Stacking & Unit Level Occupancy Matrix Modal (Matching Image) */}
+      {isStackExplorerOpen && (
+        <BuildingStackExplorerModal
+          building={persistentBuilding}
+          floors={persistentFloors}
+          onClose={() => setIsStackExplorerOpen(false)}
+        />
+      )}
 
       {/* RealFinder Unit Occupancy & CAD Blueprint Inspector Modal (Image 1) */}
       <RealFinderInspectModal
         isOpen={isRealFinderInspectOpen}
         onClose={() => setIsRealFinderInspectOpen(false)}
         buildingName={selectedBuildingFeature?.name || 'B1-A Commercial Skyscraper'}
+        address={selectedBuildingFeature?.address}
       />
 
       {/* India National 3D GIS & GeoJSON Database Importer Modal */}
@@ -704,8 +909,46 @@ function App() {
       <CreateBuildingModal
         isOpen={isCreateBuildingOpen}
         onClose={() => setIsCreateBuildingOpen(false)}
-        onCreateBuilding={(newB) => {
+        onCreateBuilding={(newB: any) => {
           setUserCreatedBuildings((prev) => [...prev, { ...newB, id: `b-${Date.now()}` }]);
+        }}
+      />
+
+      {/* Government Geospatial Data Ingestion Layer Modal */}
+      <GovtDataSourcesModal
+        isOpen={isGovtDataSourcesOpen}
+        onClose={() => setIsGovtDataSourcesOpen(false)}
+        onPreviewDataset={(ds) => {
+          setIsGovtDataSourcesOpen(false);
+          // Fly camera to preview dataset region in Cesium viewer
+          globeRef.current?.flyToLocation(12.9716, 77.5946, 1400);
+        }}
+      />
+
+      {/* Document Verification OCR Deed Cross-Check Modal */}
+      <DocumentVerificationModal
+        isOpen={isDocumentVerificationOpen}
+        onClose={() => setIsDocumentVerificationOpen(false)}
+      />
+
+      {/* Role Management & Real-Time Event Simulator Modal */}
+      <AdminManagementModal
+        isOpen={isAdminManagementOpen}
+        onClose={() => setIsAdminManagementOpen(false)}
+        currentRole={userRole}
+        onRoleChange={(r) => setUserRole(r)}
+        onTriggerSimulatedEvent={(evtName) => {
+          setAuditLogs((prev) => [
+            {
+              id: `LOG-${Date.now().toString().slice(-4)}`,
+              timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
+              userRole: userRole,
+              action: evtName,
+              targetId: 'VOLU-CAD-3D',
+              details: `Simulated live change stream broadcast: ${evtName}`,
+            },
+            ...prev,
+          ]);
         }}
       />
     </div>

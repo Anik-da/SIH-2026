@@ -15,6 +15,7 @@ export interface CesiumGlobeHandle {
   tiltView: () => void;
   flyToLocation: (lat: number, lon: number, height?: number) => void;
   setSensorMode: (mode: SensorMode) => void;
+  flyToConflictVolume: (minZ: number, maxZ: number) => void;
 }
 
 export type { Viewer, Entity };

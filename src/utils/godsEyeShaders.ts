@@ -7,7 +7,6 @@ export type SensorMode = 'NORMAL' | 'NVG' | 'FLIR' | 'CRT' | 'NOIR';
 // 1. Night Vision (NVG) - Phosphor Green, Scanlines & Vignette
 const NVG_FRAGMENT_SHADER = `
   uniform sampler2D colorTexture;
-  varying vec2 v_textureCoordinates;
 
   void main() {
     vec4 color = texture2D(colorTexture, v_textureCoordinates);
@@ -35,7 +34,6 @@ const NVG_FRAGMENT_SHADER = `
 // 2. FLIR Thermal (Ironbow) - Heat Map False Color Transition
 const FLIR_FRAGMENT_SHADER = `
   uniform sampler2D colorTexture;
-  varying vec2 v_textureCoordinates;
 
   vec3 ironbow(float t) {
     t = clamp(t, 0.0, 1.0);
@@ -57,7 +55,6 @@ const FLIR_FRAGMENT_SHADER = `
 // 3. CRT Tactical Monitor - Scanlines, Curvature & Green Raster
 const CRT_FRAGMENT_SHADER = `
   uniform sampler2D colorTexture;
-  varying vec2 v_textureCoordinates;
 
   void main() {
     vec2 uv = v_textureCoordinates;
@@ -88,7 +85,6 @@ const CRT_FRAGMENT_SHADER = `
 // 4. NOIR - High Contrast Monochromatic Tactical
 const NOIR_FRAGMENT_SHADER = `
   uniform sampler2D colorTexture;
-  varying vec2 v_textureCoordinates;
 
   void main() {
     vec4 color = texture2D(colorTexture, v_textureCoordinates);

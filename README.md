@@ -2,209 +2,204 @@
 
 # 🌐 VOLU-CAD 3D
 ### 3D ULPIN Generation and Vertical Property Mapping System
+**Smart India Hackathon 2026 — Problem Statement SIH26011**
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-propertymap--system.web.app-0284c7?style=for-the-badge&logo=firebase)](https://propertymap-system.web.app)
 [![Smart India Hackathon 2026](https://img.shields.io/badge/SIH-2026-orange.svg?style=for-the-badge&logo=hackaday)](https://sih.gov.in/)
 [![Problem Statement](https://img.shields.io/badge/Problem%20Statement-SIH26011-blue.svg?style=for-the-badge)](https://sih.gov.in/)
 [![React](https://img.shields.io/badge/React-18.x-61DAFB?style=for-the-badge&logo=react)](https://reactjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
 [![CesiumJS](https://img.shields.io/badge/CesiumJS-3D_GIS-6B90B5?style=for-the-badge)](https://cesium.com/)
+[![MongoDB Atlas](https://img.shields.io/badge/MongoDB-Atlas_4EA94B?style=for-the-badge&logo=mongodb)](https://www.mongodb.com/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-CSS-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
 
 <p align="center">
-  <b>Extending traditional 2D land parcel mapping into a high-precision, validated 3D Vertical Property Cadastre.</b>
+  <b>Extending traditional 2D land parcel mapping into a high-precision, validated 3D Vertical Property Cadastre for high-rise urban complexes, multi-tier developments, and subsurface assets.</b>
 </p>
 
-[Overview](#-overview) •
-[Core Features](#-core-features) •
+[Live Application](https://propertymap-system.web.app) •
+[Mission & Architecture](#-mission--transformation-pipeline) •
+[Key Features](#-core-capabilities) •
 [Tech Stack](#-technology-stack) •
-[System Architecture](#-system-architecture) •
-[Demonstration Flow](#-primary-demonstration-flow) •
-[Role-Based Access](#-audit--administration)
+[Quick Start](#-quick-start) •
+[Demonstration Workflow](#-primary-sih-demonstration-flow)
 
 ---
 
 </div>
 
-## 📌 Overview
+## 📌 Mission & Transformation Pipeline
 
-**VOLU-CAD 3D** is a GIS-powered 3D cadastral platform designed for the **Smart India Hackathon (SIH) 2026** under Problem Statement **SIH26011**. 
+Traditional cadastral systems in India and worldwide map land parcels in two dimensions (2D), attributing ownership purely to ground surface boundaries. In modern dense urban infrastructure with multi-story complexes, underground metro/transit networks, and multi-owner high-rises, 2D boundaries fail to resolve volumetric rights, vertical ownership disputes, and emergency rescue access.
 
-Traditional cadastral systems map land in two dimensions (2D), attributing ownership purely to ground boundaries. In modern urban infrastructure with multi-story complexes, subsurface utilities, and multi-owner high-rises, 2D boundaries are insufficient. **VOLU-CAD 3D** bridges this gap by extending 2D land parcels vertically upward and downward into validated, searchable, and interoperable 3D property volumes.
-
-### 🔄 The Core Transformation
+**VOLU-CAD 3D** bridges this gap by extending 2D land parcels vertically upward and downward into validated, searchable, and interoperable 3D property volumes with deterministic **3D ULPINs** (Unique Land Parcel Identification Numbers conforming to the Department of Land Resources, Ministry of Rural Development, Government of India standards).
 
 ```
-2D Parcel ──> Building ──> Floors ──> 3D Property Volumes ──> VPID ──> Topology Validation ──> Digital Property Passport
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                                TRANSFORMATION PIPELINE                                 │
+└────────────────────────────────────────────────────────────────────────────────────────┘
+  2D Cadastral Parcel (Bhoomi / BBMP e-Aasthi)
+          ↓
+  3D Building Volume (Solid BIM / OpenStreetMap GIS Extrusions)
+          ↓
+  Floorplan CAD Vectorization & Perimeter Detection (AI / Convex Hull)
+          ↓
+  Vertical Floor Stratification (Basement $Z < 0$ ... Tower $Z > 0$)
+          ↓
+  Deterministic 3D ULPIN Generation: ULPIN-IN-KA-2026-B01-F03
+          ↓
+  3D Topology Conflict Engine (Clashes, Inverted Heights, Encroachments)
+          ↓
+  Disaster Situational Rescue View (Evacuation Egress & Hazard Zoning)
+          ↓
+  Digital Property Passport & Public QR Verification Portal (/verify/:id)
 ```
-
-The unified platform seamlessly combines geospatial data visualization, vertical property identification (VPID), 3D spatial topology validation, and document verification into a single interoperable environment.
 
 ---
 
-## ✨ Core Features
+## ✨ Core Capabilities
 
-### 1. 🌍 GIS 3D Globe
-* **CesiumJS Integration**: Interactive 3D Earth providing true geographic spatial context.
-* **Geospatial Layers**: Seamless loading of satellite imagery, digital terrain models (DTM), parcel polygons, and 3D building extrusions.
-* **Camera Navigation & Views**: Dynamic switching between 2D orthographic and 3D oblique views with precise geographic coordinates tracking.
-* **Layer Management**: Granular control over visibility and opacity for surface and sub-surface spatial layers.
+### 1. 🏗️ Floorplan → 3D Building Studio (SIH MVP)
+- **CAD & Floorplan Ingestion**: Upload architectural blueprints, floorplan image scans, or choose from pre-loaded CAD samples (Residential 3BHK, Commercial Office Tower, Penthouse Duplex).
+- **Automated Perimeter Detection**: Real-time canvas contour analysis and vertex vectorization to extract structural perimeter footprints with interactive manual corner adjustment.
+- **Parametric 3D Stacking**: Configures above-ground floors, subterranean basement levels ($Z < 0$), and floor heights ($m$) to extrude accurate 3D volumetric building solids.
+- **Deterministic 3D ULPIN Engine**: Computes standardized 14-to-18 character volumetric identification codes encoded with state code, district, parcel, building, and vertical level indices.
 
-### 2. 🗺️ Cadastral GIS & Hierarchy
-* **Hierarchical Modeling**: `Parcel → ULPIN → Building → Vertical Units`.
-* **Multi-Building Support**: A single parcel can contain multiple complex building structures.
-* **Search & Selection**: Quick lookup by **Parcel ID**, Unique Land Parcel Identification Number (**ULPIN**), or **Building ID** with interactive real-time highlighting on the 3D globe.
+### 2. 🌍 Real Spatial Data & Live User GPS
+- **Zero Mock Fallback Mode**: Connected directly to the live OpenStreetMap Overpass GIS API (`https://overpass-api.de/api/interpreter`), fetching real urban building footprints, levels, and boundaries.
+- **Browser GPS Integration**: Features a `📍 Live Location` button that requests high-accuracy browser geolocation and animates the Cesium 3D camera to your real street or rooftop.
+- **Indian National Cadastral Hubs**: Pre-calibrated spatial navigation presets for key Indian pilot zones:
+  - 🇮🇳 **Bengaluru Central**: M.G. Road & Ward 110 (Sampangiram Nagar)
+  - 🏛️ **New Delhi**: Connaught Place & Barakhamba Road
+  - 🏙️ **Mumbai**: Bandra-Kurla Complex (BKC) Financial District
+  - 💻 **Hyderabad**: HITEC City & Cyber Towers
 
-### 3. 🏢 Vertical Property Mapping
-* **Floor Breakdown**: Vertically divides structures into distinct functional floors (`Basement`, `Ground`, `Floor 1` ... `Floor N`).
-* **Volume Generation**: Converts 2D footprints into bounded 3D spatial volumes defined by:
-  $$\text{Volume} = \text{Footprint Area} \times (Z_{\text{max}} - Z_{\text{min}})$$
-* **Attributes Tracked**: Height ($m$), Footprint Area ($m^2$), Volume ($m^3$), $Z_{\text{min}}$, and $Z_{\text{max}}$.
+### 3. 🚨 Disaster Rescue & Situational Awareness View
+- Instant situational intelligence for first responders (NDRF, State Fire Services, Municipal Ward Officers).
+- Highlights high-priority rescue zones (senior citizens, pediatric care, mobility-restricted occupants).
+- Visualizes vertical evacuation corridors, external fire escapes, and subsurface utility hazards (substations, gas mains, HVAC ducts).
 
-### 4. 🆔 Vertical Property ID (VPID)
-* **Unique Identification**: Generates a standardized, prototype VPID for every floor/volume unit.
-  * **Example VPID**: `VP-001-B01-F03`
-* **Relational Association**: Directly links the 3D spatial volume to its parent **ULPIN**, **Parcel ID**, **Building ID**, and specific **Floor Level**.
+### 4. 🪪 Digital Property Passport & Public Verification Portal
+- **Tamper-Evident Digital Certificate**: Contains complete volumetric parameters:
+  - ULPIN & Vertical Property ID (VPID)
+  - 3D Coordinates (Lat, Lon, $Z_{\text{min}}$, $Z_{\text{max}}$, Floor Area $m^2$, Volume $m^3$)
+  - Ingestion Source Provenance (ISRO Bhuvan, BBMP e-Aasthi, Town Planning Authority)
+  - Data Confidence Score & Topology Compliance Status
+- **Live Verification (`/verify/:id`)**: Dynamic QR code on each passport opens the public mobile verification portal, allowing instant citizen or banking due-diligence without credential leaks.
 
-### 5. 🛡️ 3D Topology Validation Engine
-Extends 2D GIS topology rules into 3D space to detect critical structural and spatial conflicts:
-* ⚠️ **Volume & Floor Overlaps**: Multi-ownership volumetric collisions.
-* ⚠️ **Floor Gaps**: Unmapped spatial gaps between adjacent levels.
-* ⚠️ **Invalid Z-Ranges**: Inverted or illegal floor height definitions.
-* ⚠️ **Parcel Boundary Encroachment**: Buildings or volumetric units extending outside legal parcel bounds.
-* ⚠️ **Restricted-Zone & Underground Collisions**: Conflict detection with sub-surface utilities and restricted zones.
-* 📍 **In-Globe Visualization**: Real-time 3D bounding box highlights rendering conflicts visually directly on the 3D viewport.
+### 5. 🛡️ 3D Spatial Topology Validation Engine
+Detects and pinpoints critical 3D cadastral violations directly on the globe with volumetric bounding boxes:
+- ⚠️ **Multi-Ownership Volumetric Clashes**: Overlapping spatial floor deeds.
+- ⚠️ **Vertical Floor Gaps**: Unregistered voids between consecutive levels.
+- ⚠️ **Inverted Z-Ranges**: Illogical or corrupted vertical elevations.
+- ⚠️ **Cadastral Boundary Encroachments**: Building cantilevers protruding beyond legal parcel lines.
 
-### 6. ⛏️ Underground Cadastre
-* **Sub-Surface Mapping**: Represents basements, underground parking, transit hubs, and utility tunnels using negative $Z$ coordinates ($Z < 0$).
-* **Underground Mode**: Dedicated visual toggle that renders the ground surface translucent, exposing underground property volumes and infrastructure.
+### 6. ⛏️ Sub-Surface Underground Cadastre ($Z < 0$)
+- Dedicated subsurface mode with translucent terrain rendering.
+- Visualizes basements, foundation pilings, underground parking, and municipal utility networks.
 
-### 7. 📄 Document Verification
-* Cross-references uploaded property deeds and physical documents against database attributes and 3D volumetric metrics.
-* Displays automated verification statuses:
-  * 🟩 **MATCH**: Complete structural & record alignment.
-  * 🟨 **WARNING**: Minor discrepancy in area/Z-range parameters.
-  * 🟥 **MISMATCH**: Unverified document data or volume collision.
-
-### 8. 🪪 Digital Property Passport
-* Comprehensive digital certificate per vertical property unit containing:
-  * **Identifiers**: ULPIN, VPID, Parcel ID, Building ID
-  * **Volumetric Metrics**: Floor Level, Area ($m^2$), $Z_{\text{min}}$, $Z_{\text{max}}$, Volume ($m^3$)
-  * **Audit Metadata**: Data Source, Confidence Score, Topology Validation Status
-* **QR Verification**: Built-in public QR verification interface allowing secure validation without exposing confidential owner credentials.
-
-### 9. 📊 Operational Dashboard & Analytics
-* **Key Performance Indicators**: Total Parcels, Buildings Count, Vertical Property Volumes, Verified vs. Pending Properties, and Active Conflicts.
-* **Spatial Analytics**: Graphical charts (using Recharts) breaking down conflict types, volumetric distributions, and confidence ratings.
-
-### 10. 🚨 Emergency 3D Planning
-* Building-level emergency situational awareness for first responders.
-* Enables drill-down inspection: `Building → Floor → Basement → Underground Assets → Access Points → Emergency Priority`.
-* Provides precise 3D vertical spatial location during rescue and hazard mitigation scenarios.
-
-### 11. 🔒 Audit & Administration
-Role-based administrative control supporting distinct user perspectives:
-| Role | Capabilities |
-| :--- | :--- |
-| 🛡️ **ADMIN** | Full system configuration, user management, and rule adjustments |
-| 📐 **SURVEY OFFICER** | Property definition, Z-range adjustment, 3D volume modeling |
-| ✅ **VERIFICATION OFFICER** | Document matching, conflict resolution, status sign-off |
-| 👁️ **VIEWER** | Public query, VPID search, Digital Property Passport viewing |
-
-* **Audit Log**: Immutable event logs for actions such as VPID generation, floor modifications, validation runs, document uploads, and conflict resolutions.
+### 7. 🎨 Zero-Overlap Government-Grade UI
+- Clean, responsive glassmorphic top header with no horizontal scrollbars.
+- Dedicated centered telemetry HUD with real-time citywide metrics.
+- Mutually exclusive panel routing: selecting a building opens the deep cadastral inspector without covering camera controls or background layer controls.
 
 ---
 
 ## 🛠️ Technology Stack
 
-| Domain | Technology | Description |
+| Layer | Technologies | Role in System |
 | :--- | :--- | :--- |
-| **Frontend Framework** | ![React](https://img.shields.io/badge/React-20232A?style=flat&logo=react&logoColor=61DAFB) ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat&logo=typescript&logoColor=white) ![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat&logo=vite&logoColor=white) | High-performance React component architecture bundled with Vite |
-| **Styling** | ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat&logo=tailwind-css&logoColor=white) | Modern responsive UI & custom glassmorphism design tokens |
-| **3D & GIS Engine** | **CesiumJS** | WebGL 3D globe visualization & spatial coordinate engine |
-| **Icons & Charts** | **Lucide React** / **Recharts** | Crisp iconography and interactive data visualizers |
-| **Authentication** | ![Firebase](https://img.shields.io/badge/Firebase_Auth-FFCA28?style=flat&logo=firebase&logoColor=black) | Secure role-based user authentication |
-| **Database** | ![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=flat&logo=mongodb&logoColor=white) | Document store for parcel records, spatial metadata & audit logs |
+| **Frontend** | React 18, TypeScript, Vite | Component architecture and fast client-side rendering |
+| **Styling** | Vanilla Tailwind CSS, Glassmorphism | Government-grade dark/light theme, custom scrollbars, animations |
+| **3D GIS Engine** | CesiumJS, WebGL, Cesium OSM 3D Buildings | Photorealistic 3D Earth, terrain elevation, coordinate transformations |
+| **Data Engine** | OpenStreetMap Overpass API, Turf.js | Live real spatial building queries and polygon geometric calculations |
+| **Backend API** | Node.js, Express | REST API for building intelligence, floorplans, and verification |
+| **Database** | MongoDB Atlas (Mongoose) | Persistent storage for parcels, buildings, floors, and audit trails |
+| **Authentication** | Firebase Auth | Role-based authorization (Admin, Surveyor, Verifier, Public) |
+| **Deployment** | Firebase Hosting | Production global CDN hosting (`propertymap-system.web.app`) |
 
 ---
 
-## 🏗️ System Architecture & Integration Flow
+## 🚀 Quick Start
 
-The entire platform operates as **ONE unified end-to-end web application**.
+### Prerequisites
+- **Node.js**: v18+ installed
+- **npm**: v9+ installed
 
-```
-                           [ 🔐 Landing / Auth Page ]
-                                        │
-                                        ▼
-                           [ 📊 Central Dashboard ]
-                                        │
-                                        ▼
-                           [ 🌍 3D GIS Globe View ]
-                                        │
-             ┌──────────────────────────┴──────────────────────────┐
-             ▼                                                     ▼
-    [ 📍 Cadastral Parcel ]                               [ ⛏️ Underground Mode ]
-             │                                                     │
-             ▼                                                     │
-       [ 🆔 ULPIN ]                                                │
-             │                                                     │
-             ▼                                                     │
-     [ 🏢 Select Building ]                                        │
-             │                                                     │
-             ▼                                                     │
-  [ 💥 Explode 3D Floors ] ◄───────────────────────────────────────┘
-             │
-             ▼
-  [ 📦 Floor / Volume Unit ] ──> [ 🏷️ Generate VPID ]
-             │
-             ├──────────────────────────┐
-             ▼                          ▼
-[ 📐 Z-Min/Z-Max Metrics ]   [ 🛡️ Run 3D Validation ]
-                                        │
-                                        ▼
-                             [ ⚠️ Conflict Detection ]
-                                        │
-                                        ▼
-                             [ 📄 Document Verification ]
-                                        │
-                                        ▼
-                             [ 🪪 Digital Property Passport ]
-                                        │
-                                        ▼
-                             [ 🚨 Emergency & Audit ]
+### 1. Clone & Install
+```bash
+git clone https://github.com/Anik-da/SIH-2026.git
+cd SIH-2026
+npm install
 ```
 
+### 2. Configure Environment Variables
+Create a `.env` file in the project root:
+```env
+# Cesium Ion Access Token (Optional for default tiles)
+VITE_CESIUM_ION_ACCESS_TOKEN=your_cesium_token_here
+
+# MongoDB Atlas Database URI
+MONGODB_URI=mongodb+srv://<username>:<password>@cluster0.rnjbssz.mongodb.net/volucad?retryWrites=true&w=majority
+MONGODB_DATABASE=volucad
+
+# Live API Base URL (leave blank for local proxy /api)
+VITE_API_BASE_URL=
+```
+
+### 3. Run Locally
+Start the backend API server and frontend development server concurrently:
+
+```bash
+# Terminal 1: Start MongoDB / Express Backend API
+node server/index.js
+
+# Terminal 2: Start Vite Frontend
+npm run dev
+```
+
+Visit `http://localhost:5173` in your browser.
+
+### 4. Build for Production
+```bash
+npm run build
+```
+
 ---
 
-## 🚀 Primary Demonstration Flow
+## 🎬 Primary SIH Demonstration Flow
 
-For SIH evaluators and judges, the benchmark workflow demonstrates the full transition from 2D cadastral records to a validated 3D Vertical Property Model:
+Follow this benchmark sequence to evaluate the complete end-to-end functionality:
 
-- [ ] **1. Open GIS Globe**: Launch the interactive 3D Earth environment.
-- [ ] **2. Navigate to Demo Area**: Pan/zoom into the target cadastral region.
-- [ ] **3. Select Parcel**: Click on a 2D land parcel boundary polygon.
-- [ ] **4. Display ULPIN**: Inspect associated Unique Land Parcel Identification Number.
-- [ ] **5. Select Building**: Target a 3D building structure within the parcel.
-- [ ] **6. Open 3D Building View**: Focus spatial camera on the 3D structure.
-- [ ] **7. Explode Floors**: Trigger the vertical floor separation view.
-- [ ] **8. Select a Floor Unit**: Choose a specific volumetric level (e.g., Floor 3).
-- [ ] **9. Display VPID**: View generated Vertical Property ID (`VP-001-B01-F03`).
-- [ ] **10. Inspect Metrics**: Review $Z_{\text{min}}$, $Z_{\text{max}}$, Footprint Area, and 3D Volume.
-- [ ] **11. Execute 3D Validation**: Run the topology engine to evaluate geometry.
-- [ ] **12. Detect & Inspect Conflict**: Locate volume overlaps highlighted directly in 3D.
-- [ ] **13. Underground Inspection**: Activate Underground Mode to view sub-surface assets ($Z < 0$).
-- [ ] **14. Digital Property Passport**: Open the public QR verification passport for the unit.
-
----
-
-## 🔒 Data Integrity Note
-
-> [!NOTE]
-> The prototype utilizes high-fidelity synthetic demo data where real government cadastral datasets or spatial API web services are unavailable. Synthetic datasets are solely for workflow demonstration and do not represent official government land records.
+1. **Open Globe & Location Detection**:
+   - Access **[https://propertymap-system.web.app](https://propertymap-system.web.app)**.
+   - Click **`📍 Live Location`** in bottom camera controls to fly to your live GPS position, or pick **`Bengaluru Central`**.
+2. **Inspect 3D Cadastral Structure**:
+   - Click any 3D building on the globe (e.g. *B1-A Commercial Skyscraper*).
+   - Inspect building details: parcel ID, height, floors, and data confidence score.
+3. **Floor Decomposition & Exploded View**:
+   - Click **`[View Floors Metadata]`** or click **`Explode`** in the top bar to separate floors into distinct volumetric layers.
+   - Select an individual floor (e.g. Floor 3) to view unit-level occupancy and VPID.
+4. **Floorplan → 3D Generation**:
+   - Click **`Floorplan → 3D`** in the header.
+   - Choose a sample CAD floorplan (e.g. *Commercial Office Tower*).
+   - Review detected polygon outline, approve vertices, and generate the 3D model.
+   - Observe automatic 3D ULPIN generation (`ULPIN-IN-KA-...`).
+5. **Disaster Situational Awareness**:
+   - Click **`Rescue View`** or open **`Disaster Rescue View`** from the modal.
+   - Inspect high-priority rescue units (elderly, infants), fire escape routes, and hazardous storage.
+6. **Digital Property Passport & Public Verification**:
+   - Click **`[Passport]`** on any verified unit.
+   - Scan or click the QR code to open the public verification portal (`/verify/:id`) and view the official digital certificate.
+7. **3D Topology Conflict Detection**:
+   - Click **`Validation`** in the header to review detected structural clashes.
+   - Click **`Locate Conflict in 3D`** to fly the camera directly to highlighted conflict bounding boxes.
 
 ---
 
 <div align="center">
 
 **VOLU-CAD 3D — Developed for Smart India Hackathon (SIH) 2026**
+*Author: [Anik Das](https://github.com/Anik-da)*
 
 </div>

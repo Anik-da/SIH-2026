@@ -16,18 +16,24 @@ import {
   ChevronRight,
   Sparkles,
   Zap,
+  Database,
 } from 'lucide-react';
 
 export type PageId =
   | 'landing'
   | 'login'
   | 'globe'
+  | 'data_sources'
   | 'search'
   | 'analytics'
   | 'validation'
   | 'passport'
+  | 'doc_verify'
+  | 'public_verify'
+  | 'admin_console'
   | 'emergency'
   | 'audit'
+  | 'floorplan_3d'
   | 'blueprint'
   | 'presentation'
   | 'zoning'
@@ -77,6 +83,15 @@ const PAGES: PageItem[] = [
     color: 'text-blue-400',
   },
   {
+    id: 'data_sources',
+    title: 'Government Data Sources & Ingestion',
+    category: 'Cadastral Tools',
+    description: 'Bhuvan / ISRO, BBMP e-Aasthi & 13-Stage Geospatial Ingestion Pipeline',
+    icon: Database,
+    badge: 'SIH26011',
+    color: 'text-amber-400',
+  },
+  {
     id: 'search',
     title: 'ULPIN & VPID Spatial Registry Lookup',
     category: 'Cadastral Tools',
@@ -92,6 +107,42 @@ const PAGES: PageItem[] = [
     icon: FileCheck,
     badge: 'Verified',
     color: 'text-cyan-300',
+  },
+  {
+    id: 'doc_verify',
+    title: 'Document Verification & Deed Cross-Check',
+    category: 'Cadastral Tools',
+    description: 'Automated legal deed parser comparing extracted text against 3D Cadastre',
+    icon: FileCheck,
+    badge: 'OCR Engine',
+    color: 'text-emerald-400',
+  },
+  {
+    id: 'public_verify',
+    title: 'Public Property Verification Page',
+    category: 'Cadastral Tools',
+    description: 'Public QR verification portal with privacy-protected owner data',
+    icon: Sparkles,
+    badge: 'Public Seal',
+    color: 'text-emerald-300',
+  },
+  {
+    id: 'admin_console',
+    title: 'System Administration & Live Event Stream',
+    category: 'Cadastral Tools',
+    description: 'Role-based access matrix, database telemetry & change stream event simulator',
+    icon: UserCheck,
+    badge: 'RBAC',
+    color: 'text-purple-400',
+  },
+  {
+    id: 'floorplan_3d',
+    title: 'Floorplan → 3D Generation Pipeline',
+    category: 'Cadastral Tools',
+    description: 'Upload 2D image, detect boundary contour, stack 3D floors & issue 3D ULPINs',
+    icon: Sparkles,
+    badge: 'SIH26011 MVP',
+    color: 'text-teal-300',
   },
   {
     id: 'blueprint',

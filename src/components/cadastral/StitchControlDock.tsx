@@ -22,6 +22,7 @@ interface Props {
   onToggleUtilities: () => void;
   onOpenAnalytics: () => void;
   onOpenBlueprint: () => void;
+  onOpenStackExplorer: () => void;
 }
 
 export const StitchControlDock: React.FC<Props> = ({
@@ -33,6 +34,7 @@ export const StitchControlDock: React.FC<Props> = ({
   onToggleUtilities,
   onOpenAnalytics,
   onOpenBlueprint,
+  onOpenStackExplorer,
 }) => {
   return (
     <div className="pointer-events-auto flex items-center gap-2 rounded-2xl border border-cyan-500/30 bg-slate-950/80 p-2 shadow-2xl backdrop-blur-2xl ring-1 ring-white/10">
@@ -93,6 +95,15 @@ export const StitchControlDock: React.FC<Props> = ({
       >
         <Activity className="h-4 w-4 text-cyan-400 animate-pulse" />
         <span>Volumetric HUD</span>
+      </button>
+
+      {/* 3D Building Stacking Matrix Explorer (Matching Reference UI) */}
+      <button
+        onClick={onOpenStackExplorer}
+        className="flex items-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/20 px-3.5 py-2 text-xs font-black text-emerald-300 transition-all hover:bg-emerald-500/30 active:scale-95 shadow-lg shadow-emerald-950/40"
+      >
+        <Box className="h-4 w-4 text-emerald-400" />
+        <span>3D Stacking Matrix</span>
       </button>
     </div>
   );

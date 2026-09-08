@@ -13,9 +13,7 @@ interface DataProviderContextType {
 const DataProviderContext = createContext<DataProviderContextType | undefined>(undefined);
 
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isDemoMode, setIsDemoMode] = useState<boolean>(
-    import.meta.env.VITE_ENABLE_DEMO_MODE === 'true'
-  );
+  const [isDemoMode, setIsDemoMode] = useState<boolean>(false);
 
   const realProvider = useMemo(() => new RealDataProvider(), []);
   const demoProvider = useMemo(() => new DemoDataProvider(), []);

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Globe2,
   ShieldCheck,
@@ -12,11 +12,17 @@ import {
   Search,
   Home,
   Sparkles,
+  ChevronDown,
+  Database,
+  MapPin,
+  FileCheck,
+  PlusCircle,
+  Eye,
+  Zap,
 } from 'lucide-react';
 import type { UserRole, ExplodeState } from '../types/cadastral';
 import type { User } from '../firebase';
 import { useDataProvider } from '../services/data/DataProviderContext';
-import { DataProvenanceBadge } from './common/DataProvenanceBadge';
 
 interface Props {
   userRole: UserRole;
@@ -37,10 +43,16 @@ interface Props {
   onOpenPropertyPresentation: () => void;
   onOpenZoning: () => void;
   onOpenPagesDrawer: () => void;
-  showRealFinderHud: boolean;
-  onToggleRealFinderHud: () => void;
+  showRealFinderHud?: boolean;
+  onToggleRealFinderHud?: () => void;
   onOpenGeoJsonImporter?: () => void;
   onOpenCreateBuilding?: () => void;
+  onOpenGovtDataSources?: () => void;
+  onOpenFloorplanTo3D?: () => void;
+  onOpenBlueprint?: () => void;
+  onOpenStackExplorer?: () => void;
+  isRescueModeActive?: boolean;
+  onToggleRescueMode?: () => void;
 }
 
 export default function AppHeader({
@@ -66,198 +78,319 @@ export default function AppHeader({
   onToggleRealFinderHud,
   onOpenGeoJsonImporter,
   onOpenCreateBuilding,
+  onOpenGovtDataSources,
+  onOpenFloorplanTo3D,
+  onOpenBlueprint,
+  onOpenStackExplorer,
+  isRescueModeActive = false,
+  onToggleRescueMode,
 }: Props) {
   const { isDemoMode, toggleDemoMode } = useDataProvider();
+  const [isToolsDropdownOpen, setIsToolsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsToolsDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   return (
-    <header className="pointer-events-auto flex flex-wrap items-center justify-between border-b border-slate-800 bg-slate-900/95 px-5 py-2.5 shadow-lg backdrop-blur-xl">
-      {/* Brand Title with Home Button & Data Provider Mode Switch */}
-      <div className="flex items-center gap-3">
+    <header className="relative z-30 pointer-events-auto flex h-14 w-full items-center justify-between border-b border-slate-800 bg-slate-900/95 px-3 md:px-4 shadow-xl backdrop-blur-xl select-none">
+      {/* 1. Left Section: Brand Logo, Title & Engine Status */}
+      <div className="flex items-center gap-2 md:gap-3 shrink-0 mr-1">
         <button
           onClick={onGoToLanding}
           title="Go to Landing Page"
-          className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 shadow-md shadow-cyan-500/20 ring-1 ring-white/20 transition-transform hover:scale-105"
+          className="flex h-8 w-8 md:h-9 md:w-9 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 shadow-md shadow-cyan-500/20 ring-1 ring-white/20 transition-transform hover:scale-105 shrink-0"
         >
-          <Globe2 className="h-5 w-5 text-white" />
+          <Globe2 className="h-4 w-4 md:h-5 md:w-5 text-white" />
         </button>
-        <div className="leading-tight">
-          <div className="flex items-center gap-2">
-            <h1 className="text-sm font-black tracking-wide text-white">VOLU-CAD 3D</h1>
+
+        <div className="leading-tight shrink-0">
+          <div className="flex items-center gap-1.5 md:gap-2">
+            <h1 className="text-xs md:text-sm font-black tracking-wide text-white">VOLU-CAD 3D</h1>
             <button
               onClick={toggleDemoMode}
-              title={isDemoMode ? "Switch to Real Spatial Data Engine" : "Switch to Static Demo Mode"}
-              className={`px-2 py-0.5 rounded-full text-[10px] font-bold border transition-all ${
+              title={isDemoMode ? "Currently in Static Demo Mode (Click to switch to Real Live Spatial Data)" : "Currently using Live Real Spatial Engine (Click to toggle)"}
+              className={`px-2 py-0.5 rounded-full text-[9px] font-bold border transition-all cursor-pointer shrink-0 ${
                 isDemoMode
-                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
-                  : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 hover:bg-amber-500/30'
+                  : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/30 shadow-sm shadow-emerald-500/20'
               }`}
             >
-              {isDemoMode ? '⚡ MOCK DEMO MODE' : '🌐 REAL DATA ENGINE'}
+              {isDemoMode ? '⚡ MOCK' : '🌐 REAL DATA'}
             </button>
           </div>
-          <p className="text-[10px] text-slate-400">3D ULPIN &amp; Vertical Property Mapping Platform</p>
+          <p className="text-[9px] md:text-[10px] text-slate-400 font-medium hidden 2xl:block">
+            3D ULPIN &amp; Vertical Cadastre
+          </p>
         </div>
       </div>
 
-      {/* Quick Action Navigation Bar */}
-      <div className="flex items-center gap-2">
-        <button
-          onClick={onOpenPagesDrawer}
-          className="flex items-center gap-1.5 rounded-xl border border-cyan-500/40 bg-cyan-500/15 px-3.5 py-1.5 text-xs font-bold text-cyan-300 shadow-md shadow-cyan-500/20 transition-all hover:bg-cyan-500/25 active:scale-95"
-        >
-          <Layers className="h-4 w-4 text-cyan-400" />
-          All Pages &amp; Modules
-        </button>
+      {/* 2. Center Section: Primary Action Navigation & Tools Dropdown */}
+      <div className="flex items-center gap-1.5 lg:gap-2 shrink-0">
+        {/* Floorplan → 3D Studio (Prominent Hero Action for SIH MVP) */}
+        {onOpenFloorplanTo3D && (
+          <button
+            onClick={onOpenFloorplanTo3D}
+            className="flex items-center gap-1.5 rounded-xl border border-emerald-500/60 bg-gradient-to-r from-emerald-600/30 to-teal-600/30 px-2.5 md:px-3 py-1.5 text-xs font-black text-emerald-200 shadow-md shadow-emerald-500/20 transition-all hover:from-emerald-600/50 hover:to-teal-600/50 active:scale-95 ring-1 ring-emerald-400/40 shrink-0"
+          >
+            <Sparkles className="h-3.5 w-3.5 text-emerald-300 animate-pulse" />
+            <span>Floorplan → 3D</span>
+            <span className="rounded bg-emerald-400/20 px-1 py-0.2 text-[8px] font-black text-emerald-300 uppercase">
+              SIH MVP
+            </span>
+          </button>
+        )}
 
-        <button
-          onClick={onGoToLanding}
-          className="flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800/80 px-3 py-1.5 text-xs font-semibold text-slate-300 transition-all hover:bg-slate-700"
-        >
-          <Home className="h-4 w-4 text-cyan-400" />
-          Landing Page
-        </button>
-
-        <button
-          onClick={onOpenSearch}
-          className="flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800/80 px-3 py-1.5 text-xs font-semibold text-cyan-300 transition-all hover:bg-slate-700 active:scale-95"
-        >
-          <Search className="h-4 w-4 text-cyan-400" />
-          Search ULPIN / VPID
-        </button>
-
-        <button
-          onClick={onToggleExplode}
-          className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition-all active:scale-95 ${
-            explodeState === 'exploded'
-              ? 'border-cyan-400 bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/30'
-              : 'border-slate-700 bg-slate-800/80 text-slate-200 hover:bg-slate-700'
-          }`}
-        >
-          <Layers3 className="h-4 w-4" />
-          {explodeState === 'exploded' ? 'Collapse 3D Floors' : 'Explode 3D Floors'}
-        </button>
-
-        <button
-          onClick={onToggleUnderground}
-          className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition-all active:scale-95 ${
-            showUnderground
-              ? 'border-purple-400 bg-purple-500/20 text-purple-300'
-              : 'border-slate-700 bg-slate-800/80 text-slate-400 hover:bg-slate-700'
-          }`}
-        >
-          <Layers className="h-4 w-4" />
-          Underground Mode
-        </button>
-
-        <button
-          onClick={onOpenPropertyPresentation}
-          className="flex items-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-300 transition-all hover:bg-emerald-500/20 active:scale-95"
-        >
-          <Home className="h-4 w-4 text-emerald-400" />
-          Real Estate 3D Presentation
-        </button>
-
-        <button
-          onClick={onToggleRealFinderHud}
-          className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-bold transition-all active:scale-95 ${
-            showRealFinderHud
-              ? 'border-cyan-400 bg-cyan-500/20 text-cyan-300 shadow-md shadow-cyan-500/20'
-              : 'border-slate-700 bg-slate-800/80 text-slate-400 hover:bg-slate-700'
-          }`}
-        >
-          <Sparkles className="h-4 w-4 text-cyan-400" />
-          51WORLD / RealFinder HUD Overlay
-        </button>
-
-        <button
-          onClick={onOpenGeoJsonImporter}
-          className="flex items-center gap-1.5 rounded-xl border border-blue-500/30 bg-blue-500/10 px-3 py-1.5 text-xs font-semibold text-blue-300 transition-all hover:bg-blue-500/20 active:scale-95"
-        >
-          <Globe2 className="h-4 w-4 text-blue-400" />
-          Import 3D GIS Database
-        </button>
-
-        <button
-          onClick={onOpenCreateBuilding}
-          className="flex items-center gap-1.5 rounded-xl border border-emerald-500/40 bg-emerald-500/20 px-3 py-1.5 text-xs font-bold text-emerald-300 shadow-md shadow-emerald-900/30 transition-all hover:bg-emerald-500/30 active:scale-95"
-        >
-          <Sparkles className="h-4 w-4 text-emerald-400" />
-          + Create 3D Building
-        </button>
-
-        <button
-          onClick={onOpenZoning}
-          className="flex items-center gap-1.5 rounded-xl border border-purple-500/30 bg-purple-500/10 px-3 py-1.5 text-xs font-semibold text-purple-300 transition-all hover:bg-purple-500/20 active:scale-95"
-        >
-          <Globe2 className="h-4 w-4 text-purple-400" />
-          Land Use & Zoning
-        </button>
-
-        <button
-          onClick={onOpenAnalytics}
-          className="flex items-center gap-1.5 rounded-xl border border-cyan-500/30 bg-cyan-500/10 px-3 py-1.5 text-xs font-semibold text-cyan-300 transition-all hover:bg-cyan-500/20 active:scale-95"
-        >
-          <BarChart3 className="h-4 w-4 text-cyan-400" />
-          3D Analytics
-        </button>
-
+        {/* 3D Validation */}
         <button
           onClick={onOpenValidation}
-          className="relative flex items-center gap-1.5 rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-300 transition-all hover:bg-red-500/20 active:scale-95"
+          className="relative flex items-center gap-1.5 rounded-xl border border-red-500/30 bg-red-500/10 px-2.5 py-1.5 text-xs font-bold text-red-300 transition-all hover:bg-red-500/20 active:scale-95 shrink-0"
         >
-          <ShieldCheck className="h-4 w-4 text-red-400" />
-          3D Validation
+          <ShieldCheck className="h-3.5 w-3.5 text-red-400" />
+          <span>Validation</span>
           {activeConflictCount > 0 && (
-            <span className="flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+            <span className="flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-red-500 text-[9px] font-black text-white">
               {activeConflictCount}
             </span>
           )}
         </button>
 
+        {/* Disaster Rescue View Toggle */}
         <button
           onClick={onOpenEmergency}
-          className="flex items-center gap-1.5 rounded-xl border border-orange-500/30 bg-orange-500/10 px-3 py-1.5 text-xs font-semibold text-orange-300 transition-all hover:bg-orange-500/20 active:scale-95"
+          className={`flex items-center gap-1.5 rounded-xl border px-2.5 py-1.5 text-xs font-bold transition-all active:scale-95 shrink-0 ${
+            isRescueModeActive
+              ? 'border-red-500 bg-red-600 text-white shadow-lg shadow-red-500/30 ring-2 ring-red-400 animate-pulse'
+              : 'border-orange-500/40 bg-orange-500/15 text-orange-300 hover:bg-orange-500/25'
+          }`}
         >
-          <Flame className="h-4 w-4 text-orange-400" />
-          Emergency View
+          <Flame className="h-3.5 w-3.5 text-orange-400" />
+          <span>{isRescueModeActive ? '🔴 Active' : 'Rescue View'}</span>
         </button>
 
+        {/* Govt Data Sources (ISRO / BBMP) */}
+        {onOpenGovtDataSources && (
+          <button
+            onClick={onOpenGovtDataSources}
+            className="flex items-center gap-1.5 rounded-xl border border-amber-500/40 bg-amber-500/10 px-2.5 py-1.5 text-xs font-bold text-amber-300 transition-all hover:bg-amber-500/20 active:scale-95 shrink-0"
+          >
+            <Database className="h-3.5 w-3.5 text-amber-400" />
+            <span>Govt Sources</span>
+          </button>
+        )}
+
+        {/* "More Tools & Cadastral Views" Dropdown */}
+        <div className="relative shrink-0" ref={dropdownRef}>
+          <button
+            onClick={() => setIsToolsDropdownOpen((prev) => !prev)}
+            className="flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800/90 px-2.5 md:px-3 py-1.5 text-xs font-semibold text-slate-200 transition-all hover:bg-slate-700 active:scale-95"
+          >
+            <span>Tools &amp; Views</span>
+            <ChevronDown className={`h-3.5 w-3.5 text-slate-400 transition-transform ${isToolsDropdownOpen ? 'rotate-180' : ''}`} />
+          </button>
+
+          {isToolsDropdownOpen && (
+            <div className="absolute top-full left-0 mt-2 w-64 rounded-2xl border border-slate-700/80 bg-slate-900/95 p-2 shadow-2xl backdrop-blur-xl ring-1 ring-white/10 space-y-1 z-50">
+              {onOpenBlueprint && (
+                <button
+                  onClick={() => { onOpenBlueprint(); setIsToolsDropdownOpen(false); }}
+                  className="flex w-full items-center gap-2.5 rounded-xl p-2 text-left text-xs text-slate-200 hover:bg-cyan-500/15 hover:text-cyan-300 transition-all"
+                >
+                  <Sparkles className="h-4 w-4 text-cyan-400" />
+                  <div>
+                    <div className="font-bold">2D CAD Blueprint Converter</div>
+                    <div className="text-[10px] text-slate-400">Vector blueprint CAD extrusion</div>
+                  </div>
+                </button>
+              )}
+
+              {onOpenStackExplorer && (
+                <button
+                  onClick={() => { onOpenStackExplorer(); setIsToolsDropdownOpen(false); }}
+                  className="flex w-full items-center gap-2.5 rounded-xl p-2 text-left text-xs text-slate-200 hover:bg-purple-500/15 hover:text-purple-300 transition-all"
+                >
+                  <Box className="h-4 w-4 text-purple-400" />
+                  <div>
+                    <div className="font-bold">3D Stack &amp; Unit Matrix</div>
+                    <div className="text-[10px] text-slate-400">Unit breakdown &amp; stack explorer</div>
+                  </div>
+                </button>
+              )}
+
+              <button
+                onClick={() => { onOpenSearch(); setIsToolsDropdownOpen(false); }}
+                className="flex w-full items-center gap-2.5 rounded-xl p-2 text-left text-xs text-slate-200 hover:bg-cyan-500/15 hover:text-cyan-300 transition-all"
+              >
+                <Search className="h-4 w-4 text-cyan-400" />
+                <div>
+                  <div className="font-bold">Search ULPIN / VPID</div>
+                  <div className="text-[10px] text-slate-400">Registry spatial lookup</div>
+                </div>
+              </button>
+
+              <button
+                onClick={() => { onOpenAnalytics(); setIsToolsDropdownOpen(false); }}
+                className="flex w-full items-center gap-2.5 rounded-xl p-2 text-left text-xs text-slate-200 hover:bg-cyan-500/15 hover:text-cyan-300 transition-all"
+              >
+                <BarChart3 className="h-4 w-4 text-cyan-400" />
+                <div>
+                  <div className="font-bold">Volumetric Analytics</div>
+                  <div className="text-[10px] text-slate-400">Floor occupancy &amp; height limits</div>
+                </div>
+              </button>
+
+              <button
+                onClick={() => { onOpenZoning(); setIsToolsDropdownOpen(false); }}
+                className="flex w-full items-center gap-2.5 rounded-xl p-2 text-left text-xs text-slate-200 hover:bg-purple-500/15 hover:text-purple-300 transition-all"
+              >
+                <Globe2 className="h-4 w-4 text-purple-400" />
+                <div>
+                  <div className="font-bold">Land Use &amp; Zoning</div>
+                  <div className="text-[10px] text-slate-400">Civic zoning intelligence</div>
+                </div>
+              </button>
+
+              <button
+                onClick={() => { onOpenPropertyPresentation(); setIsToolsDropdownOpen(false); }}
+                className="flex w-full items-center gap-2.5 rounded-xl p-2 text-left text-xs text-slate-200 hover:bg-emerald-500/15 hover:text-emerald-300 transition-all"
+              >
+                <Home className="h-4 w-4 text-emerald-400" />
+                <div>
+                  <div className="font-bold">Real Estate 3D Presentation</div>
+                  <div className="text-[10px] text-slate-400">Unit architectural showcase</div>
+                </div>
+              </button>
+
+              {onOpenGeoJsonImporter && (
+                <button
+                  onClick={() => { onOpenGeoJsonImporter(); setIsToolsDropdownOpen(false); }}
+                  className="flex w-full items-center gap-2.5 rounded-xl p-2 text-left text-xs text-slate-200 hover:bg-blue-500/15 hover:text-blue-300 transition-all"
+                >
+                  <Database className="h-4 w-4 text-blue-400" />
+                  <div>
+                    <div className="font-bold">Import 3D GIS Database</div>
+                    <div className="text-[10px] text-slate-400">National GeoJSON layer ingestion</div>
+                  </div>
+                </button>
+              )}
+
+              {onOpenCreateBuilding && (
+                <button
+                  onClick={() => { onOpenCreateBuilding(); setIsToolsDropdownOpen(false); }}
+                  className="flex w-full items-center gap-2.5 rounded-xl p-2 text-left text-xs text-slate-200 hover:bg-emerald-500/15 hover:text-emerald-300 transition-all"
+                >
+                  <PlusCircle className="h-4 w-4 text-emerald-400" />
+                  <div>
+                    <div className="font-bold">+ Create 3D Building</div>
+                    <div className="text-[10px] text-slate-400">Custom volume positioning</div>
+                  </div>
+                </button>
+              )}
+
+              {onToggleRealFinderHud && (
+                <button
+                  onClick={() => { onToggleRealFinderHud(); setIsToolsDropdownOpen(false); }}
+                  className="flex w-full items-center gap-2.5 rounded-xl p-2 text-left text-xs text-slate-200 hover:bg-cyan-500/15 hover:text-cyan-300 transition-all"
+                >
+                  <Sparkles className="h-4 w-4 text-cyan-400" />
+                  <div>
+                    <div className="font-bold">RealFinder HUD Overlay</div>
+                    <div className="text-[10px] text-slate-400">Toggle live overlay</div>
+                  </div>
+                </button>
+              )}
+
+              <button
+                onClick={() => { onOpenAudit(); setIsToolsDropdownOpen(false); }}
+                className="flex w-full items-center gap-2.5 rounded-xl p-2 text-left text-xs text-slate-200 hover:bg-slate-800 hover:text-white transition-all border-t border-slate-800 pt-2"
+              >
+                <History className="h-4 w-4 text-slate-400" />
+                <div>
+                  <div className="font-bold">Audit Trail &amp; Events</div>
+                  <div className="text-[10px] text-slate-400">Officer action transaction history</div>
+                </div>
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* All Modules Drawer Launcher */}
         <button
-          onClick={onOpenAudit}
-          className="flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800/80 px-3 py-1.5 text-xs font-semibold text-slate-300 transition-all hover:bg-slate-700"
+          onClick={onOpenPagesDrawer}
+          className="flex items-center gap-1.5 rounded-xl border border-cyan-500/40 bg-cyan-500/15 px-2.5 md:px-3 py-1.5 text-xs font-bold text-cyan-300 shadow-md shadow-cyan-500/20 transition-all hover:bg-cyan-500/25 active:scale-95 shrink-0"
         >
-          <History className="h-4 w-4 text-purple-400" />
-          Audit Trail
+          <Layers className="h-3.5 w-3.5 text-cyan-400" />
+          <span>Modules</span>
         </button>
       </div>
 
-      {/* Role Switcher & Auth Profile Button */}
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800/80 px-2.5 py-1 text-xs">
-          <UserCheck className="h-3.5 w-3.5 text-cyan-400" />
-          <span className="text-[10px] text-slate-400">ROLE:</span>
+      {/* 3. Right Section: Quick 3D Toggles, Role Switcher & Officer Profile */}
+      <div className="flex items-center gap-1.5 lg:gap-2 shrink-0">
+        {/* Quick Explode 3D Toggle */}
+        <button
+          onClick={onToggleExplode}
+          title={explodeState === 'exploded' ? 'Collapse 3D Floor Volumes' : 'Explode 3D Floor Volumes'}
+          className={`flex h-8 items-center gap-1 rounded-xl px-2 text-xs font-bold transition-all shrink-0 ${
+            explodeState === 'exploded'
+              ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/30'
+              : 'border border-slate-700 bg-slate-800/80 text-slate-300 hover:bg-slate-700'
+          }`}
+        >
+          <Layers3 className="h-3.5 w-3.5" />
+          <span className="hidden lg:inline">{explodeState === 'exploded' ? 'Collapse' : 'Explode'}</span>
+        </button>
+
+        {/* Quick Underground Mode Toggle */}
+        <button
+          onClick={onToggleUnderground}
+          title={showUnderground ? 'Disable Subsurface Mode' : 'Enable Subsurface ($Z < 0$) Mode'}
+          className={`flex h-8 items-center gap-1 rounded-xl px-2 text-xs font-bold transition-all shrink-0 ${
+            showUnderground
+              ? 'border border-purple-400 bg-purple-500/20 text-purple-300'
+              : 'border border-slate-700 bg-slate-800/80 text-slate-400 hover:bg-slate-700'
+          }`}
+        >
+          <Zap className="h-3.5 w-3.5 text-purple-400" />
+          <span className="hidden lg:inline">Sub-Surface</span>
+        </button>
+
+        {/* Role Selector */}
+        <div className="flex items-center gap-1 rounded-xl border border-slate-700 bg-slate-800/90 px-2 py-1 text-xs shrink-0">
+          <UserCheck className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
+          <span className="text-[10px] text-slate-400 hidden xl:inline">ROLE:</span>
           <select
             value={userRole}
             onChange={(e) => onRoleChange(e.target.value as UserRole)}
-            className="bg-transparent font-bold text-cyan-300 focus:outline-none cursor-pointer"
+            className="bg-transparent font-bold text-cyan-300 focus:outline-none cursor-pointer text-xs"
           >
             <option value="ADMIN" className="bg-slate-900 text-white">ADMIN</option>
-            <option value="SURVEY_OFFICER" className="bg-slate-900 text-white">SURVEY OFFICER</option>
-            <option value="VERIFICATION_OFFICER" className="bg-slate-900 text-white">VERIFICATION OFFICER</option>
-            <option value="VIEWER" className="bg-slate-900 text-white">VIEWER (PUBLIC)</option>
+            <option value="SURVEY_OFFICER" className="bg-slate-900 text-white">SURVEYOR</option>
+            <option value="VERIFICATION_OFFICER" className="bg-slate-900 text-white">VERIFIER</option>
+            <option value="VIEWER" className="bg-slate-900 text-white">PUBLIC</option>
           </select>
         </div>
 
+        {/* Officer Profile Button */}
         <button
           onClick={onOpenAuth}
-          className="flex items-center gap-2 rounded-xl border border-cyan-500/30 bg-cyan-500/10 px-3 py-1.5 text-xs font-semibold text-cyan-300 transition-all hover:bg-cyan-500/20 active:scale-95"
+          className="flex items-center gap-1.5 rounded-xl border border-cyan-500/30 bg-cyan-500/10 px-2 py-1 text-xs font-semibold text-cyan-300 transition-all hover:bg-cyan-500/20 active:scale-95 shrink-0"
         >
           {authUser?.photoURL ? (
             <img src={authUser.photoURL} alt="Avatar" className="h-5 w-5 rounded-full border border-cyan-400" />
           ) : (
-            <UserIcon className="h-4 w-4 text-cyan-400" />
+            <UserIcon className="h-3.5 w-3.5 text-cyan-400" />
           )}
-          <span>{authUser ? authUser.displayName || authUser.email?.split('@')[0] : 'Officer Account'}</span>
+          <span className="max-w-[70px] truncate hidden md:inline">
+            {authUser ? authUser.displayName || authUser.email?.split('@')[0] : 'Admin'}
+          </span>
         </button>
       </div>
     </header>
