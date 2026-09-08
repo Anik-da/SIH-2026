@@ -566,12 +566,54 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
 
           loadImagery();
 
-          // 3. Real-Time 3D City Building Pipeline (Solid 3D Structures - Clean Satellite Surface)
+          // 3. Real-Time 3D City Building Pipeline (Photorealistic for New York ONLY, Solid OSM elsewhere)
           const load3DTilesPipeline = async () => {
-            // Global Solid 3D Building Geometry (Cesium OSM 3D Buildings - 100% Solid Opaque Structure)
-            updateStatus({ osmStatus: 'LOADING', photorealisticStatus: 'NOT_CONFIGURED' });
+            let osmBuildings: any = null;
+            let photorealisticTileset: any = null;
+
+            const isCameraInNewYork = () => {
+              if (viewer.isDestroyed()) return false;
+              const carto = viewer.camera.positionCartographic;
+              if (!carto) return false;
+              const lat = CesiumMath.toDegrees(carto.latitude);
+              const lon = CesiumMath.toDegrees(carto.longitude);
+              // Bounding box for Greater New York City
+              return lat >= 40.45 && lat <= 40.95 && lon >= -74.30 && lon <= -73.65;
+            };
+
+            const updateTilesetForCurrentLocation = () => {
+              if (viewer.isDestroyed()) return;
+              const inNYC = isCameraInNewYork();
+
+              if (photorealisticTileset) {
+                photorealisticTileset.show = inNYC;
+              }
+              if (osmBuildings) {
+                osmBuildings.show = !inNYC;
+              }
+
+              updateStatus({
+                photorealisticStatus: inNYC ? 'LOADED' : 'IDLE',
+                osmStatus: inNYC ? 'IDLE' : 'LOADED',
+                activeMode: inNYC ? 'PHOTOREALISTIC_3D' : 'OSM_3D',
+              });
+            };
+
+            // A. Google Photorealistic 3D Tiles (Activated ONLY for New York)
             try {
-              const osmBuildings = await createOsmBuildingsAsync();
+              photorealisticTileset = await createGooglePhotorealistic3DTileset();
+              if (!viewer.isDestroyed()) {
+                photorealisticTileset.show = false; // Default false for Indian Cadastral Hub
+                viewer.scene.primitives.add(photorealisticTileset);
+                console.log('Google Photorealistic 3D Tiles loaded (active exclusively for New York)!');
+              }
+            } catch (photoError: any) {
+              console.warn('Google Photorealistic 3D Tiles load attempt:', photoError?.message || photoError);
+            }
+
+            // B. Global Solid 3D Building Geometry (Cesium OSM 3D Buildings - Active everywhere else)
+            try {
+              osmBuildings = await createOsmBuildingsAsync();
               if (!viewer.isDestroyed()) {
                 osmBuildings.maximumScreenSpaceError = 4; // High LOD crisp solid 3D structures
                 osmBuildings.style = new Cesium3DTileStyle({
@@ -584,7 +626,6 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
                   },
                 });
                 viewer.scene.primitives.add(osmBuildings);
-                updateStatus({ osmStatus: 'LOADED', activeMode: 'OSM_3D' });
                 console.log('Solid 3D Buildings (OpenStreetMap) loaded successfully!');
               }
             } catch (osmError: any) {
@@ -595,11 +636,19 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
               });
             }
 
+            // Check and sync tileset mode for current camera view
+            updateTilesetForCurrentLocation();
+
             // Real OpenStreetMap 2D Footprint Extrusions for detailed local structures
             if (!viewer.isDestroyed()) {
               loadViewport3DBuildings(viewer);
               viewer.camera.moveEnd.addEventListener(() => {
-                if (!viewer.isDestroyed()) loadViewport3DBuildings(viewer);
+                if (!viewer.isDestroyed()) {
+                  updateTilesetForCurrentLocation();
+                  if (!isCameraInNewYork()) {
+                    loadViewport3DBuildings(viewer);
+                  }
+                }
               });
             }
           };

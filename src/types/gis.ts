@@ -78,6 +78,13 @@ export const DEMO_LOCATIONS = [
     latitude: 17.4504,
     height: 950,
   },
+  {
+    id: 'nyc',
+    name: '🗽 New York City (Photorealistic 3D Mesh)',
+    longitude: -74.0060,
+    latitude: 40.7128,
+    height: 1000,
+  },
 ];
 
 export const DEFAULT_LAYERS: LayerConfig[] = [
