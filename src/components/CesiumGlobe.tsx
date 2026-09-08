@@ -703,9 +703,6 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
               if (photorealisticTileset) {
                 photorealisticTileset.show = inNYC;
               }
-              if (osmBuildings) {
-                osmBuildings.show = !inNYC;
-              }
 
               updateStatus({
                 photorealisticStatus: inNYC ? 'LOADED' : 'IDLE',
@@ -729,33 +726,13 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
               console.warn('Google Photorealistic 3D Tiles load attempt:', photoError?.message || photoError);
             }
 
-            // B. Global Solid 3D Building Geometry (Cesium OSM 3D Buildings - Active everywhere else)
-            try {
-              osmBuildings = await createOsmBuildingsAsync();
-              if (!viewer.isDestroyed()) {
-                osmBuildings.tileFailed?.addEventListener?.((tileErr: any) => {
-                  console.warn('OSM 3D Tile load error suppressed:', tileErr);
-                });
-                osmBuildings.maximumScreenSpaceError = 4; // High LOD crisp solid 3D structures
-                osmBuildings.style = new Cesium3DTileStyle({
-                  color: {
-                    conditions: [
-                      ["${feature['building']} === 'commercial' || ${feature['building:use']} === 'commercial'", "color('#0284c7', 0.95)"],
-                      ["${feature['building']} === 'residential' || ${feature['building:use']} === 'residential'", "color('#38bdf8', 0.90)"],
-                      ['true', "color('#f8fafc', 0.88)"],
-                    ],
-                  },
-                });
-                viewer.scene.primitives.add(osmBuildings);
-                console.log('Solid 3D Buildings (OpenStreetMap) loaded successfully!');
-              }
-            } catch (osmError: any) {
-              console.warn('Cesium OSM 3D Buildings load attempt:', osmError?.message || osmError);
-              updateStatus({
-                osmStatus: 'FAILED',
-                lastError: `OSM 3D Data: ${osmError?.message || String(osmError)}`,
-              });
-            }
+            // B. Global Solid 3D Building Geometry
+            // Cesium Ion OSM Buildings (Asset 96188) is baked at World Terrain elevation (886m MSL)
+            // and floats in the sky on flat ellipsoid terrain.
+            // loadViewport3DBuildings() provides clean, real-time OpenStreetMap 3D solid buildings anchored flush to the ground!
+            updateStatus({
+              osmStatus: 'LOADED',
+            });
 
             // Check and sync tileset mode for current camera view
             updateTilesetForCurrentLocation();
