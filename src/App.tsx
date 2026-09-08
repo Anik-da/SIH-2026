@@ -739,7 +739,7 @@ function App() {
           <CameraControls
             onGoToDemo={handleGoToDemo}
             onResetView={handleResetView}
-            onSelectLocation={(lat, lon, height) => globeRef.current?.flyToLocation(lat, lon, height)}
+            onSelectLocation={(lat, lon, height, name) => globeRef.current?.flyToLocation(lat, lon, height, name)}
           />
           <CoordinateDisplay coordinates={coordinates} />
           {isMeasuring && (

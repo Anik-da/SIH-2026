@@ -115,17 +115,13 @@ export default function AppHeader({
         <div className="leading-tight shrink-0">
           <div className="flex items-center gap-1.5 md:gap-2">
             <h1 className="text-xs md:text-sm font-black tracking-wide text-white">VOLU-CAD 3D</h1>
-            <button
-              onClick={toggleDemoMode}
-              title={isDemoMode ? "Currently in Static Demo Mode (Click to switch to Real Live Spatial Data)" : "Currently using Live Real Spatial Engine (Click to toggle)"}
-              className={`px-2 py-0.5 rounded-full text-[9px] font-bold border transition-all cursor-pointer shrink-0 ${
-                isDemoMode
-                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 hover:bg-amber-500/30'
-                  : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/30 shadow-sm shadow-emerald-500/20'
-              }`}
+            <div
+              title="Operational State: Strict Real Spatial Data Engine Active (OSM Overpass GIS + MongoDB Atlas)"
+              className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-bold border border-emerald-500/40 bg-emerald-500/15 text-emerald-300 shadow-sm shadow-emerald-500/20 select-none shrink-0"
             >
-              {isDemoMode ? '⚡ MOCK' : '🌐 REAL DATA'}
-            </button>
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span>REAL DATA ONLY</span>
+            </div>
           </div>
           <p className="text-[9px] md:text-[10px] text-slate-400 font-medium hidden 2xl:block">
             3D ULPIN &amp; Vertical Cadastre

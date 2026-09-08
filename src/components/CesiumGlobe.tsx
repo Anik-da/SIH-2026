@@ -366,9 +366,34 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
           },
         });
       },
-      flyToLocation: (lat: number, lon: number, height = 1200) => {
+      flyToLocation: (lat: number, lon: number, height = 750, labelText?: string) => {
         const viewer = viewerRef.current;
         if (!viewer) return;
+
+        // Remove previous search pin if any
+        const existingPin = viewer.entities.getById('searched-location-pin');
+        if (existingPin) viewer.entities.remove(existingPin);
+
+        // Add visual target pin on the ground
+        viewer.entities.add({
+          id: 'searched-location-pin',
+          position: Cartesian3.fromDegrees(lon, lat, 15),
+          point: {
+            pixelSize: 12,
+            color: Color.fromCssColorString('#06b6d4'),
+            outlineColor: Color.WHITE,
+            outlineWidth: 2,
+          },
+          label: {
+            text: labelText ? `📍 ${labelText.split(',')[0]}` : '📍 Searched Location',
+            font: 'bold 12px Inter, system-ui, sans-serif',
+            fillColor: Color.WHITE,
+            showBackground: true,
+            backgroundColor: Color.fromCssColorString('#0f172a').withAlpha(0.85),
+            pixelOffset: new Cartesian2(0, -25),
+          },
+        });
+
         viewer.camera.flyTo({
           destination: Cartesian3.fromDegrees(lon, lat, height),
           orientation: {
@@ -376,7 +401,7 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
             pitch: CesiumMath.toRadians(-35),
             roll: 0,
           },
-          duration: 2.5,
+          duration: 2.0,
         });
       },
       setSensorMode: (mode: SensorMode) => {

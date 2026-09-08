@@ -13,7 +13,7 @@ export interface CesiumGlobeHandle {
   rotateLeft: () => void;
   rotateRight: () => void;
   tiltView: () => void;
-  flyToLocation: (lat: number, lon: number, height?: number) => void;
+  flyToLocation: (lat: number, lon: number, height?: number, labelText?: string) => void;
   setSensorMode: (mode: SensorMode) => void;
   flyToConflictVolume: (minZ: number, maxZ: number) => void;
 }

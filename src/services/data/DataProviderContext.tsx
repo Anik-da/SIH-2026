@@ -13,23 +13,21 @@ interface DataProviderContextType {
 const DataProviderContext = createContext<DataProviderContextType | undefined>(undefined);
 
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isDemoMode, setIsDemoMode] = useState<boolean>(false);
-
+  // Permanently locked to Real Spatial Data Engine only
+  const isDemoMode = false;
   const realProvider = useMemo(() => new RealDataProvider(), []);
-  const demoProvider = useMemo(() => new DemoDataProvider(), []);
+  const dataProvider = realProvider;
 
-  const dataProvider = useMemo(() => {
-    return isDemoMode ? demoProvider : realProvider;
-  }, [isDemoMode, demoProvider, realProvider]);
-
-  const toggleDemoMode = () => setIsDemoMode((prev) => !prev);
+  const toggleDemoMode = () => {
+    console.info('[DataProvider] Running in strict Real Spatial Data Engine mode.');
+  };
 
   return (
     <DataProviderContext.Provider
       value={{
         dataProvider,
-        isDemoMode,
-        setDemoMode: setIsDemoMode,
+        isDemoMode: false,
+        setDemoMode: () => {},
         toggleDemoMode,
       }}
     >
