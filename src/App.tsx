@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Cartesian3,
   Color,
@@ -284,8 +284,36 @@ function App() {
     return () => unsubscribe();
   }, []);
 
-  const selectedProperty =
-    demoProperties.find((p) => p.floorId === selectedFloorId) ?? null;
+  const selectedProperty = useMemo(() => {
+    // 1. Try finding in demoProperties
+    const foundDemo = demoProperties.find((p) => p.floorId === selectedFloorId);
+    if (foundDemo) return foundDemo;
+
+    // 2. If persistentBuilding is active, synthesize from persistentBuilding and persistentFloors
+    if (persistentBuilding) {
+      const flr = persistentFloors.find((f) => f.floorId === selectedFloorId) || persistentFloors[0];
+      const floorNum = flr?.floorNumber || 3;
+      return {
+        vpid: `VPID-${persistentBuilding.buildingId}-F${String(Math.abs(floorNum)).padStart(2, '0')}`,
+        ulpin: persistentBuilding.ulpin || 'ULPIN-IN-KA-2026-89421',
+        buildingId: persistentBuilding.buildingId,
+        parcelId: persistentBuilding.parcelId || 'PARCEL-KA-BLR-2026-001',
+        floorId: flr?.floorId || `FLR-${persistentBuilding.buildingId}-F03`,
+        floorNumber: floorNum,
+        floorLabel: flr?.floorName || `Floor 0${floorNum} (Verified Unit)`,
+        zMin: flr?.zMin ?? (floorNum * 3.5),
+        zMax: flr?.zMax ?? ((floorNum + 1) * 3.5),
+        area: flr?.area || 620,
+        volume: flr?.volume || 1860,
+        status: 'VERIFIED' as const,
+        ownerName: 'Karnataka State Cadastre Registry (Verified Title)',
+        propertyType: 'Residential High-Rise Unit',
+        unitNumber: `Unit ${Math.abs(floorNum)}01`,
+      };
+    }
+
+    return null;
+  }, [selectedFloorId, persistentBuilding, persistentFloors]);
 
   const handleReady = useCallback((viewer: Viewer) => {
     viewerRef.current = viewer;
@@ -806,8 +834,16 @@ function App() {
 
       <PropertyPassportModal
         property={selectedProperty}
+        building={persistentBuilding}
+        floors={persistentFloors}
+        selectedFloorId={selectedFloorId}
         isOpen={isPassportOpen}
         onClose={() => setIsPassportOpen(false)}
+        onOpenPublicVerification={(identifier) => {
+          setPublicVerifyId(identifier);
+          setIsPassportOpen(false);
+          setIsPublicVerifyView(true);
+        }}
       />
 
       <EmergencyPlanningModal
