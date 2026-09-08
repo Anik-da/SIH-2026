@@ -59,26 +59,20 @@ export function makeFloorLabel(
   });
 }
 
-export function getGroundElevation(viewer?: Cesium.Viewer, lon = 77.50437, lat = 13.06747): number {
-  if (viewer && !viewer.isDestroyed()) {
-    try {
-      const h = viewer.scene.globe.getHeight(Cesium.Cartographic.fromDegrees(lon, lat));
-      if (h !== undefined && h !== null && h > 100) return h;
-    } catch (_) {}
-  }
-  return 886.0; // Precise Bengaluru plateau ground elevation MSL
+export function getGroundElevation(_viewer?: Cesium.Viewer, _lon = 77.50426, _lat = 13.06746): number {
+  return 0.0; // Ground datum is flush with the ellipsoid surface (0.0m)
 }
 
 export function flyToBuilding(viewer: Cesium.Viewer, building: Building, duration = 2) {
   const elev = getGroundElevation(viewer, building.center.lon, building.center.lat);
-  const centerCartesian = Cesium.Cartesian3.fromDegrees(building.center.lon, building.center.lat, elev + 24);
+  const centerCartesian = Cesium.Cartesian3.fromDegrees(building.center.lon, building.center.lat, elev + 20);
   const boundingSphere = new Cesium.BoundingSphere(centerCartesian, 60);
 
   viewer.camera.flyToBoundingSphere(boundingSphere, {
     offset: new Cesium.HeadingPitchRange(
-      Cesium.Math.toRadians(40),
-      Cesium.Math.toRadians(-28),
-      260 // 260m viewing range so the 3D palace is crisply visible from eye level
+      Cesium.Math.toRadians(25),
+      Cesium.Math.toRadians(-22),
+      190 // 190m viewing range for cinematic street-level palace perspective
     ),
     duration,
   });

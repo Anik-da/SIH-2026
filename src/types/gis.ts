@@ -37,9 +37,9 @@ export interface Coordinates {
 
 export const DEMO_AREA = {
   name: 'Sapthagiri NPS University (3D Neoclassical Palace)',
-  longitude: 77.50437,
-  latitude: 13.06747,
-  height: 350,
+  longitude: 77.50426,
+  latitude: 13.06746,
+  height: 260,
 };
 
 

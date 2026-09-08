@@ -150,7 +150,8 @@ function loadViewport3DBuildings(viewer: Viewer) {
               const firstLon = coordsFlat[0];
               const firstLat = coordsFlat[1];
               const distToSapthagiri = Math.hypot(firstLon - SAPTHAGIRI_COORDS.lon, firstLat - SAPTHAGIRI_COORDS.lat);
-              if (distToSapthagiri < 0.0015) {
+              const sapthagiriWayIds = [726507705, 1304494566, 1253120647, 1304494567, 1253120648, 726506614, 1253120645];
+              if (distToSapthagiri < 0.0022 || sapthagiriWayIds.includes(el.id)) {
                 return; // Keep handcrafted Sapthagiri palace clean and unobstructed
               }
 
@@ -591,7 +592,7 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
             fullscreenButton: false,
             infoBox: false,
             selectionIndicator: true,
-            terrain: Terrain.fromWorldTerrain({ requestVertexNormals: true }),
+            terrainProvider: new EllipsoidTerrainProvider(),
             baseLayer: false as unknown as undefined,
           });
 
@@ -873,13 +874,12 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
           // STEP 7: Sapthagiri NPS University Initial Location Fly-to
           const bldgLon = building ? building.center.lon : SAPTHAGIRI_COORDS.lon;
           const bldgLat = building ? building.center.lat : SAPTHAGIRI_COORDS.lat;
-          const elev = SAPTHAGIRI_COORDS.elevation; // 886m MSL ground elevation
 
           viewer.camera.setView({
-            destination: Cartesian3.fromDegrees(bldgLon, bldgLat, elev + 260),
+            destination: Cartesian3.fromDegrees(bldgLon, bldgLat - 0.0012, 140),
             orientation: {
-              heading: CesiumMath.toRadians(40), // 40° Heading
-              pitch: CesiumMath.toRadians(-28),   // -28° Pitch for elevated 3D roofs & facades
+              heading: CesiumMath.toRadians(25), // 25° Heading looking directly at the +25° front facade
+              pitch: CesiumMath.toRadians(-22),   // -22° Pitch for realistic eye-level perspective
               roll: 0,
             },
           });
@@ -1014,8 +1014,8 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
               onSelectBuildingFeature?.({
                 name: 'Sapthagiri NPS University (Main Academic Palace & Senate)',
                 ulpin: 'ULPIN-IN-KA-2026-SNPSU01',
-                lat: 13.06747,
-                lon: 77.50437,
+                lat: 13.06746,
+                lon: 77.50426,
                 height: 48,
                 floors: 12,
                 valuation: '₹340,00,00,000',

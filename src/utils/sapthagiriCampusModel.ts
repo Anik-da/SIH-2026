@@ -29,9 +29,9 @@ import {
  */
 
 export const SAPTHAGIRI_COORDS = {
-  lat: 13.06747,
-  lon: 77.50437,
-  elevation: 886.0,
+  lat: 13.06746,
+  lon: 77.50426,
+  elevation: 0.0,
 };
 
 // Alignment angle: +25° rotation to face Hesaraghatta Main Road directly
@@ -57,14 +57,8 @@ export function renderSapthagiriCampusModel(
     const centerLat = SAPTHAGIRI_COORDS.lat;
     const centerLon = SAPTHAGIRI_COORDS.lon;
 
-    // Detect actual terrain elevation at Sapthagiri campus coordinates
-    let baseElev = SAPTHAGIRI_COORDS.elevation;
-    try {
-      const sampledH = viewer.scene.globe.getHeight(Cartographic.fromDegrees(centerLon, centerLat));
-      if (sampledH !== undefined && sampledH !== null && sampledH > 100) {
-        baseElev = sampledH;
-      }
-    } catch (_) {}
+    // Ground elevation: flush with the surface at 0.0
+    const baseElev = 0.0;
 
     // Degree conversion constants around Bengaluru (lat ~13.0675°)
     const LAT_M = 111320;

@@ -1,6 +1,6 @@
 import type { Building, VerticalProperty, Floor, PropertyType, PropertyStatus, ValidationConflict, AuditLogEntry } from '../types/cadastral';
 
-const PARCEL_CENTER = { lon: 77.50437, lat: 13.06747 };
+const PARCEL_CENTER = { lon: 77.50426, lat: 13.06746 };
 
 const LAT_M = 111320;
 const LON_M = 111320 * Math.cos((PARCEL_CENTER.lat * Math.PI) / 180);
@@ -14,8 +14,8 @@ const rot = (dx: number, dy: number): [number, number] => [
   PARCEL_CENTER.lat + (dx * sinR + dy * cosR) / LAT_M,
 ];
 
-const HALF_W = 88; // 176m campus width
-const HALF_H = 50; // 100m campus depth
+const HALF_W = 75; // 150m campus width
+const HALF_H = 45; // 90m campus depth
 
 export const footprint: [number, number][] = [
   rot(-HALF_W, -HALF_H),
@@ -24,7 +24,7 @@ export const footprint: [number, number][] = [
   rot(-HALF_W, HALF_H),
 ];
 
-export const footprintArea = 176 * 100; // 17,600 m²
+export const footprintArea = 150 * 90; // 13,500 m²
 
 
 const floorDefs: Omit<Floor, 'id'>[] = [
