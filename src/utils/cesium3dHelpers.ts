@@ -59,7 +59,7 @@ export function makeFloorLabel(
   });
 }
 
-export function getGroundElevation(viewer?: Cesium.Viewer, lon = 77.5042, lat = 13.0679): number {
+export function getGroundElevation(viewer?: Cesium.Viewer, lon = 77.50437, lat = 13.06747): number {
   if (viewer && !viewer.isDestroyed()) {
     try {
       const h = viewer.scene.globe.getHeight(Cesium.Cartographic.fromDegrees(lon, lat));

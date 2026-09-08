@@ -1,21 +1,31 @@
 import type { Building, VerticalProperty, Floor, PropertyType, PropertyStatus, ValidationConflict, AuditLogEntry } from '../types/cadastral';
 
-const PARCEL_CENTER = { lon: 77.5042, lat: 13.0679 };
+const PARCEL_CENTER = { lon: 77.50437, lat: 13.06747 };
 
 const LAT_M = 111320;
 const LON_M = 111320 * Math.cos((PARCEL_CENTER.lat * Math.PI) / 180);
 
-const HALF_W = 80; // 160m campus width
-const HALF_H = 45; // 90m campus depth
+const ROT_RAD = (25 * Math.PI) / 180;
+const cosR = Math.cos(ROT_RAD);
+const sinR = Math.sin(ROT_RAD);
 
-export const footprint: [number, number][] = [
-  [PARCEL_CENTER.lon - (HALF_W / LON_M), PARCEL_CENTER.lat - (HALF_H / LAT_M)],
-  [PARCEL_CENTER.lon + (HALF_W / LON_M), PARCEL_CENTER.lat - (HALF_H / LAT_M)],
-  [PARCEL_CENTER.lon + (HALF_W / LON_M), PARCEL_CENTER.lat + (HALF_H / LAT_M)],
-  [PARCEL_CENTER.lon - (HALF_W / LON_M), PARCEL_CENTER.lat + (HALF_H / LAT_M)],
+const rot = (dx: number, dy: number): [number, number] => [
+  PARCEL_CENTER.lon + (dx * cosR - dy * sinR) / LON_M,
+  PARCEL_CENTER.lat + (dx * sinR + dy * cosR) / LAT_M,
 ];
 
-export const footprintArea = 160 * 90; // 14,400 m²
+const HALF_W = 88; // 176m campus width
+const HALF_H = 50; // 100m campus depth
+
+export const footprint: [number, number][] = [
+  rot(-HALF_W, -HALF_H),
+  rot(HALF_W, -HALF_H),
+  rot(HALF_W, HALF_H),
+  rot(-HALF_W, HALF_H),
+];
+
+export const footprintArea = 176 * 100; // 17,600 m²
+
 
 const floorDefs: Omit<Floor, 'id'>[] = [
   { label: 'Sub-Basement — Geotechnical Vaults & Structural Testing', shortLabel: 'B2', zMin: -6, zMax: -3, floorNumber: -2, isUnderground: true },

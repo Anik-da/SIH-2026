@@ -1014,8 +1014,8 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
               onSelectBuildingFeature?.({
                 name: 'Sapthagiri NPS University (Main Academic Palace & Senate)',
                 ulpin: 'ULPIN-IN-KA-2026-SNPSU01',
-                lat: 13.0679,
-                lon: 77.5042,
+                lat: 13.06747,
+                lon: 77.50437,
                 height: 48,
                 floors: 12,
                 valuation: '₹340,00,00,000',
