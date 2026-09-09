@@ -61,15 +61,60 @@ export function makeFloorLabel(
   });
 }
 
-export function getGroundElevation(viewer?: Cesium.Viewer, lon = 77.50426, lat = 13.06746): number {
-  if (viewer && !viewer.isDestroyed() && viewer.scene && viewer.scene.globe) {
+export function getGroundElevation(viewer?: Cesium.Viewer, lon = 77.50426, lat = 13.06746, radiusMeters = 0): number {
+  const DEFAULT_BENGALURU_ELEVATION = 834.0;
+  if (!viewer || viewer.isDestroyed() || !viewer.scene || !viewer.scene.globe) {
+    return DEFAULT_BENGALURU_ELEVATION;
+  }
+
+  if (radiusMeters <= 0) {
     const carto = Cesium.Cartographic.fromDegrees(lon, lat);
     const height = viewer.scene.globe.getHeight(carto);
-    if (typeof height === 'number' && !isNaN(height)) {
+    if (typeof height === 'number' && !isNaN(height) && height !== 0) {
       return height;
     }
+    return DEFAULT_BENGALURU_ELEVATION;
   }
-  return 0.0;
+
+  // Multi-point sampling across campus footprint to handle sloping ground terrain
+  const latR = radiusMeters / 111320;
+  const lonR = radiusMeters / (111320 * Math.cos((lat * Math.PI) / 180));
+
+  const samplePoints = [
+    [lon, lat],
+    [lon - lonR, lat - latR],
+    [lon + lonR, lat - latR],
+    [lon + lonR, lat + latR],
+    [lon - lonR, lat + latR],
+    [lon, lat - latR],
+    [lon, lat + latR],
+    [lon - lonR, lat],
+    [lon + lonR, lat],
+  ];
+
+  let maxH = -Infinity;
+  let validCount = 0;
+
+  for (const [pLon, pLat] of samplePoints) {
+    const carto = Cesium.Cartographic.fromDegrees(pLon, pLat);
+    const h = viewer.scene.globe.getHeight(carto);
+    if (typeof h === 'number' && !isNaN(h) && h !== 0) {
+      if (h > maxH) maxH = h;
+      validCount++;
+    }
+  }
+
+  if (validCount > 0 && maxH !== -Infinity) {
+    return maxH;
+  }
+
+  const centerCarto = Cesium.Cartographic.fromDegrees(lon, lat);
+  const centerH = viewer.scene.globe.getHeight(centerCarto);
+  if (typeof centerH === 'number' && !isNaN(centerH) && centerH !== 0) {
+    return centerH;
+  }
+
+  return DEFAULT_BENGALURU_ELEVATION;
 }
 
 export function flyToBuilding(viewer: Cesium.Viewer, building: Building, duration = 2) {

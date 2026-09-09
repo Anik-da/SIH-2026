@@ -859,6 +859,24 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
               } catch (e) {
                 console.warn('Sapthagiri Campus Render Exception:', e);
               }
+
+              // Re-sync campus elevation once terrain tiles stream in asynchronously
+              setTimeout(() => {
+                if (!viewer.isDestroyed()) {
+                  try {
+                    renderSapthagiriCampusModel(viewer, selectedFloorId, explodeState === 'exploded' ? 1.2 : 0, isRescueModeActive);
+                  } catch (_) {}
+                }
+              }, 1200);
+
+              setTimeout(() => {
+                if (!viewer.isDestroyed()) {
+                  try {
+                    renderSapthagiriCampusModel(viewer, selectedFloorId, explodeState === 'exploded' ? 1.2 : 0, isRescueModeActive);
+                  } catch (_) {}
+                }
+              }, 3000);
+
               // Throttle camera change checks to avoid main-thread drag hitches
               viewer.camera.percentageChanged = 0.25;
               viewer.camera.changed.addEventListener(() => {

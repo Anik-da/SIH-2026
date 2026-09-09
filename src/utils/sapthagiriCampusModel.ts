@@ -61,10 +61,10 @@ export function renderSapthagiriCampusModel(
     const centerLat = SAPTHAGIRI_COORDS.lat;
     const centerLon = SAPTHAGIRI_COORDS.lon;
 
-    // Ground elevation: flush directly on top of terrain ground surface
-    const baseElev = getGroundElevation(viewer, centerLon, centerLat);
+    // Ground elevation: sample peak footprint height across 90m campus radius to align flush with terrain
+    const baseElev = getGroundElevation(viewer, centerLon, centerLat, 90) + 0.15;
 
-    // Degree conversion constants around Bengaluru (lat ~13.0675Â°)
+    // Degree conversion constants around Bengaluru (lat ~13.0675°)
     const LAT_M = 111320;
     const LON_M = 111320 * Math.cos((centerLat * Math.PI) / 180);
 
@@ -114,7 +114,24 @@ export function renderSapthagiriCampusModel(
     const cSelectedFloor = Color.fromCssColorString('#0284c7');
 
     // =========================================================================
-    // 1. Campus Ground Plaza & Manicured Lawns (Rotated -15Â° facing the road)
+    // 0. Subterranean Foundation Base / Plinth Skirt (Prevents Floating on Slope)
+    // =========================================================================
+    const foundationCoords = makeBoxCoords(0, 0, 188, 112);
+    viewer.entities.add({
+      id: 'sapthagiri-foundation-pad',
+      polygon: {
+        hierarchy: new PolygonHierarchy(Cartesian3.fromDegreesArray(foundationCoords)),
+        height: baseElev - 3.5,
+        extrudedHeight: baseElev + 0.1,
+        material: Color.fromCssColorString('#1e293b').withAlpha(0.98),
+        outline: true,
+        outlineColor: Color.fromCssColorString('#0f172a'),
+        outlineWidth: 2,
+      },
+    });
+
+    // =========================================================================
+    // 1. Campus Ground Plaza & Manicured Lawns (Rotated -15° facing the road)
     // =========================================================================
     const lawnCoords = makeBoxCoords(0, 0, 185, 110);
     viewer.entities.add({
