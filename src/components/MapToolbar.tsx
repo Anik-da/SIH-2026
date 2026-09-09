@@ -65,17 +65,17 @@ export default function MapToolbar({
     { icon: Maximize2, label: 'Toggle Fullscreen', onClick: onToggleFullscreen },
   ];
 
-  const sensorModes: { mode: SensorMode; label: string; icon: typeof Sun; color: string }[] = [
-    { mode: 'NORMAL', label: 'Normal GIS', icon: Sun, color: 'text-slate-300' },
-    { mode: 'NVG', label: 'NVG Night Vision', icon: Moon, color: 'text-emerald-400' },
-    { mode: 'FLIR', label: 'FLIR Thermal', icon: Flame, color: 'text-amber-400' },
-    { mode: 'CRT', label: 'CRT Tactical', icon: Monitor, color: 'text-cyan-400' },
-    { mode: 'NOIR', label: 'NOIR Intelligence', icon: Activity, color: 'text-indigo-400' },
+  const sensorModes: { mode: SensorMode; label: string; icon: typeof Sun; color: string; key: string }[] = [
+    { mode: 'NORMAL', label: 'Normal GIS', icon: Sun, color: 'text-amber-400', key: 'F7' },
+    { mode: 'NVG', label: 'NVG Night Vision', icon: Moon, color: 'text-emerald-400', key: 'F6' },
+    { mode: 'FLIR', label: 'FLIR Thermal', icon: Flame, color: 'text-rose-400', key: 'F5' },
+    { mode: 'CRT', label: 'CRT Tactical', icon: Monitor, color: 'text-cyan-400', key: 'F4' },
+    { mode: 'NOIR', label: 'NOIR Intelligence', icon: Activity, color: 'text-indigo-400', key: 'F3' },
   ];
 
   return (
     <div className="pointer-events-auto flex flex-col gap-1.5 rounded-2xl border border-slate-700/70 bg-slate-900/95 p-1.5 backdrop-blur-xl shadow-2xl relative w-[76px] select-none">
-      {/* 2-Column Grid Layout (Ultra-Compact, No Long Scroll Strip) */}
+      {/* 2-Column Grid Layout (Ultra-Compact) */}
       <div className="grid grid-cols-2 gap-1">
         {leftColumnButtons.map((btn) => (
           <button
@@ -135,19 +135,20 @@ export default function MapToolbar({
           <>
             {/* Backdrop click listener */}
             <div
-              className="fixed inset-0 z-40 bg-black/10"
+              className="fixed inset-0 z-40 bg-black/20"
               onClick={() => setShowOpticsMenu(false)}
             />
-            <div className="absolute left-[82px] bottom-0 z-50 w-56 rounded-xl border border-amber-500/40 bg-slate-900/98 p-2 shadow-2xl backdrop-blur-xl ring-1 ring-amber-500/30 animate-in fade-in zoom-in-95 duration-150">
-              <div className="px-2 py-1.5 text-[10px] font-extrabold uppercase tracking-wider text-amber-400 border-b border-slate-800 mb-1.5 flex items-center justify-between">
+            {/* 100% Opaque Solid Dark Card Positioned Clear of Left Toolbar */}
+            <div className="absolute left-full ml-3 bottom-0 z-[9999] w-64 rounded-xl border-2 border-amber-500/60 bg-slate-950 p-2.5 shadow-[0_10px_40px_rgba(0,0,0,0.95)] ring-2 ring-amber-500/40 animate-in fade-in zoom-in-95 duration-150">
+              <div className="px-2.5 py-1.5 text-[11px] font-black uppercase tracking-wider text-amber-400 border-b border-slate-800 mb-2 flex items-center justify-between bg-slate-900/90 rounded-lg">
                 <span className="flex items-center gap-1.5">
-                  <Sparkles className="h-3.5 w-3.5 text-amber-400" /> God's Eye Optics
+                  <Sparkles className="h-4 w-4 text-amber-400 animate-spin-slow" /> GOD'S EYE OPTICS
                 </span>
-                <span className="rounded bg-amber-500/20 px-1.5 py-0.5 text-[9px] text-amber-300 font-mono">
+                <span className="rounded bg-amber-500/30 px-2 py-0.5 text-[10px] text-amber-200 font-mono font-bold border border-amber-500/40">
                   {activeSensorMode}
                 </span>
               </div>
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 {sensorModes.map((s) => (
                   <button
                     key={s.mode}
@@ -155,19 +156,24 @@ export default function MapToolbar({
                       if (onSelectSensorMode) onSelectSensorMode(s.mode);
                       setShowOpticsMenu(false);
                     }}
-                    className={`flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-xs font-medium transition-all ${
+                    className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-bold transition-all ${
                       activeSensorMode === s.mode
-                        ? 'bg-amber-500/25 text-amber-300 font-bold ring-1 ring-amber-500/50 shadow-md shadow-amber-500/10'
-                        : 'text-slate-300 hover:bg-slate-800/90 hover:text-white'
+                        ? 'bg-amber-500/30 text-amber-200 border border-amber-400 shadow-lg shadow-amber-500/20'
+                        : 'text-slate-100 bg-slate-900/80 hover:bg-slate-800 hover:text-white border border-slate-800'
                     }`}
                   >
                     <div className="flex items-center gap-2.5">
                       <s.icon className={`h-4 w-4 ${s.color}`} />
-                      <span>{s.label}</span>
+                      <span className="tracking-wide text-slate-100">{s.label}</span>
                     </div>
-                    {activeSensorMode === s.mode && (
-                      <span className="h-2 w-2 rounded-full bg-amber-400 animate-ping" />
-                    )}
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">
+                        {s.key}
+                      </span>
+                      {activeSensorMode === s.mode && (
+                        <span className="h-2.5 w-2.5 rounded-full bg-amber-400 animate-ping" />
+                      )}
+                    </div>
                   </button>
                 ))}
               </div>
