@@ -25,16 +25,18 @@ interface CollisionBox {
 const { width: BW, depth: BD, wallThickness: WT } = BUILDING_DIMENSIONS;
 
 const collisionBoxes: CollisionBox[] = [
+  // Outer Left Wall
   { minX: -BW / 2 - WT, maxX: -BW / 2 + WT, minZ: -BD / 2, maxZ: BD / 2, minY: 0, maxY: 100 },
+  // Outer Right Wall
   { minX: BW / 2 - WT, maxX: BW / 2 + WT, minZ: -BD / 2, maxZ: BD / 2, minY: 0, maxY: 100 },
+  // Outer Back Wall
   { minX: -BW / 2, maxX: BW / 2, minZ: -BD / 2 - WT, maxZ: -BD / 2 + WT, minY: 0, maxY: 100 },
-  { minX: -BW / 2, maxX: -1, minZ: BD / 2 - WT, maxZ: BD / 2, minY: 0, maxY: 100 },
-  { minX: 1, maxX: BW / 2, minZ: BD / 2 - WT, maxZ: BD / 2, minY: 0, maxY: 100 },
-  { minX: -1.58, maxX: -1.42, minZ: -BD / 2 + 0.2, maxZ: BD / 2 - 0.2, minY: 0, maxY: 100 },
-  { minX: 1.42, maxX: 1.58, minZ: -BD / 2 + 0.2, maxZ: BD / 2 - 0.2, minY: 0, maxY: 100 },
-  { minX: -1.33, maxX: -1.17, minZ: -BD / 2 + 1.5, maxZ: -BD / 2 + 3.5, minY: 0, maxY: 100 },
-  { minX: 1.17, maxX: 1.33, minZ: -BD / 2 + 1.5, maxZ: -BD / 2 + 3.5, minY: 0, maxY: 100 },
-  { minX: -1.25, maxX: 1.25, minZ: -BD / 2 + 1.42, maxZ: -BD / 2 + 1.58, minY: 0, maxY: 100 },
+  // Outer Front Wall (left of entrance)
+  { minX: -BW / 2, maxX: -1.5, minZ: BD / 2 - WT, maxZ: BD / 2 + WT, minY: 0, maxY: 100 },
+  // Outer Front Wall (right of entrance)
+  { minX: 1.5, maxX: BW / 2, minZ: BD / 2 - WT, maxZ: BD / 2 + WT, minY: 0, maxY: 100 },
+  // Elevator Rear Shaft Wall
+  { minX: -1.25, maxX: 1.25, minZ: -BD / 2 + 1.4, maxZ: -BD / 2 + 1.6, minY: 0, maxY: 100 },
 ];
 
 function checkCollision(x: number, z: number, y: number): boolean {
@@ -74,7 +76,7 @@ export function PlayerController({
   const { controls, onInteract: setInteractHandler } = usePlayerControls();
 
   const velocity = useRef(new THREE.Vector3());
-  const position = useRef(new THREE.Vector3(0, PLAYER_HEIGHT, 8));
+  const position = useRef(new THREE.Vector3(0, PLAYER_HEIGHT, 4));
   const yaw = useRef(0);
   const pitch = useRef(0);
   const isLocked = useRef(false);
@@ -91,7 +93,9 @@ export function PlayerController({
     const canvas = gl.domElement;
     const onClick = () => {
       if (enabled && !isLocked.current) {
-        canvas.requestPointerLock();
+        try {
+          canvas.requestPointerLock();
+        } catch (_) {}
       }
     };
     const onLockChange = () => {
@@ -106,15 +110,45 @@ export function PlayerController({
   }, [gl, enabled]);
 
   useEffect(() => {
-    const onMove = (e: MouseEvent) => {
-      if (!isLocked.current || !enabled) return;
-      yaw.current -= e.movementX * 0.002;
-      pitch.current -= e.movementY * 0.002;
-      pitch.current = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, pitch.current));
+    let isDragging = false;
+    let lastX = 0;
+    let lastY = 0;
+
+    const onMouseDown = (e: MouseEvent) => {
+      isDragging = true;
+      lastX = e.clientX;
+      lastY = e.clientY;
     };
-    document.addEventListener('mousemove', onMove);
-    return () => document.removeEventListener('mousemove', onMove);
-  }, [enabled]);
+    const onMouseUp = () => {
+      isDragging = false;
+    };
+    const onMouseMove = (e: MouseEvent) => {
+      if (!enabled) return;
+      if (isLocked.current) {
+        yaw.current -= e.movementX * 0.0025;
+        pitch.current -= e.movementY * 0.0025;
+        pitch.current = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, pitch.current));
+      } else if (isDragging) {
+        const dx = e.clientX - lastX;
+        const dy = e.clientY - lastY;
+        lastX = e.clientX;
+        lastY = e.clientY;
+        yaw.current -= dx * 0.003;
+        pitch.current -= dy * 0.003;
+        pitch.current = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, pitch.current));
+      }
+    };
+
+    const canvas = gl.domElement;
+    canvas.addEventListener('mousedown', onMouseDown);
+    window.addEventListener('mouseup', onMouseUp);
+    window.addEventListener('mousemove', onMouseMove);
+    return () => {
+      canvas.removeEventListener('mousedown', onMouseDown);
+      window.removeEventListener('mouseup', onMouseUp);
+      window.removeEventListener('mousemove', onMouseMove);
+    };
+  }, [gl, enabled]);
 
   useEffect(() => {
     setInteractHandler(onInteract);

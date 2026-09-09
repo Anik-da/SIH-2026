@@ -63,5 +63,12 @@ export function usePlayerControls() {
     interactPressed.current = fn;
   };
 
-  return { controls, onInteract };
+  const setControlState = (key: keyof ControlState, val: boolean) => {
+    controls.current[key] = val;
+    if (key === 'interact' && val) {
+      interactPressed.current?.();
+    }
+  };
+
+  return { controls, onInteract, setControlState };
 }

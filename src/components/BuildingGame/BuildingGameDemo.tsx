@@ -13,14 +13,16 @@ import { building, properties } from '@/data/buildingData';
 import { FLOOR_NUMBER_MAP, FLOOR_HEIGHT, BUILDING_DIMENSIONS } from '@/data/constants';
 import type { BuildingGameDemoProps, PropertyData } from '@/types';
 
+import { usePlayerControls } from '@/hooks/usePlayerControls';
+
 type Phase = 'start' | 'entering' | 'playing' | 'gis-transition';
 
 const ELEVATOR_X = 0;
 const ELEVATOR_Z = -BUILDING_DIMENSIONS.depth / 2 + 2.5;
-const ELEVATOR_RADIUS = 3.0;
+const ELEVATOR_RADIUS = 3.5;
 const ENTRANCE_Z = BUILDING_DIMENSIONS.depth / 2;
-const ENTRANCE_RADIUS = 3.0;
-const PROPERTY_RADIUS = 3.5;
+const ENTRANCE_RADIUS = 3.5;
+const PROPERTY_RADIUS = 5.5;
 
 export function BuildingGameDemo({ onOpenGISGlobe, onOpenPropertyPassport, onBackToHome }: BuildingGameDemoProps) {
   const [phase, setPhase] = useState<Phase>('start');
@@ -29,14 +31,16 @@ export function BuildingGameDemo({ onOpenGISGlobe, onOpenPropertyPassport, onBac
   const [showPrompt, setShowPrompt] = useState(false);
   const [targetFloorY, setTargetFloorY] = useState<number | null>(null);
   const [arrivalFloor, setArrivalFloor] = useState('');
-  const [enteredBuilding, setEnteredBuilding] = useState(false);
-  const [playerPos, setPlayerPos] = useState<[number, number, number]>([0, 1.7, 8]);
+  const [enteredBuilding, setEnteredBuilding] = useState(true);
+  const [playerPos, setPlayerPos] = useState<[number, number, number]>([0, 1.7, 4]);
   const [nearProperty, setNearProperty] = useState<PropertyData | null>(null);
 
   const game = useGameState();
+  const { setControlState } = usePlayerControls();
 
   const handleEnter = useCallback(() => {
     setPhase('entering');
+    setEnteredBuilding(true);
     setTimeout(() => {
       setPhase('playing');
       setShowHint(true);
@@ -227,6 +231,11 @@ export function BuildingGameDemo({ onOpenGISGlobe, onOpenPropertyPassport, onBac
             showCrosshair={true}
             onOpenGIS={handleOpenGIS}
             onBackToHome={onBackToHome}
+            onMoveForward={(val) => setControlState('forward', val)}
+            onMoveBackward={(val) => setControlState('backward', val)}
+            onMoveLeft={(val) => setControlState('left', val)}
+            onMoveRight={(val) => setControlState('right', val)}
+            onInteractClick={handleInteract}
           />
 
           <FloorExplorer
