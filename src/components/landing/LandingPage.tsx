@@ -49,10 +49,17 @@ export const LandingPage: React.FC<Props> = ({ user, onLaunchApp, onOpenLogin, o
 
         <div className="flex items-center gap-3">
           <button
-            onClick={onLaunchApp}
+            onClick={onOpen3DBuilding || onLaunchApp}
             className="flex items-center gap-2 text-xs font-semibold text-slate-300 hover:text-cyan-400 sm:flex"
           >
             <Building2 className="h-4 w-4 text-cyan-400" /> 3D Building Explorer
+          </button>
+
+          <button
+            onClick={onLaunchApp}
+            className="flex items-center gap-2 text-xs font-semibold text-slate-300 hover:text-blue-400 sm:flex"
+          >
+            <Globe2 className="h-4 w-4 text-blue-400" /> GIS Globe Platform
           </button>
 
           {user ? (
@@ -88,12 +95,20 @@ export const LandingPage: React.FC<Props> = ({ user, onLaunchApp, onOpenLogin, o
         {/* Action Buttons */}
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <button
-            onClick={onLaunchApp}
+            onClick={onOpen3DBuilding || onLaunchApp}
             className="flex items-center gap-3 rounded-2xl bg-gradient-to-r from-cyan-400 via-cyan-500 to-blue-600 px-8 py-4 text-sm font-extrabold text-slate-950 shadow-2xl shadow-cyan-500/30 transition-all hover:brightness-110 active:scale-98 w-full sm:w-auto justify-center"
           >
             <Building2 className="h-5 w-5" />
             Launch 3D Building Explorer
             <ArrowRight className="h-5 w-5" />
+          </button>
+
+          <button
+            onClick={onLaunchApp}
+            className="flex items-center gap-3 rounded-2xl border border-cyan-500/40 bg-slate-900/90 px-7 py-4 text-sm font-bold text-cyan-300 transition-all hover:bg-slate-800 hover:border-cyan-400 w-full sm:w-auto justify-center shadow-lg shadow-cyan-950/40"
+          >
+            <Globe2 className="h-5 w-5 text-cyan-400" />
+            Launch 3D GIS Globe Platform
           </button>
 
           <button

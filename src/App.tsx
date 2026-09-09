@@ -212,6 +212,9 @@ function App() {
       case 'login':
         setViewMode('login');
         break;
+      case '3d_building':
+        setViewMode('3d-building');
+        break;
       case 'globe':
         setViewMode('app');
         break;
@@ -618,6 +621,7 @@ function App() {
         user={authUser}
         onLaunchApp={() => setViewMode('app')}
         onOpenLogin={() => setViewMode('login')}
+        onOpen3DBuilding={() => setViewMode('3d-building')}
       />
     );
   }
@@ -628,7 +632,7 @@ function App() {
       <LoginPage
         user={authUser}
         onBackToLanding={() => setViewMode('landing')}
-        onLaunchApp={() => setViewMode('app')}
+        onLaunchApp={() => setViewMode('3d-building')}
       />
     );
   }
