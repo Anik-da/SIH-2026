@@ -48,19 +48,9 @@ export const LandingPage: React.FC<Props> = ({ user, onLaunchApp, onOpenLogin, o
         </div>
 
         <div className="flex items-center gap-3">
-          {onOpen3DBuilding && (
-            <button
-              onClick={onOpen3DBuilding}
-              className="flex items-center gap-1.5 rounded-xl border border-cyan-500/40 bg-cyan-500/10 px-3 py-2 text-xs font-bold text-cyan-300 transition-all hover:bg-cyan-500/20"
-            >
-              <Building2 className="h-4 w-4" />
-              <span>3D Building</span>
-            </button>
-          )}
-
           <button
-            onClick={onOpenLogin}
-            className="hidden items-center gap-2 text-xs font-semibold text-slate-300 hover:text-cyan-400 sm:flex"
+            onClick={onLaunchApp}
+            className="flex items-center gap-2 text-xs font-semibold text-slate-300 hover:text-cyan-400 sm:flex"
           >
             <Globe2 className="h-4 w-4" /> 3D Globe Dashboard
           </button>
@@ -98,23 +88,13 @@ export const LandingPage: React.FC<Props> = ({ user, onLaunchApp, onOpenLogin, o
         {/* Action Buttons */}
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <button
-            onClick={onOpenLogin}
+            onClick={onLaunchApp}
             className="flex items-center gap-3 rounded-2xl bg-gradient-to-r from-cyan-400 via-cyan-500 to-blue-600 px-8 py-4 text-sm font-extrabold text-slate-950 shadow-2xl shadow-cyan-500/30 transition-all hover:brightness-110 active:scale-98 w-full sm:w-auto justify-center"
           >
             <Globe2 className="h-5 w-5" />
             Launch 3D GIS Globe Platform
             <ArrowRight className="h-5 w-5" />
           </button>
-
-          {onOpen3DBuilding && (
-            <button
-              onClick={onOpen3DBuilding}
-              className="flex items-center gap-2 rounded-2xl border border-cyan-500/40 bg-slate-900/90 px-7 py-4 text-sm font-bold text-cyan-300 transition-all hover:bg-cyan-500/10 hover:border-cyan-400 w-full sm:w-auto justify-center shadow-lg shadow-cyan-950/40"
-            >
-              <Building2 className="h-4 w-4 text-cyan-400" />
-              <span>3D Building Explorer</span>
-            </button>
-          )}
 
           <button
             onClick={onOpenLogin}
