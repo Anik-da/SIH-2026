@@ -742,7 +742,7 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
               loadViewport3DBuildings(viewer);
               // Render Sapthagiri NPS University Grand Neoclassical Campus 3D Model
               try {
-                renderSapthagiriCampusModel(viewer);
+                renderSapthagiriCampusModel(viewer, selectedFloorId, explodeState === 'exploded' ? 1.2 : 0, isRescueModeActive);
               } catch (e) {
                 console.warn('Sapthagiri Campus Render Exception:', e);
               }

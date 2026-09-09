@@ -36,7 +36,7 @@ export const VerticalPropertyPanel: React.FC<Props> = ({
   const statusInfo = statusForProperty(property?.status) || STATUS_COLORS.valid;
 
   return (
-    <div className="animate-in slide-in-from-right pointer-events-auto absolute right-4 top-20 z-20 w-96 rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-2xl backdrop-blur-xl transition-all duration-300">
+    <div className="animate-in slide-in-from-right pointer-events-auto absolute right-4 top-20 z-20 w-96 max-h-[calc(100vh-6rem)] overflow-y-auto rounded-2xl border border-slate-800 bg-slate-900/95 p-5 shadow-2xl backdrop-blur-xl transition-all duration-300 scrollbar-thin scrollbar-thumb-slate-700">
       {/* Header */}
       <div className="flex items-start justify-between border-b border-slate-800 pb-4">
         <div>
