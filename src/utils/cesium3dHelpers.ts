@@ -59,8 +59,16 @@ export function makeFloorLabel(
   });
 }
 
-export function getGroundElevation(_viewer?: Cesium.Viewer, _lon = 77.50426, _lat = 13.06746): number {
-  return 0.0; // Ground datum is flush with the ellipsoid surface (0.0m)
+export function getGroundElevation(viewer?: Cesium.Viewer, lon = 77.50426, lat = 13.06746): number {
+  if (viewer && !viewer.isDestroyed() && viewer.scene?.globe) {
+    try {
+      const h = viewer.scene.globe.getHeight(Cesium.Cartographic.fromDegrees(lon, lat));
+      if (h !== undefined && !isNaN(h) && h > 100) return h;
+    } catch {
+      // Fallback
+    }
+  }
+  return 892.0; // Ground datum matches Cesium World Terrain MSL in Bengaluru (~892m)
 }
 
 export function flyToBuilding(viewer: Cesium.Viewer, building: Building, duration = 2) {

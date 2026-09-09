@@ -592,7 +592,7 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
             fullscreenButton: false,
             infoBox: false,
             selectionIndicator: true,
-            terrainProvider: new EllipsoidTerrainProvider(),
+            terrain: Terrain.fromWorldTerrain({ requestVertexNormals: true }),
             baseLayer: false as unknown as undefined,
           });
 
@@ -703,6 +703,9 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
               if (photorealisticTileset) {
                 photorealisticTileset.show = inNYC;
               }
+              if (osmBuildings) {
+                osmBuildings.show = !inNYC;
+              }
 
               updateStatus({
                 photorealisticStatus: inNYC ? 'LOADED' : 'IDLE',
@@ -726,13 +729,43 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
               console.warn('Google Photorealistic 3D Tiles load attempt:', photoError?.message || photoError);
             }
 
-            // B. Global Solid 3D Building Geometry
-            // Cesium Ion OSM Buildings (Asset 96188) is baked at World Terrain elevation (886m MSL)
-            // and floats in the sky on flat ellipsoid terrain.
-            // loadViewport3DBuildings() provides clean, real-time OpenStreetMap 3D solid buildings anchored flush to the ground!
-            updateStatus({
-              osmStatus: 'LOADED',
-            });
+            // B. Global Solid 3D Building Geometry (Cesium OSM 3D Buildings - Active everywhere else)
+            try {
+              osmBuildings = await createOsmBuildingsAsync();
+              if (!viewer.isDestroyed()) {
+                osmBuildings.tileFailed?.addEventListener?.((tileErr: any) => {
+                  console.warn('OSM 3D Tile load error suppressed:', tileErr);
+                });
+                osmBuildings.maximumScreenSpaceError = 4; // High LOD crisp solid 3D structures
+                osmBuildings.style = new Cesium3DTileStyle({
+                  color: {
+                    conditions: [
+                      ["${feature['building']} === 'commercial' || ${feature['building:use']} === 'commercial'", "color('#0284c7', 0.95)"],
+                      ["${feature['building']} === 'residential' || ${feature['building:use']} === 'residential'", "color('#38bdf8', 0.90)"],
+                      ['true', "color('#f8fafc', 0.88)"],
+                    ],
+                  },
+                  show: {
+                    conditions: [
+                      // Hide generic default OSM box directly at Sapthagiri campus so our 3D Neoclassical Palace renders cleanly
+                      ["distance(vec2(${feature['cesium#longitude']}, ${feature['cesium#latitude']}), vec2(77.50426, 13.06746)) < 0.0012", "false"],
+                      ["true", "true"],
+                    ],
+                  },
+                });
+                viewer.scene.primitives.add(osmBuildings);
+                console.log('Solid 3D Buildings (OpenStreetMap) loaded successfully!');
+                updateStatus({
+                  osmStatus: 'LOADED',
+                });
+              }
+            } catch (osmError: any) {
+              console.warn('Cesium OSM 3D Buildings load attempt:', osmError?.message || osmError);
+              updateStatus({
+                osmStatus: 'FAILED',
+                lastError: `OSM 3D Data: ${osmError?.message || String(osmError)}`,
+              });
+            }
 
             // Check and sync tileset mode for current camera view
             updateTilesetForCurrentLocation();
@@ -770,8 +803,8 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
           if (viewer.scene.skyAtmosphere) viewer.scene.skyAtmosphere.show = true;
           viewer.scene.fog.enabled = true;
 
-          // Depth test disabled against terrain to prevent buildings from clipping/vanishing
-          viewer.scene.globe.depthTestAgainstTerrain = false;
+          // Depth test enabled against terrain so buildings emerge flush from the ground
+          viewer.scene.globe.depthTestAgainstTerrain = true;
 
           // =========================================================================
           // 360-DEGREE ROTATION & ORBIT CONTROLLER CONFIGURATION
@@ -852,8 +885,10 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
           const bldgLon = building ? building.center.lon : SAPTHAGIRI_COORDS.lon;
           const bldgLat = building ? building.center.lat : SAPTHAGIRI_COORDS.lat;
 
+          const elev = SAPTHAGIRI_COORDS.elevation; // 892m MSL ground elevation
+
           viewer.camera.setView({
-            destination: Cartesian3.fromDegrees(bldgLon, bldgLat - 0.0012, 140),
+            destination: Cartesian3.fromDegrees(bldgLon, bldgLat - 0.0012, elev + 140),
             orientation: {
               heading: CesiumMath.toRadians(25), // 25° Heading looking directly at the +25° front facade
               pitch: CesiumMath.toRadians(-22),   // -22° Pitch for realistic eye-level perspective
