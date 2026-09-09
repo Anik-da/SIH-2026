@@ -61,8 +61,8 @@ export function renderSapthagiriCampusModel(
     const centerLat = SAPTHAGIRI_COORDS.lat;
     const centerLon = SAPTHAGIRI_COORDS.lon;
 
-    // Ground elevation: flush directly on top of terrain ground surface (0.1m offset to prevent surface z-fighting)
-    const baseElev = getGroundElevation(viewer, centerLon, centerLat) + 0.1;
+    // Ground elevation: flush directly on top of terrain ground surface
+    const baseElev = getGroundElevation(viewer, centerLon, centerLat);
 
     // Degree conversion constants around Bengaluru (lat ~13.0675Â°)
     const LAT_M = 111320;
@@ -149,7 +149,7 @@ export function renderSapthagiriCampusModel(
       id: 'sapthagiri-marker-badge',
       position: Cartesian3.fromDegrees(centerLon, centerLat - 0.0003, baseElev + 68),
       label: {
-        text: 'ðŸ›ï¸ SAPTHAGIRI NPS UNIVERSITY\nMain Academic Palace & Senate Complex (12 Floors)',
+        text: '🏛️ SAPTHAGIRI NPS UNIVERSITY\nMain Academic Palace & Senate Complex (12 Floors)',
         font: 'bold 13px Inter, system-ui, sans-serif',
         fillColor: Color.WHITE,
         outlineColor: Color.fromCssColorString('#0f172a'),

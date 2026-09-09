@@ -65,13 +65,9 @@ export function getGroundElevation(viewer?: Cesium.Viewer, lon = 77.50426, lat =
   if (viewer && !viewer.isDestroyed() && viewer.scene && viewer.scene.globe) {
     const carto = Cesium.Cartographic.fromDegrees(lon, lat);
     const height = viewer.scene.globe.getHeight(carto);
-    if (typeof height === 'number' && height > 0) {
+    if (typeof height === 'number' && !isNaN(height)) {
       return height;
     }
-  }
-  // Known exact ground elevation for Bengaluru / Sapthagiri campus region (~908.5m WGS84)
-  if (Math.abs(lat - 13.067) < 0.2 && Math.abs(lon - 77.504) < 0.2) {
-    return 908.5;
   }
   return 0.0;
 }
