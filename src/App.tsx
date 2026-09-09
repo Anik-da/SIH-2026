@@ -124,7 +124,7 @@ function App() {
   const [isZoningOpen, setIsZoningOpen] = useState(false);
   const [isPagesDrawerOpen, setIsPagesDrawerOpen] = useState(false);
   const [showRealFinderHud, setShowRealFinderHud] = useState(false);
-  const [isRealFinderCardOpen, setIsRealFinderCardOpen] = useState(true);
+  const [isRealFinderCardOpen, setIsRealFinderCardOpen] = useState(false);
   const [isRealFinderInspectOpen, setIsRealFinderInspectOpen] = useState(false);
   const [isGeoJsonImporterOpen, setIsGeoJsonImporterOpen] = useState(false);
   const [importedGeoJson, setImportedGeoJson] = useState<any>(null);
