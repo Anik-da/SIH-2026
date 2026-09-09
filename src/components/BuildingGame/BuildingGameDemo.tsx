@@ -298,6 +298,7 @@ export function BuildingGameDemo({ onOpenGISGlobe, onOpenPropertyPassport, onBac
           {/* Emergency HUD Banner & Simulation Controls */}
           <EmergencyHUDBanner
             emergency={emergency}
+            currentFloorId={game.currentFloorId}
             onEvacuate={handleEvacuate}
             onDismiss={() => setEmergency(null)}
             onTriggerRandom={triggerRandomEmergency}

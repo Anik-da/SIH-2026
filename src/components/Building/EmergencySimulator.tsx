@@ -184,20 +184,28 @@ export function Emergency3DView({ emergency, currentFloorId }: Emergency3DViewPr
 
 interface EmergencyHUDProps {
   emergency?: EmergencyState | null;
+  currentFloorId?: string;
   onEvacuate: () => void;
   onDismiss: () => void;
   onTriggerRandom: () => void;
 }
 
-export function EmergencyHUDBanner({ emergency, onEvacuate, onDismiss, onTriggerRandom }: EmergencyHUDProps) {
+export function EmergencyHUDBanner({ emergency, currentFloorId, onEvacuate, onDismiss, onTriggerRandom }: EmergencyHUDProps) {
   const [alarmMuted, setAlarmMuted] = useState(false);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const sirenOscRef = useRef<OscillatorNode | null>(null);
   const gainNodeRef = useRef<GainNode | null>(null);
 
-  // Synthesize Web Audio Alarm Siren when emergency is active
+  // Siren audio is active ONLY when player is on the specific floor where the emergency occurs
+  const isOnEmergencyFloor = Boolean(
+    emergency &&
+    emergency.isActive &&
+    (!currentFloorId || emergency.floorId === currentFloorId)
+  );
+
+  // Synthesize Web Audio Alarm Siren when player is on the emergency floor
   useEffect(() => {
-    if (!emergency || !emergency.isActive || alarmMuted) {
+    if (!emergency || !emergency.isActive || alarmMuted || !isOnEmergencyFloor) {
       if (sirenOscRef.current) {
         try { sirenOscRef.current.stop(); } catch { /* ignore */ }
         sirenOscRef.current = null;
@@ -241,7 +249,7 @@ export function EmergencyHUDBanner({ emergency, onEvacuate, onDismiss, onTrigger
         sirenOscRef.current = null;
       }
     };
-  }, [emergency, alarmMuted]);
+  }, [emergency, currentFloorId, alarmMuted, isOnEmergencyFloor]);
 
   if (!emergency || !emergency.isActive) {
     return (
