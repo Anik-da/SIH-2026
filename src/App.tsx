@@ -873,7 +873,7 @@ function App() {
             />
 
             {/* Left side: Toolbar */}
-            <div className="absolute left-4 top-4 z-10 max-h-[calc(100vh-6rem)] overflow-y-auto custom-scrollbar">
+            <div className="absolute left-4 top-4 z-30 flex flex-col gap-2">
               <MapToolbar
                 onHome={handleHome}
                 onZoomIn={handleZoomIn}
