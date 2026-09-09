@@ -43,7 +43,8 @@ const sinR = Math.sin(ROT_RAD);
 export function renderSapthagiriCampusModel(
   viewer: Viewer,
   selectedFloorId?: string | null,
-  explodeFactor: number = 0
+  explodeFactor: number = 0,
+  isRescueModeActive: boolean = false
 ) {
   if (!viewer || viewer.isDestroyed()) return;
 
@@ -214,15 +215,33 @@ export function renderSapthagiriCampusModel(
       const zMax = baseElev + f * floorHeight + explodeShift;
       const isOdd = f % 2 === 1;
 
-      let floorMaterial = isSelectedFloor
-        ? cSelectedFloor.withAlpha(0.95)
-        : activeFloorNum !== null
-        ? (isOdd ? cMarbleCream : cSandstoneWarm).withAlpha(0.35)
-        : (isOdd ? cMarbleCream : cSandstoneWarm).withAlpha(0.95);
+      let floorMaterial: Color;
+      let outlineColor: Color;
 
-      let outlineColor = isSelectedFloor
-        ? Color.fromCssColorString('#38bdf8')
-        : cGoldTrim.withAlpha(0.65);
+      if (isRescueModeActive) {
+        if (f === 3) {
+          // Critical Fire Floor: Glowing Crimson Flame
+          floorMaterial = Color.fromCssColorString('#dc2626').withAlpha(0.95);
+          outlineColor = Color.fromCssColorString('#fef08a');
+        } else if (f === 4) {
+          // High-Heat Smoke Caution Floor
+          floorMaterial = Color.fromCssColorString('#ea580c').withAlpha(0.90);
+          outlineColor = Color.fromCssColorString('#fdba74');
+        } else {
+          // Safe Evacuated / Cleared Floors: Translucent Emerald Green
+          floorMaterial = Color.fromCssColorString('#10b981').withAlpha(0.60);
+          outlineColor = Color.fromCssColorString('#86efac');
+        }
+      } else if (isSelectedFloor) {
+        floorMaterial = cSelectedFloor.withAlpha(0.95);
+        outlineColor = Color.fromCssColorString('#38bdf8');
+      } else if (activeFloorNum !== null) {
+        floorMaterial = (isOdd ? cMarbleCream : cSandstoneWarm).withAlpha(0.35);
+        outlineColor = cGoldTrim.withAlpha(0.4);
+      } else {
+        floorMaterial = (isOdd ? cMarbleCream : cSandstoneWarm).withAlpha(0.95);
+        outlineColor = cGoldTrim.withAlpha(0.65);
+      }
 
       distinctBuildings.forEach((bld) => {
         const boxCoords = makeBoxCoords(bld.cx, bld.cy, bld.width, bld.depth);
@@ -236,7 +255,7 @@ export function renderSapthagiriCampusModel(
             material: floorMaterial,
             outline: true,
             outlineColor: outlineColor,
-            outlineWidth: isSelectedFloor ? 3 : 1.5,
+            outlineWidth: isRescueModeActive && (f === 3 || f === 4) ? 4 : isSelectedFloor ? 3 : 1.5,
             shadows: ShadowMode.ENABLED,
           },
         });
@@ -609,8 +628,83 @@ export function renderSapthagiriCampusModel(
       },
     });
 
+    // =========================================================================
+    // 5. TACTICAL FIRST-RESPONDER RESCUE OVERLAY (When isRescueModeActive = true)
+    // =========================================================================
+    if (isRescueModeActive) {
+      // 1. Critical Hazard Beacon atop Floor 3
+      viewer.entities.add({
+        id: 'sapthagiri-rescue-incident-badge',
+        position: Cartesian3.fromDegrees(centerLon, centerLat, baseElev + 3 * floorHeight + 14),
+        label: {
+          text: '🚨 ACTIVE FIRE INCIDENT — FLOOR 03 (LAB)\n⚠️ 14 OCCUPANTS DETECTED • TEMP 420°C\n✅ EVACUATE VIA STAIRWELL B (CLEAR)',
+          font: 'bold 12px Inter, sans-serif',
+          fillColor: Color.WHITE,
+          outlineColor: Color.fromCssColorString('#7f1d1d'),
+          outlineWidth: 4,
+          showBackground: true,
+          backgroundColor: Color.fromCssColorString('#dc2626').withAlpha(0.96),
+          backgroundPadding: new Cartesian2(12, 7),
+          horizontalOrigin: HorizontalOrigin.CENTER,
+          verticalOrigin: VerticalOrigin.BOTTOM,
+          disableDepthTestDistance: Number.POSITIVE_INFINITY,
+        },
+      });
+
+      // 2. Front Plaza Fire Brigade Incident Command & Triage Staging Area
+      const stagingCoords = makeBoxCoords(0, -30, 80, 20);
+      viewer.entities.add({
+        id: 'sapthagiri-rescue-staging-zone',
+        name: 'Fire Brigade Incident Command & Triage Staging Area',
+        polygon: {
+          hierarchy: new PolygonHierarchy(Cartesian3.fromDegreesArray(stagingCoords)),
+          height: baseElev + 0.55,
+          extrudedHeight: baseElev + 0.9,
+          material: Color.fromCssColorString('#ef4444').withAlpha(0.85),
+          outline: true,
+          outlineColor: Color.WHITE,
+          outlineWidth: 2.5,
+        },
+      });
+
+      viewer.entities.add({
+        id: 'sapthagiri-rescue-staging-badge',
+        position: Cartesian3.fromDegrees(centerLon, centerLat - 0.00035, baseElev + 6),
+        label: {
+          text: '🚒 INCIDENT COMMAND & TRIAGE STAGING POST',
+          font: 'bold 11px Inter, sans-serif',
+          fillColor: Color.WHITE,
+          outlineColor: Color.fromCssColorString('#b91c1c'),
+          outlineWidth: 3,
+          showBackground: true,
+          backgroundColor: Color.fromCssColorString('#991b1b').withAlpha(0.92),
+          backgroundPadding: new Cartesian2(8, 5),
+          horizontalOrigin: HorizontalOrigin.CENTER,
+          verticalOrigin: VerticalOrigin.BOTTOM,
+          disableDepthTestDistance: Number.POSITIVE_INFINITY,
+        },
+      });
+
+      // 3. Green Illuminated Evacuation Route Corridor (from Floor 3 stairs to staging zone)
+      const escP1 = toCoords(-20, 0);
+      const escP2 = toCoords(0, -10);
+      const escP3 = toCoords(0, -28);
+      viewer.entities.add({
+        id: 'sapthagiri-rescue-evac-corridor',
+        polyline: {
+          positions: Cartesian3.fromDegreesArrayHeights([
+            escP1[0], escP1[1], baseElev + 10.8,
+            escP2[0], escP2[1], baseElev + 4.0,
+            escP3[0], escP3[1], baseElev + 0.8,
+          ]),
+          width: 6,
+          material: Color.fromCssColorString('#22c55e'),
+        },
+      });
+    }
+
     console.log(
-      `🏛️ Sapthagiri NPS University (3 Distinct 12-storey Buildings) anchored at 13.06745°N, 77.50440°E (Elevation: ${baseElev.toFixed(1)}m, Facing: -15°)!`
+      `🏛️ Sapthagiri NPS University (3 Distinct 12-storey Buildings) anchored at 13.06746°N, 77.50426°E (Elevation: ${baseElev.toFixed(1)}m, RescueMode: ${isRescueModeActive})!`
     );
   } catch (err) {
     console.error('Failed to render Sapthagiri Campus Model:', err);

@@ -19,6 +19,7 @@ import CoordinateDisplay from './components/CoordinateDisplay';
 import CameraControls from './components/CameraControls';
 import SelectionManager from './components/SelectionManager';
 import AppHeader from './components/AppHeader';
+import { Flame, ShieldAlert, X } from 'lucide-react';
 
 import { VerticalPropertyPanel } from './components/cadastral/VerticalPropertyPanel';
 import { VerticalFloorSlider } from './components/cadastral/VerticalFloorSlider';
@@ -651,6 +652,69 @@ function App() {
           onReady={handleReady}
           activeSensorMode={activeSensorMode}
         />
+
+        {/* Tactical First-Responder Disaster Rescue Incident Command HUD Banner */}
+        {isRescueModeActive && (
+          <div className="pointer-events-auto absolute top-4 left-1/2 -translate-x-1/2 z-30 w-[95%] max-w-4xl animate-in fade-in slide-in-from-top-4 duration-300">
+            <div className="rounded-2xl border border-red-500/70 bg-slate-950/95 p-3.5 shadow-2xl shadow-red-950/60 backdrop-blur-xl ring-1 ring-red-500/30">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-600/30 text-red-400 border border-red-500/60 animate-pulse">
+                    <Flame className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="flex h-2 w-2 rounded-full bg-red-500 animate-ping" />
+                      <span className="text-[10px] font-black tracking-widest text-red-400 uppercase">
+                        TACTICAL FIRST-RESPONDER RESCUE ACTIVE
+                      </span>
+                      <span className="rounded bg-red-500/20 px-1.5 py-0.5 text-[9px] font-bold text-red-300 border border-red-500/40">
+                        CRITICAL LEVEL 3
+                      </span>
+                    </div>
+                    <p className="text-xs font-bold text-white">
+                      Sapthagiri NPS University • Floor 03 (Computer Lab) Active Fire Incident
+                    </p>
+                    <p className="text-[11px] text-slate-300">
+                      <strong className="text-red-400">14 Occupants Trapped</strong> • Heat: 420°C • Evacuation Route: <span className="text-emerald-400 font-semibold">West Skybridge &rarr; Stairwell B (CLEAR)</span>
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      handleSelectFloor('SNPSU-F3');
+                      const viewer = viewerRef.current;
+                      const f3 = demoBuilding.floors.find((f) => f.shortLabel === 'F3' || f.floorNumber === 3);
+                      if (viewer && f3) {
+                        flyToFloor(viewer, demoBuilding, f3, explodeState === 'exploded' ? 1 : 0);
+                      }
+                    }}
+                    className="flex items-center gap-1.5 rounded-xl bg-red-600 px-3 py-1.5 text-xs font-bold text-white shadow-md shadow-red-600/40 hover:bg-red-500 transition-all"
+                  >
+                    <Flame className="h-3.5 w-3.5" />
+                    <span>Focus Floor 03</span>
+                  </button>
+                  <button
+                    onClick={() => setIsEmergencyPlanningOpen(true)}
+                    className="flex items-center gap-1.5 rounded-xl border border-red-500/50 bg-red-950/40 px-3 py-1.5 text-xs font-bold text-red-200 hover:bg-red-900/60 transition-all"
+                  >
+                    <ShieldAlert className="h-3.5 w-3.5" />
+                    <span>Demographics &amp; Plan</span>
+                  </button>
+                  <button
+                    onClick={() => setIsRescueModeActive(false)}
+                    className="rounded-xl border border-slate-700 bg-slate-800/80 p-1.5 text-slate-400 hover:bg-slate-700 hover:text-white transition-all"
+                    title="Exit Rescue Mode"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Persistent Building Intelligence Panel (MongoDB Integrated) */}
         {isBuildingPanelOpen && (

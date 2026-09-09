@@ -1128,7 +1128,7 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
 
       // When building is Sapthagiri NPS University, render the true 3D Neoclassical Architectural Campus
       if (isSapthagiri) {
-        renderSapthagiriCampusModel(viewer, selectedFloorId, explodeFactor);
+        renderSapthagiriCampusModel(viewer, selectedFloorId, explodeFactor, isRescueModeActive);
 
         // Sub-surface clean campus utilities if toggled (parallel perimeter infrastructure)
         if (showUtilities && showUnderground) {
