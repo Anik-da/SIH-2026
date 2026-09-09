@@ -48,6 +48,7 @@ import {
 } from '../utils/cesium3dHelpers';
 import { STATUS_COLORS, SELECTED_COLOR, UNDERGROUND_COLOR, PARCEL_COLOR } from '../data/colors';
 import { SURROUNDING_CITY_BUILDINGS, footprint } from '../data/cadastralDemoData';
+import { SAPTHAGIRI_SURROUNDING_BUILDINGS } from '../data/sapthagiriPreloadedBuildings';
 
 import { applySensorMode, type SensorMode } from '../utils/godsEyeShaders';
 import { getFormattedAddress } from '../utils/addressLookup';
@@ -62,30 +63,89 @@ const HAS_TOKEN = Boolean(CESIUM_ION_TOKEN);
 // Configure global Cesium Ion Access Token
 Ion.defaultAccessToken = CESIUM_ION_TOKEN;
 
+// 1. Pre-cached 800 real OpenStreetMap 3D buildings around Sapthagiri NPS University
+function renderPreloadedSapthagiriBuildings(viewer: Viewer) {
+  if (viewer.isDestroyed()) return;
+  const firstId = `preloaded-osm-bldg-${SAPTHAGIRI_SURROUNDING_BUILDINGS[0]?.id}`;
+  if (viewer.entities.getById(firstId)) return; // already loaded
+
+  SAPTHAGIRI_SURROUNDING_BUILDINGS.forEach((b) => {
+    const colorHue = b.id % 5;
+    const matColor =
+      colorHue === 0
+        ? Color.fromCssColorString('#f8fafc')
+        : colorHue === 1
+        ? Color.fromCssColorString('#38bdf8')
+        : colorHue === 2
+        ? Color.fromCssColorString('#cbd5e1')
+        : colorHue === 3
+        ? Color.fromCssColorString('#0284c7')
+        : Color.fromCssColorString('#f1f5f9');
+
+    viewer.entities.add({
+      id: `preloaded-osm-bldg-${b.id}`,
+      polygon: {
+        hierarchy: new PolygonHierarchy(Cartesian3.fromDegreesArray(b.coords)),
+        height: 0,
+        extrudedHeight: b.height,
+        material: matColor,
+        outline: true,
+        outlineColor: Color.fromCssColorString('#0284c7').withAlpha(0.6),
+        outlineWidth: 1.2,
+        shadows: ShadowMode.ENABLED,
+      },
+    });
+  });
+  console.log(`Rendered ${SAPTHAGIRI_SURROUNDING_BUILDINGS.length} preloaded 3D buildings around Sapthagiri.`);
+}
+
+// 2. High-rise commercial & residential towers around Bengaluru CBD (MG Road / Richmond Town)
+function renderCityBuildings(viewer: Viewer) {
+  if (viewer.isDestroyed()) return;
+  SURROUNDING_CITY_BUILDINGS.forEach((b) => {
+    const id = `city-building-${b.id}`;
+    if (viewer.entities.getById(id)) return;
+    const hw = b.width / 2 / 111320;
+    const hd = b.depth / 2 / (111320 * Math.cos((b.center.lat * Math.PI) / 180));
+    const coords = [
+      b.center.lon - hd, b.center.lat - hw,
+      b.center.lon + hd, b.center.lat - hw,
+      b.center.lon + hd, b.center.lat + hw,
+      b.center.lon - hd, b.center.lat + hw,
+    ];
+    viewer.entities.add({
+      id,
+      name: b.name,
+      polygon: {
+        hierarchy: new PolygonHierarchy(Cartesian3.fromDegreesArray(coords)),
+        height: 0,
+        extrudedHeight: b.height,
+        material: Color.fromCssColorString(b.propertyType === 'Commercial' ? '#0284c7' : '#38bdf8').withAlpha(0.9),
+        outline: true,
+        outlineColor: Color.fromCssColorString('#0284c7'),
+        outlineWidth: 1.5,
+        shadows: ShadowMode.ENABLED,
+      },
+    });
+  });
+}
+
+// 3. Dynamic Real OpenStreetMap 3D Footprint Extrusions for any panned viewport
 function loadViewport3DBuildings(viewer: Viewer) {
   if (viewer.isDestroyed()) return;
 
-  // Clean up any legacy synthetic fallback entities
-  const oldFallbackEntities = viewer.entities.values.filter(
-    (el) => typeof el.id === 'string' && el.id.startsWith('cadastral-residential-3d-')
-  );
-  oldFallbackEntities.forEach((el) => viewer.entities.remove(el));
-
-  let west: number, south: number, east: number, north: number;
+  let cLat = 12.9716;
+  let cLon = 77.5946;
 
   const rect = viewer.camera.computeViewRectangle(viewer.scene.globe.ellipsoid);
   if (rect) {
-    west = CesiumMath.toDegrees(rect.west);
-    south = CesiumMath.toDegrees(rect.south);
-    east = CesiumMath.toDegrees(rect.east);
-    north = CesiumMath.toDegrees(rect.north);
+    cLat = CesiumMath.toDegrees((rect.south + rect.north) / 2);
+    cLon = CesiumMath.toDegrees((rect.west + rect.east) / 2);
   } else {
     const centerCartesian = viewer.camera.pickEllipsoid(
       new Cartesian3(viewer.canvas.clientWidth / 2, viewer.canvas.clientHeight / 2, 0),
       viewer.scene.globe.ellipsoid
     );
-    let cLat = 12.9716;
-    let cLon = 77.5946;
     if (centerCartesian) {
       const carto = Cartographic.fromCartesian(centerCartesian);
       cLat = CesiumMath.toDegrees(carto.latitude);
@@ -97,111 +157,102 @@ function loadViewport3DBuildings(viewer: Viewer) {
         cLon = CesiumMath.toDegrees(carto.longitude);
       }
     }
-    west = cLon - 0.045;
-    east = cLon + 0.045;
-    south = cLat - 0.045;
-    north = cLat + 0.045;
   }
 
-  const s = Math.min(south, north);
-  const n = Math.max(south, north);
-  const w = Math.min(west, east);
-  const e = Math.max(west, east);
+  // If viewing near Sapthagiri campus (< 2.5km), ensure preloaded buildings are active and return
+  const distToSapthagiri = Math.hypot(cLat - SAPTHAGIRI_COORDS.lat, cLon - SAPTHAGIRI_COORDS.lon);
+  if (distToSapthagiri < 0.025) {
+    renderPreloadedSapthagiriBuildings(viewer);
+    return;
+  }
 
-    const latSpan = Math.min(n - s, 0.04);
-    const lonSpan = Math.min(e - w, 0.04);
-    const cLat = (s + n) / 2;
-    const cLon = (w + e) / 2;
-    const minLat = (cLat - latSpan / 2).toFixed(4);
-    const maxLat = (cLat + latSpan / 2).toFixed(4);
-    const minLon = (cLon - lonSpan / 2).toFixed(4);
-    const maxLon = (cLon + lonSpan / 2).toFixed(4);
+  // Bounding box for remote viewport (tight 1.5km box for sub-second Overpass query response)
+  const span = 0.012;
+  const minLat = (cLat - span).toFixed(4);
+  const maxLat = (cLat + span).toFixed(4);
+  const minLon = (cLon - span).toFixed(4);
+  const maxLon = (cLon + span).toFixed(4);
 
-    const query = `[out:json][timeout:25];(way["building"](${minLat},${minLon},${maxLat},${maxLon});relation["building"](${minLat},${minLon},${maxLat},${maxLon}););out body;>;out skel qt;`;
-    const urlPrimary = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
-    const urlMirror = `https://overpass.kumi.systems/api/interpreter?data=${encodeURIComponent(query)}`;
+  const query = `[out:json][timeout:15];(way["building"](${minLat},${minLon},${maxLat},${maxLon}););out body;>;out skel qt;`;
 
-    const processOverpassData = (data: any) => {
-      if (viewer.isDestroyed()) return;
+  const processOverpassData = (data: any) => {
+    if (viewer.isDestroyed() || !data || !data.elements) return;
 
-      if (data && data.elements) {
-        const oldOsmEntities = viewer.entities.values.filter(
-          (el) => typeof el.id === 'string' && el.id.startsWith('real-osm-building-')
-        );
-        oldOsmEntities.forEach((el) => viewer.entities.remove(el));
+    const oldOsmEntities = viewer.entities.values.filter(
+      (el) => typeof el.id === 'string' && el.id.startsWith('real-osm-building-')
+    );
+    oldOsmEntities.forEach((el) => viewer.entities.remove(el));
 
-        const nodesMap = new Map<number, [number, number]>();
-        data.elements.forEach((el: any) => {
-          if (el.type === 'node') nodesMap.set(el.id, [el.lon, el.lat]);
+    const nodesMap = new Map<number, [number, number]>();
+    data.elements.forEach((el: any) => {
+      if (el.type === 'node') nodesMap.set(el.id, [el.lon, el.lat]);
+    });
+
+    data.elements.forEach((el: any) => {
+      if (el.type === 'way' && el.nodes && el.nodes.length >= 3) {
+        const coordsFlat: number[] = [];
+        el.nodes.forEach((nodeId: number) => {
+          const coord = nodesMap.get(nodeId);
+          if (coord) coordsFlat.push(coord[0], coord[1]);
         });
 
-        data.elements.forEach((el: any) => {
-          if ((el.type === 'way' || el.type === 'relation') && el.nodes && el.nodes.length >= 3) {
-            const coordsFlat: number[] = [];
-            el.nodes.forEach((nodeId: number) => {
-              const coord = nodesMap.get(nodeId);
-              if (coord) {
-                coordsFlat.push(coord[0], coord[1]);
-              }
-            });
-
-            if (coordsFlat.length >= 6) {
-              // Do not overwrite our detailed handcrafted Sapthagiri Neoclassical 3D Campus
-              const firstLon = coordsFlat[0];
-              const firstLat = coordsFlat[1];
-              const distToSapthagiri = Math.hypot(firstLon - SAPTHAGIRI_COORDS.lon, firstLat - SAPTHAGIRI_COORDS.lat);
-              const sapthagiriWayIds = [726507705, 1304494566, 1253120647, 1304494567, 1253120648, 726506614, 1253120645];
-              if (distToSapthagiri < 0.0022 || sapthagiriWayIds.includes(el.id)) {
-                return; // Keep handcrafted Sapthagiri palace clean and unobstructed
-              }
-
-              const tagHeight = el.tags?.height
-                ? parseFloat(el.tags.height)
-                : el.tags?.['building:levels']
-                ? parseFloat(el.tags['building:levels']) * 3.5
-                : Math.max(10, (el.id % 25) + 8);
-
-              const colorHue = el.id % 5;
-              const matColor =
-                colorHue === 0
-                  ? Color.fromCssColorString('#f8fafc')
-                  : colorHue === 1
-                  ? Color.fromCssColorString('#38bdf8')
-                  : colorHue === 2
-                  ? Color.fromCssColorString('#cbd5e1')
-                  : colorHue === 3
-                  ? Color.fromCssColorString('#0284c7')
-                  : Color.fromCssColorString('#f1f5f9');
-
-              try {
-                viewer.entities.add({
-                  id: `real-osm-building-${el.id}`,
-                  polygon: {
-                    hierarchy: new PolygonHierarchy(Cartesian3.fromDegreesArray(coordsFlat)),
-                    height: 0,
-                    extrudedHeight: tagHeight,
-                    material: matColor,
-                    outline: true,
-                    outlineColor: Color.fromCssColorString('#0284c7'),
-                    outlineWidth: 1.5,
-                    shadows: ShadowMode.ENABLED,
-                  },
-                });
-              } catch (_) {}
-            }
+        if (coordsFlat.length >= 6) {
+          const firstLon = coordsFlat[0];
+          const firstLat = coordsFlat[1];
+          if (Math.hypot(firstLon - SAPTHAGIRI_COORDS.lon, firstLat - SAPTHAGIRI_COORDS.lat) < 0.0022) {
+            return; // Protect Sapthagiri campus footprint
           }
-        });
-      }
-    };
 
-  fetch(urlPrimary)
+          const tagHeight = el.tags?.height
+            ? parseFloat(el.tags.height)
+            : el.tags?.['building:levels']
+            ? parseFloat(el.tags['building:levels']) * 3.5
+            : Math.max(9, (el.id % 22) + 7);
+
+          const colorHue = el.id % 5;
+          const matColor =
+            colorHue === 0
+              ? Color.fromCssColorString('#f8fafc')
+              : colorHue === 1
+              ? Color.fromCssColorString('#38bdf8')
+              : colorHue === 2
+              ? Color.fromCssColorString('#cbd5e1')
+              : colorHue === 3
+              ? Color.fromCssColorString('#0284c7')
+              : Color.fromCssColorString('#f1f5f9');
+
+          try {
+            viewer.entities.add({
+              id: `real-osm-building-${el.id}`,
+              polygon: {
+                hierarchy: new PolygonHierarchy(Cartesian3.fromDegreesArray(coordsFlat)),
+                height: 0,
+                extrudedHeight: tagHeight,
+                material: matColor,
+                outline: true,
+                outlineColor: Color.fromCssColorString('#0284c7'),
+                outlineWidth: 1.2,
+                shadows: ShadowMode.ENABLED,
+              },
+            });
+          } catch (_) {}
+        }
+      }
+    });
+  };
+
+  // Resilient Overpass endpoint rotation (Mail.ru high-speed mirror first, then standard)
+  fetch('https://maps.mail.ru/osm/tools/overpass/api/interpreter', {
+    method: 'POST',
+    body: query,
+  })
     .then((res) => (res.ok ? res.json() : null))
     .then((data) => {
       if (data) processOverpassData(data);
       else {
-        fetch(urlMirror)
+        fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`)
           .then((res) => (res.ok ? res.json() : null))
-          .then((mirrorData) => mirrorData && processOverpassData(mirrorData))
+          .then((backupData) => backupData && processOverpassData(backupData))
           .catch(() => {});
       }
     })
@@ -792,6 +843,8 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
 
             // Render local detailed BIM structures
             if (!viewer.isDestroyed()) {
+              renderPreloadedSapthagiriBuildings(viewer);
+              renderCityBuildings(viewer);
               loadViewport3DBuildings(viewer);
               // Render Sapthagiri NPS University Grand Neoclassical Campus 3D Model
               try {
@@ -806,6 +859,20 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
                   updateTilesetForCurrentLocation();
                 }
               });
+              let moveEndTimer: any = null;
+              viewer.camera.moveEnd.addEventListener(() => {
+                if (!viewer.isDestroyed()) {
+                  updateTilesetForCurrentLocation();
+                  if (!isCameraInNewYork()) {
+                    clearTimeout(moveEndTimer);
+                    moveEndTimer = setTimeout(() => {
+                      if (!viewer.isDestroyed()) {
+                        loadViewport3DBuildings(viewer);
+                      }
+                    }, 400);
+                  }
+                }
+              });
             }
           };
 
@@ -816,8 +883,8 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
           if (viewer.scene.skyAtmosphere) viewer.scene.skyAtmosphere.show = true;
           viewer.scene.fog.enabled = true;
 
-          // Depth test enabled against terrain so buildings emerge flush from the ground
-          viewer.scene.globe.depthTestAgainstTerrain = true;
+          // Depth test disabled against terrain to prevent ground-level buildings, parcels and floors from clipping
+          viewer.scene.globe.depthTestAgainstTerrain = false;
 
           // =========================================================================
           // 360-DEGREE ROTATION & ORBIT CONTROLLER CONFIGURATION (BUTTERY SMOOTH)
@@ -1158,17 +1225,15 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
         building.id === 'BLDG-BLR-021' ||
         building.name.includes('Sapthagiri');
 
-      // Remove existing custom 3D floor entities, labels, pins, buildings & utility pipes
+      // Remove existing custom 3D floor entities, custom floor labels, & utility pipes
       const toRemove = viewer.entities.values.filter(
         (e) =>
           typeof e.id === 'string' &&
-          (e.id.includes('floor-') ||
-            e.id.includes('label') ||
-            e.id.includes('city-building') ||
-            e.id.includes('solid-bim') ||
-            e.id.includes('parcel') ||
-            e.id.includes('utility') ||
-            (!isSapthagiri && e.id.includes('building')))
+          (e.id.startsWith('custom-floor-') ||
+            e.id.startsWith('label-floor-') ||
+            e.id.startsWith('cadastral-parcel') ||
+            e.id.startsWith('utility-') ||
+            (!isSapthagiri && (e.id.startsWith('parcel-') || e.id.startsWith('building-'))))
       );
       toRemove.forEach((e) => viewer.entities.remove(e));
 
