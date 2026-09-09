@@ -56,9 +56,8 @@ function SceneContent(props: GameSceneProps) {
         currentFloorId={props.currentFloorId}
         onSelectProperty={props.onSelectProperty}
         onSelectObject={props.onSelectObject}
+        emergency={props.emergency}
       />
-
-      <Emergency3DView emergency={props.emergency} currentFloorId={props.currentFloorId} />
 
       <PlayerController
         enabled={props.playerActive}

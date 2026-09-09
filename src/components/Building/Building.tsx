@@ -4,6 +4,7 @@ import type { FloorData, PropertyData } from '@/types';
 import { FloorVolume } from './FloorVolume';
 import { BUILDING_DIMENSIONS } from '@/data/constants';
 import type { InspectedObjectData } from './ObjectInspectionModal';
+import type { EmergencyState } from './EmergencySimulator';
 
 interface BuildingProps {
   floors: FloorData[];
@@ -15,6 +16,7 @@ interface BuildingProps {
   currentFloorId: string;
   onSelectProperty: (prop: PropertyData) => void;
   onSelectObject?: (info: InspectedObjectData) => void;
+  emergency?: EmergencyState | null;
 }
 
 export function Building({
@@ -27,6 +29,7 @@ export function Building({
   currentFloorId,
   onSelectProperty,
   onSelectObject,
+  emergency,
 }: BuildingProps) {
   const { width, depth } = BUILDING_DIMENSIONS;
 
@@ -74,6 +77,7 @@ export function Building({
           onSelectProperty={onSelectProperty}
           isCurrentFloor={currentFloorId === floor.floorId}
           onSelectObject={onSelectObject}
+          emergency={emergency}
         />
       ))}
 

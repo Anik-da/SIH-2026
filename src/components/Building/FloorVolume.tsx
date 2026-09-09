@@ -6,6 +6,7 @@ import type { FloorData, PropertyData } from '@/types';
 import { BUILDING_DIMENSIONS, FLOOR_HEIGHT } from '@/data/constants';
 import { PropertyVolume } from './PropertyVolume';
 import { FloorInterior } from './FloorInterior';
+import { Emergency3DView, type EmergencyState } from './EmergencySimulator';
 
 import type { InspectedObjectData } from './ObjectInspectionModal';
 
@@ -20,6 +21,7 @@ interface FloorVolumeProps {
   onSelectProperty: (prop: PropertyData) => void;
   isCurrentFloor: boolean;
   onSelectObject?: (info: InspectedObjectData) => void;
+  emergency?: EmergencyState | null;
 }
 
 export function FloorVolume({
@@ -33,6 +35,7 @@ export function FloorVolume({
   onSelectProperty,
   isCurrentFloor,
   onSelectObject,
+  emergency,
 }: FloorVolumeProps) {
   const groupRef = useRef<THREE.Group>(null);
   const targetY = useRef(floor.zMin);
@@ -79,20 +82,12 @@ export function FloorVolume({
       )}
 
       {/* Floor slab */}
-      <mesh receiveShadow position={[0, 0, 0]}>
-        <boxGeometry args={[width, 0.15, depth]} />
-        <meshStandardMaterial color={floorColor} roughness={0.6} transparent opacity={floorOpacity} />
+      <mesh position={[0, 0, 0]} receiveShadow>
+        <boxGeometry args={[width, 0.05, depth]} />
+        <meshStandardMaterial color={floorColor} roughness={0.7} transparent opacity={floorOpacity} />
       </mesh>
 
-      {/* Ceiling slab (skip terrace) */}
-      {!isTerrace && (
-        <mesh position={[0, FLOOR_HEIGHT, 0]}>
-          <boxGeometry args={[width, 0.15, depth]} />
-          <meshStandardMaterial color="#f8fafc" roughness={0.5} transparent opacity={underground && floor.floorId === 'G' ? 0.15 : 1} />
-        </mesh>
-      )}
-
-      {/* Exterior walls - front/back/sides */}
+      {/* Exterior walls */}
       <mesh position={[-width / 2 + wallThickness / 2, FLOOR_HEIGHT / 2, 0]}>
         <boxGeometry args={[wallThickness, FLOOR_HEIGHT - 0.15, depth]} />
         <meshStandardMaterial color={wallColor} roughness={0.5} transparent opacity={hasDimming ? 0.4 : 0.85} />
@@ -155,6 +150,9 @@ export function FloorVolume({
 
       {/* Interior Floor Simulation Details & Furniture */}
       <FloorInterior floor={floor} hasDimming={hasDimming} onSelectObject={onSelectObject} />
+
+      {/* Emergency Disaster Visual Overlays (Sirens, Smoke, Evacuation Arrows) */}
+      <Emergency3DView emergency={emergency} currentFloorId={floor.floorId} />
 
       {/* Floor outline highlight if current floor */}
       {isCurrentFloor && (

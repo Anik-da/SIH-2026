@@ -12,7 +12,7 @@ import { ObjectInspectionModal, type InspectedObjectData } from '@/components/Bu
 import { EmergencyHUDBanner, type EmergencyState, type EmergencyType } from '@/components/Building/EmergencySimulator';
 import { useGameState } from '@/hooks/useGameState';
 import { building, properties } from '@/data/buildingData';
-import { FLOOR_NUMBER_MAP, FLOOR_HEIGHT, BUILDING_DIMENSIONS } from '@/data/constants';
+import { FLOOR_NUMBER_MAP, FLOOR_NAMES, FLOOR_HEIGHT, BUILDING_DIMENSIONS } from '@/data/constants';
 import type { BuildingGameDemoProps, PropertyData } from '@/types';
 
 import { usePlayerControls } from '@/hooks/usePlayerControls';
@@ -43,17 +43,28 @@ export function BuildingGameDemo({ onOpenGISGlobe, onOpenPropertyPassport, onBac
   const { setControlState } = usePlayerControls();
 
   const triggerRandomEmergency = useCallback(() => {
-    const floorIds = ['G', 'F1', 'F2', 'F3', 'F4', 'F5'];
+    const floorIds = ['G', 'F01', 'F02', 'F03', 'F04', 'F05', 'F06'];
     const randomFloor = floorIds[Math.floor(Math.random() * floorIds.length)];
     const types: ('FIRE' | 'ELECTRICAL' | 'GAS')[] = ['FIRE', 'ELECTRICAL', 'GAS'];
     const randomType = types[Math.floor(Math.random() * types.length)];
     
+    const floorName = FLOOR_NAMES[randomFloor] || `Floor ${randomFloor}`;
+
+    let desc = '';
+    if (randomType === 'FIRE') {
+      desc = `🔥 CRITICAL ALARM: Chemical Fire Hazard detected on ${floorName}! Oxygen suppression active. Follow neon escape route!`;
+    } else if (randomType === 'ELECTRICAL') {
+      desc = `⚡ CRITICAL ALARM: High-Voltage Electrical Arc Failure on ${floorName}! Circuit breaker tripped. Evacuate to Stairwell B!`;
+    } else {
+      desc = `☣ CRITICAL ALARM: Toxic Chemical Gas Pipeline Leak on ${floorName}! Atmospheric hazard level 3. Follow green arrows!`;
+    }
+
     setEmergency({
       isActive: true,
       floorId: randomFloor,
       type: randomType,
-      floorName: `Floor ${randomFloor}`,
-      description: `CRITICAL ALERT: ${randomType} HAZARD detected on Floor ${randomFloor}! Initiate Evacuation!`,
+      floorName,
+      description: desc,
     });
   }, []);
 
