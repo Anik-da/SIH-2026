@@ -266,9 +266,10 @@ export const LocationSearchBar: React.FC<Props> = ({
       {/* Dropdown Results & Quick Presets */}
       {isOpen && (
         <div
+          style={{ backgroundColor: '#090d16' }}
           className={`absolute ${
             direction === 'up' ? 'bottom-full mb-2.5' : 'top-full mt-2'
-          } left-0 w-80 sm:w-96 rounded-2xl border border-slate-700/80 bg-slate-900/98 p-2 shadow-2xl backdrop-blur-2xl ring-1 ring-white/10 z-50 max-h-80 overflow-y-auto custom-scrollbar`}
+          } left-0 w-80 sm:w-96 rounded-2xl border border-slate-700 bg-slate-950 p-2 shadow-2xl backdrop-blur-2xl ring-1 ring-cyan-500/20 z-50 max-h-80 overflow-y-auto custom-scrollbar`}
         >
           {/* Real-time search matches */}
           {results.length > 0 && (

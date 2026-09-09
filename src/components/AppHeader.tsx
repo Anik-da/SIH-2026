@@ -20,6 +20,7 @@ import {
   Eye,
   Zap,
   Box,
+  X,
 } from 'lucide-react';
 import type { UserRole, ExplodeState } from '../types/cadastral';
 import type { User } from '../firebase';
@@ -203,16 +204,37 @@ export default function AppHeader({
           </button>
 
           {isToolsDropdownOpen && (
-            <div className="absolute top-full left-0 mt-2 w-72 max-h-[calc(100vh-5rem)] overflow-y-auto rounded-2xl border border-slate-700/80 bg-slate-900/98 p-2 shadow-2xl backdrop-blur-2xl ring-1 ring-white/15 space-y-1 z-[9999] scrollbar-thin scrollbar-thumb-slate-700 animate-in fade-in slide-in-from-top-2 duration-150">
+            <div
+              style={{ backgroundColor: '#090d16', zIndex: 99999 }}
+              className="absolute top-full left-0 mt-2 w-80 max-h-[calc(100vh-5rem)] overflow-y-auto rounded-2xl border border-slate-700 bg-slate-950 p-2.5 shadow-2xl ring-1 ring-cyan-500/30 space-y-1.5 scrollbar-thin scrollbar-thumb-slate-700 animate-in fade-in slide-in-from-top-2 duration-150"
+            >
+              {/* Dropdown Header with Close button */}
+              <div className="flex items-center justify-between px-2 py-1 border-b border-slate-800 pb-2 mb-1">
+                <div className="flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-cyan-400 animate-pulse" />
+                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-cyan-300">Tools & Cadastral Views</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsToolsDropdownOpen(false)}
+                  className="rounded-lg p-1 text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                  title="Close Menu"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+
               {onOpenBlueprint && (
                 <button
                   onClick={() => { onOpenBlueprint(); setIsToolsDropdownOpen(false); }}
-                  className="flex w-full items-center gap-2.5 rounded-xl p-2 text-left text-xs text-slate-200 hover:bg-cyan-500/15 hover:text-cyan-300 transition-all"
+                  className="flex w-full items-center gap-3 rounded-xl p-2 text-left text-xs bg-slate-900/90 hover:bg-slate-800 border border-slate-800 hover:border-cyan-500/40 transition-all group"
                 >
-                  <Sparkles className="h-4 w-4 text-cyan-400" />
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-cyan-500/15 text-cyan-400 group-hover:bg-cyan-500/25 transition-colors">
+                    <Sparkles className="h-4 w-4" />
+                  </div>
                   <div>
-                    <div className="font-bold">2D CAD Blueprint Converter</div>
-                    <div className="text-[10px] text-slate-400">Vector blueprint CAD extrusion</div>
+                    <div className="font-bold text-slate-100 group-hover:text-cyan-300">2D CAD Blueprint Converter</div>
+                    <div className="text-[11px] text-slate-400 group-hover:text-slate-300">Vector blueprint CAD extrusion</div>
                   </div>
                 </button>
               )}
@@ -220,69 +242,81 @@ export default function AppHeader({
               {onOpenStackExplorer && (
                 <button
                   onClick={() => { onOpenStackExplorer(); setIsToolsDropdownOpen(false); }}
-                  className="flex w-full items-center gap-2.5 rounded-xl p-2 text-left text-xs text-slate-200 hover:bg-purple-500/15 hover:text-purple-300 transition-all"
+                  className="flex w-full items-center gap-3 rounded-xl p-2 text-left text-xs bg-slate-900/90 hover:bg-slate-800 border border-slate-800 hover:border-purple-500/40 transition-all group"
                 >
-                  <Box className="h-4 w-4 text-purple-400" />
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-purple-500/15 text-purple-400 group-hover:bg-purple-500/25 transition-colors">
+                    <Box className="h-4 w-4" />
+                  </div>
                   <div>
-                    <div className="font-bold">3D Stack &amp; Unit Matrix</div>
-                    <div className="text-[10px] text-slate-400">Unit breakdown &amp; stack explorer</div>
+                    <div className="font-bold text-slate-100 group-hover:text-purple-300">3D Stack &amp; Unit Matrix</div>
+                    <div className="text-[11px] text-slate-400 group-hover:text-slate-300">Unit breakdown &amp; stack explorer</div>
                   </div>
                 </button>
               )}
 
               <button
                 onClick={() => { onOpenSearch(); setIsToolsDropdownOpen(false); }}
-                className="flex w-full items-center gap-2.5 rounded-xl p-2 text-left text-xs text-slate-200 hover:bg-cyan-500/15 hover:text-cyan-300 transition-all"
+                className="flex w-full items-center gap-3 rounded-xl p-2 text-left text-xs bg-slate-900/90 hover:bg-slate-800 border border-slate-800 hover:border-cyan-500/40 transition-all group"
               >
-                <Search className="h-4 w-4 text-cyan-400" />
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-cyan-500/15 text-cyan-400 group-hover:bg-cyan-500/25 transition-colors">
+                  <Search className="h-4 w-4" />
+                </div>
                 <div>
-                  <div className="font-bold">Search ULPIN / VPID</div>
-                  <div className="text-[10px] text-slate-400">Registry spatial lookup</div>
+                  <div className="font-bold text-slate-100 group-hover:text-cyan-300">Search ULPIN / VPID</div>
+                  <div className="text-[11px] text-slate-400 group-hover:text-slate-300">Registry spatial lookup</div>
                 </div>
               </button>
 
               <button
                 onClick={() => { onOpenAnalytics(); setIsToolsDropdownOpen(false); }}
-                className="flex w-full items-center gap-2.5 rounded-xl p-2 text-left text-xs text-slate-200 hover:bg-cyan-500/15 hover:text-cyan-300 transition-all"
+                className="flex w-full items-center gap-3 rounded-xl p-2 text-left text-xs bg-slate-900/90 hover:bg-slate-800 border border-slate-800 hover:border-cyan-500/40 transition-all group"
               >
-                <BarChart3 className="h-4 w-4 text-cyan-400" />
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-cyan-500/15 text-cyan-400 group-hover:bg-cyan-500/25 transition-colors">
+                  <BarChart3 className="h-4 w-4" />
+                </div>
                 <div>
-                  <div className="font-bold">Volumetric Analytics</div>
-                  <div className="text-[10px] text-slate-400">Floor occupancy &amp; height limits</div>
+                  <div className="font-bold text-slate-100 group-hover:text-cyan-300">Volumetric Analytics</div>
+                  <div className="text-[11px] text-slate-400 group-hover:text-slate-300">Floor occupancy &amp; height limits</div>
                 </div>
               </button>
 
               <button
                 onClick={() => { onOpenZoning(); setIsToolsDropdownOpen(false); }}
-                className="flex w-full items-center gap-2.5 rounded-xl p-2 text-left text-xs text-slate-200 hover:bg-purple-500/15 hover:text-purple-300 transition-all"
+                className="flex w-full items-center gap-3 rounded-xl p-2 text-left text-xs bg-slate-900/90 hover:bg-slate-800 border border-slate-800 hover:border-purple-500/40 transition-all group"
               >
-                <Globe2 className="h-4 w-4 text-purple-400" />
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-purple-500/15 text-purple-400 group-hover:bg-purple-500/25 transition-colors">
+                  <Globe2 className="h-4 w-4" />
+                </div>
                 <div>
-                  <div className="font-bold">Land Use &amp; Zoning</div>
-                  <div className="text-[10px] text-slate-400">Civic zoning intelligence</div>
+                  <div className="font-bold text-slate-100 group-hover:text-purple-300">Land Use &amp; Zoning</div>
+                  <div className="text-[11px] text-slate-400 group-hover:text-slate-300">Civic zoning intelligence</div>
                 </div>
               </button>
 
               <button
                 onClick={() => { onOpenPropertyPresentation(); setIsToolsDropdownOpen(false); }}
-                className="flex w-full items-center gap-2.5 rounded-xl p-2 text-left text-xs text-slate-200 hover:bg-emerald-500/15 hover:text-emerald-300 transition-all"
+                className="flex w-full items-center gap-3 rounded-xl p-2 text-left text-xs bg-slate-900/90 hover:bg-slate-800 border border-slate-800 hover:border-emerald-500/40 transition-all group"
               >
-                <Home className="h-4 w-4 text-emerald-400" />
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-400 group-hover:bg-emerald-500/25 transition-colors">
+                  <Home className="h-4 w-4" />
+                </div>
                 <div>
-                  <div className="font-bold">Real Estate 3D Presentation</div>
-                  <div className="text-[10px] text-slate-400">Unit architectural showcase</div>
+                  <div className="font-bold text-slate-100 group-hover:text-emerald-300">Real Estate 3D Presentation</div>
+                  <div className="text-[11px] text-slate-400 group-hover:text-slate-300">Unit architectural showcase</div>
                 </div>
               </button>
 
               {onOpenGeoJsonImporter && (
                 <button
                   onClick={() => { onOpenGeoJsonImporter(); setIsToolsDropdownOpen(false); }}
-                  className="flex w-full items-center gap-2.5 rounded-xl p-2 text-left text-xs text-slate-200 hover:bg-blue-500/15 hover:text-blue-300 transition-all"
+                  className="flex w-full items-center gap-3 rounded-xl p-2 text-left text-xs bg-slate-900/90 hover:bg-slate-800 border border-slate-800 hover:border-blue-500/40 transition-all group"
                 >
-                  <Database className="h-4 w-4 text-blue-400" />
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-500/15 text-blue-400 group-hover:bg-blue-500/25 transition-colors">
+                    <Database className="h-4 w-4" />
+                  </div>
                   <div>
-                    <div className="font-bold">Import 3D GIS Database</div>
-                    <div className="text-[10px] text-slate-400">National GeoJSON layer ingestion</div>
+                    <div className="font-bold text-slate-100 group-hover:text-blue-300">Import 3D GIS Database</div>
+                    <div className="text-[11px] text-slate-400 group-hover:text-slate-300">National GeoJSON layer ingestion</div>
                   </div>
                 </button>
               )}
@@ -290,12 +324,14 @@ export default function AppHeader({
               {onOpenCreateBuilding && (
                 <button
                   onClick={() => { onOpenCreateBuilding(); setIsToolsDropdownOpen(false); }}
-                  className="flex w-full items-center gap-2.5 rounded-xl p-2 text-left text-xs text-slate-200 hover:bg-emerald-500/15 hover:text-emerald-300 transition-all"
+                  className="flex w-full items-center gap-3 rounded-xl p-2 text-left text-xs bg-slate-900/90 hover:bg-slate-800 border border-slate-800 hover:border-emerald-500/40 transition-all group"
                 >
-                  <PlusCircle className="h-4 w-4 text-emerald-400" />
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-400 group-hover:bg-emerald-500/25 transition-colors">
+                    <PlusCircle className="h-4 w-4" />
+                  </div>
                   <div>
-                    <div className="font-bold">+ Create 3D Building</div>
-                    <div className="text-[10px] text-slate-400">Custom volume positioning</div>
+                    <div className="font-bold text-slate-100 group-hover:text-emerald-300">+ Create 3D Building</div>
+                    <div className="text-[11px] text-slate-400 group-hover:text-slate-300">Custom volume positioning</div>
                   </div>
                 </button>
               )}
@@ -303,24 +339,28 @@ export default function AppHeader({
               {onToggleRealFinderHud && (
                 <button
                   onClick={() => { onToggleRealFinderHud(); setIsToolsDropdownOpen(false); }}
-                  className="flex w-full items-center gap-2.5 rounded-xl p-2 text-left text-xs text-slate-200 hover:bg-cyan-500/15 hover:text-cyan-300 transition-all"
+                  className="flex w-full items-center gap-3 rounded-xl p-2 text-left text-xs bg-slate-900/90 hover:bg-slate-800 border border-slate-800 hover:border-cyan-500/40 transition-all group"
                 >
-                  <Sparkles className="h-4 w-4 text-cyan-400" />
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-cyan-500/15 text-cyan-400 group-hover:bg-cyan-500/25 transition-colors">
+                    <Sparkles className="h-4 w-4" />
+                  </div>
                   <div>
-                    <div className="font-bold">RealFinder HUD Overlay</div>
-                    <div className="text-[10px] text-slate-400">Toggle live overlay</div>
+                    <div className="font-bold text-slate-100 group-hover:text-cyan-300">RealFinder HUD Overlay</div>
+                    <div className="text-[11px] text-slate-400 group-hover:text-slate-300">Toggle live overlay</div>
                   </div>
                 </button>
               )}
 
               <button
                 onClick={() => { onOpenAudit(); setIsToolsDropdownOpen(false); }}
-                className="flex w-full items-center gap-2.5 rounded-xl p-2 text-left text-xs text-slate-200 hover:bg-slate-800 hover:text-white transition-all border-t border-slate-800 pt-2"
+                className="flex w-full items-center gap-3 rounded-xl p-2 text-left text-xs bg-slate-900/90 hover:bg-slate-800 border border-slate-800 hover:border-slate-600 transition-all border-t border-slate-800/80 pt-2 group"
               >
-                <History className="h-4 w-4 text-slate-400" />
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-800 text-slate-400 group-hover:bg-slate-700 transition-colors">
+                  <History className="h-4 w-4" />
+                </div>
                 <div>
-                  <div className="font-bold">Audit Trail &amp; Events</div>
-                  <div className="text-[10px] text-slate-400">Officer action transaction history</div>
+                  <div className="font-bold text-slate-100 group-hover:text-white">Audit Trail &amp; Events</div>
+                  <div className="text-[11px] text-slate-400 group-hover:text-slate-300">Officer action transaction history</div>
                 </div>
               </button>
             </div>
