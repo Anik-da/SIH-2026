@@ -106,7 +106,7 @@ function App() {
 
   // Cadastral 3D State
   const [userRole, setUserRole] = useState<UserRole>('ADMIN');
-  const [selectedFloorId, setSelectedFloorId] = useState<string | null>('B-001-F3');
+  const [selectedFloorId, setSelectedFloorId] = useState<string | null>(null);
   const [explodeState, setExplodeState] = useState<ExplodeState>('collapsed');
   const [showUnderground, setShowUnderground] = useState(true);
   const [showUtilities, setShowUtilities] = useState(true);
@@ -414,33 +414,91 @@ function App() {
       );
 
       const viewer = viewerRef.current;
-      if (!viewer) return updated;
+      const targetLayer = updated.find((l) => l.id === id);
+      const isVis = targetLayer ? targetLayer.visible : true;
 
-      const layer = updated.find((l) => l.id === id);
-      if (!layer) return updated;
+      if (!viewer || viewer.isDestroyed()) return updated;
 
-      if (id === 'terrain') {
-        viewer.scene.globe.show = layer.visible;
+      // 1. Buildings Layer: 3D OSM Tilesets + Custom Campus Model + Extruded Footprints
+      if (id === 'buildings') {
+        try {
+          const primitivesCount = viewer.scene.primitives.length;
+          for (let i = 0; i < primitivesCount; i++) {
+            const p = viewer.scene.primitives.get(i);
+            if (p && typeof p.show !== 'undefined') {
+              p.show = isVis;
+            }
+          }
+        } catch {
+          // ignore
+        }
+
+        viewer.entities.values.forEach((e) => {
+          if (
+            typeof e.id === 'string' &&
+            (e.id.startsWith('sapthagiri-') ||
+              e.id.startsWith('solid-bim') ||
+              e.id.startsWith('real-osm-building') ||
+              e.id.startsWith('user-created-building') ||
+              e.id.includes('floor-'))
+          ) {
+            e.show = isVis;
+          }
+        });
       }
 
+      // 2. Terrain Layer: Depth testing & elevation
+      if (id === 'terrain') {
+        viewer.scene.globe.depthTestAgainstTerrain = isVis;
+      }
+
+      // 3. Imagery Layer: Satellite Imagery
       if (id === 'imagery') {
         const layerCount = viewer.imageryLayers.length;
         for (let i = 0; i < layerCount; i++) {
-          viewer.imageryLayers.get(i).show = layer.visible;
+          viewer.imageryLayers.get(i).show = isVis;
         }
       }
 
+      // 4. Parcels Layer: Cadastral Land Boundaries & Polygons
       if (id === 'parcels') {
-        for (let i = 0; i < viewer.dataSources.length; i++) {
-          const ds: DataSource = viewer.dataSources.get(i);
-          if (ds.name === 'Demo Parcels') {
-            ds.show = layer.visible;
+        viewer.entities.values.forEach((e) => {
+          if (
+            typeof e.id === 'string' &&
+            (e.id.startsWith('parcel') || e.id.startsWith('cadastral-') || e.id.includes('parcel'))
+          ) {
+            e.show = isVis;
           }
-        }
+        });
       }
 
+      // 5. Underground Layer: Subsurface Utilities & Excavation
       if (id === 'underground') {
-        setShowUnderground(layer.visible);
+        setShowUnderground(isVis);
+        setShowUtilities(isVis);
+        viewer.entities.values.forEach((e) => {
+          if (typeof e.id === 'string' && (e.id.includes('utility') || e.id.includes('subsurface'))) {
+            e.show = isVis;
+          }
+        });
+      }
+
+      // 6. Survey Layer: Control Points & Markers
+      if (id === 'survey') {
+        viewer.entities.values.forEach((e) => {
+          if (typeof e.id === 'string' && (e.id.startsWith('survey-') || e.id.includes('marker') || e.id.includes('label-'))) {
+            e.show = isVis;
+          }
+        });
+      }
+
+      // 7. Conflicts Layer: Validation Error Badges & Intersections
+      if (id === 'conflicts') {
+        viewer.entities.values.forEach((e) => {
+          if (typeof e.id === 'string' && (e.id.includes('conflict') || e.id.includes('overlap'))) {
+            e.show = isVis;
+          }
+        });
       }
 
       return updated;
@@ -818,9 +876,11 @@ function App() {
               onSelect={handleSelectFloor}
             />
 
-            {/* Right side: Layer Manager + Selection (Hidden when building/floor inspector is open) */}
+            {/* Right side: Layer Manager + Selection (Positioned alongside property panel when open) */}
             {!isBuildingPanelOpen && !isFloorPanelOpen && (
-              <div className="absolute right-4 top-4 z-10 flex flex-col gap-3">
+              <div className={`absolute top-4 z-10 flex flex-col gap-3 transition-all duration-300 ${
+                selectedProperty ? 'right-[26rem]' : 'right-4'
+              }`}>
                 <LayerManager layers={layers} onToggle={handleToggleLayer} />
                 <SelectionManager selection={selection} onClear={handleClearSelection} />
               </div>

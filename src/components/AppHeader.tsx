@@ -101,7 +101,7 @@ export default function AppHeader({
   }, []);
 
   return (
-    <header className="relative z-30 pointer-events-auto flex h-14 w-full items-center justify-between border-b border-slate-800 bg-slate-900/95 px-3 md:px-4 shadow-xl backdrop-blur-xl select-none">
+    <header className="relative z-50 pointer-events-auto flex h-14 w-full items-center justify-between border-b border-slate-800 bg-slate-900/95 px-3 md:px-4 shadow-xl backdrop-blur-xl select-none">
       {/* 1. Left Section: Brand Logo, Title & Engine Status */}
       <div className="flex items-center gap-2 md:gap-3 shrink-0 mr-1">
         <button
@@ -186,15 +186,23 @@ export default function AppHeader({
         {/* "More Tools & Cadastral Views" Dropdown */}
         <div className="relative shrink-0" ref={dropdownRef}>
           <button
-            onClick={() => setIsToolsDropdownOpen((prev) => !prev)}
-            className="flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800/90 px-2.5 md:px-3 py-1.5 text-xs font-semibold text-slate-200 transition-all hover:bg-slate-700 active:scale-95"
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsToolsDropdownOpen((prev) => !prev);
+            }}
+            className={`flex items-center gap-1.5 rounded-xl border px-2.5 md:px-3 py-1.5 text-xs font-semibold transition-all active:scale-95 cursor-pointer ${
+              isToolsDropdownOpen
+                ? 'border-cyan-400 bg-cyan-500/20 text-cyan-200 shadow-md shadow-cyan-500/20 ring-1 ring-cyan-400/50'
+                : 'border-slate-700 bg-slate-800/90 text-slate-200 hover:bg-slate-700'
+            }`}
           >
             <span>Tools &amp; Views</span>
-            <ChevronDown className={`h-3.5 w-3.5 text-slate-400 transition-transform ${isToolsDropdownOpen ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`h-3.5 w-3.5 text-slate-400 transition-transform duration-200 ${isToolsDropdownOpen ? 'rotate-180 text-cyan-300' : ''}`} />
           </button>
 
           {isToolsDropdownOpen && (
-            <div className="absolute top-full left-0 mt-2 w-64 rounded-2xl border border-slate-700/80 bg-slate-900/95 p-2 shadow-2xl backdrop-blur-xl ring-1 ring-white/10 space-y-1 z-50">
+            <div className="absolute top-full left-0 mt-2 w-72 max-h-[calc(100vh-5rem)] overflow-y-auto rounded-2xl border border-slate-700/80 bg-slate-900/98 p-2 shadow-2xl backdrop-blur-2xl ring-1 ring-white/15 space-y-1 z-[9999] scrollbar-thin scrollbar-thumb-slate-700 animate-in fade-in slide-in-from-top-2 duration-150">
               {onOpenBlueprint && (
                 <button
                   onClick={() => { onOpenBlueprint(); setIsToolsDropdownOpen(false); }}
