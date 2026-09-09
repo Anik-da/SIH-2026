@@ -31,79 +31,117 @@ export function FloorInterior({ floor, hasDimming = false, onSelectObject }: Flo
   const matWhiteBoard = useMemo(() => new THREE.MeshStandardMaterial({ color: '#f8fafc', roughness: 0.2 }), []);
   const matGoldAccent = useMemo(() => new THREE.MeshStandardMaterial({ color: '#f59e0b', metalness: 0.9, roughness: 0.2 }), []);
 
+  const handleObjectClick = (e: any, title: string, category: string, details: string[], description: string) => {
+    e.stopPropagation();
+    if (onSelectObject) {
+      onSelectObject({
+        title,
+        category,
+        floorLabel: floor.name || `Floor ${floor.floorId}`,
+        status: 'OPERATIONAL — VERIFIED',
+        details,
+        description,
+      });
+    }
+  };
+
   // Floor G: Grand Lobby & Reception
   if (fid === 'G' || fType === 'ground') {
     return (
       <group position={[0, 0, 0]}>
         {/* Reception Desk */}
-        <mesh position={[0, 0.45, 2]} material={matWoodWarm}>
-          <boxGeometry args={[3.2, 0.9, 0.8]} />
-        </mesh>
-        <mesh position={[0, 0.92, 2]} material={matOakLight}>
-          <boxGeometry args={[3.4, 0.08, 0.9]} />
-        </mesh>
-        {/* Monitor & Lamp on desk */}
-        <mesh position={[-0.6, 1.15, 2.1]} material={matBlackMetal}>
-          <boxGeometry args={[0.6, 0.4, 0.08]} />
-        </mesh>
-        <mesh position={[-0.6, 1.15, 2.05]} material={matScreenGlow}>
-          <boxGeometry args={[0.55, 0.35, 0.01]} />
-        </mesh>
-        <mesh position={[0.6, 1.1, 2.1]} material={matGoldAccent}>
-          <cylinderGeometry args={[0.08, 0.12, 0.3, 12]} />
-        </mesh>
+        <group
+          onClick={(e) => handleObjectClick(
+            e,
+            'Central Reception Desk & Concierge',
+            'Lobby Infrastructure',
+            ['Material: Warm Oak & Brass', 'Dimensions: 3.4m x 0.9m', 'Security: RFID Scanner Integrated'],
+            'Main entrance concierge desk with visitor check-in systems and building directory interface.'
+          )}
+        >
+          <mesh position={[0, 0.45, 2]} material={matWoodWarm}>
+            <boxGeometry args={[3.2, 0.9, 0.8]} />
+          </mesh>
+          <mesh position={[0, 0.92, 2]} material={matOakLight}>
+            <boxGeometry args={[3.4, 0.08, 0.9]} />
+          </mesh>
+          {/* Monitor & Lamp on desk */}
+          <mesh position={[-0.6, 1.15, 2.1]} material={matBlackMetal}>
+            <boxGeometry args={[0.6, 0.4, 0.08]} />
+          </mesh>
+          <mesh position={[-0.6, 1.15, 2.05]} material={matScreenGlow}>
+            <boxGeometry args={[0.55, 0.35, 0.01]} />
+          </mesh>
+          <mesh position={[0.6, 1.1, 2.1]} material={matGoldAccent}>
+            <cylinderGeometry args={[0.08, 0.12, 0.3, 12]} />
+          </mesh>
+        </group>
 
         {/* Turnstile Security Gates */}
-        <mesh position={[-2.5, 0.5, 0]} material={matMetalChrome}>
-          <boxGeometry args={[0.2, 1.0, 1.2]} />
-        </mesh>
-        <mesh position={[-1.7, 0.5, 0]} material={matMetalChrome}>
-          <boxGeometry args={[0.2, 1.0, 1.2]} />
-        </mesh>
-        <mesh position={[1.7, 0.5, 0]} material={matMetalChrome}>
-          <boxGeometry args={[0.2, 1.0, 1.2]} />
-        </mesh>
-        <mesh position={[2.5, 0.5, 0]} material={matMetalChrome}>
-          <boxGeometry args={[0.2, 1.0, 1.2]} />
-        </mesh>
+        <group
+          onClick={(e) => handleObjectClick(
+            e,
+            'Biometric Turnstile Security Gates',
+            'Access Control',
+            ['Throughput: 45 Persons/Min', 'Authentication: NFC / FaceID', 'Power: 120W DC System'],
+            'Automated biometric speed gates enforcing building access control and visitor verification.'
+          )}
+        >
+          <mesh position={[-2.5, 0.5, 0]} material={matMetalChrome}>
+            <boxGeometry args={[0.2, 1.0, 1.2]} />
+          </mesh>
+          <mesh position={[-1.7, 0.5, 0]} material={matMetalChrome}>
+            <boxGeometry args={[0.2, 1.0, 1.2]} />
+          </mesh>
+          <mesh position={[1.7, 0.5, 0]} material={matMetalChrome}>
+            <boxGeometry args={[0.2, 1.0, 1.2]} />
+          </mesh>
+          <mesh position={[2.5, 0.5, 0]} material={matMetalChrome}>
+            <boxGeometry args={[0.2, 1.0, 1.2]} />
+          </mesh>
+        </group>
 
         {/* Lounge Sofas & Coffee Table */}
-        <mesh position={[-4.5, 0.35, -2]} material={matBlueVelvet}>
-          <boxGeometry args={[2.2, 0.7, 1.0]} />
-        </mesh>
-        <mesh position={[-4.5, 0.25, -0.8]} material={matWoodDark}>
-          <boxGeometry args={[1.4, 0.4, 0.8]} />
-        </mesh>
-
-        <mesh position={[4.5, 0.35, -2]} material={matBlueVelvet}>
-          <boxGeometry args={[2.2, 0.7, 1.0]} />
-        </mesh>
-        <mesh position={[4.5, 0.25, -0.8]} material={matWoodDark}>
-          <boxGeometry args={[1.4, 0.4, 0.8]} />
-        </mesh>
-
-        {/* Potted Indoor Plants */}
-        <mesh position={[-5.8, 0.4, 3.5]} material={matPotTerracotta}>
-          <cylinderGeometry args={[0.3, 0.25, 0.8, 16]} />
-        </mesh>
-        <mesh position={[-5.8, 1.2, 3.5]} material={matGreenPlant}>
-          <sphereGeometry args={[0.55, 16, 16]} />
-        </mesh>
-
-        <mesh position={[5.8, 0.4, 3.5]} material={matPotTerracotta}>
-          <cylinderGeometry args={[0.3, 0.25, 0.8, 16]} />
-        </mesh>
-        <mesh position={[5.8, 1.2, 3.5]} material={matGreenPlant}>
-          <sphereGeometry args={[0.55, 16, 16]} />
-        </mesh>
+        <group
+          onClick={(e) => handleObjectClick(
+            e,
+            'Executive Lobby Velvet Lounge',
+            'Furniture & Seating',
+            ['Capacity: 6 Persons', 'Fabric: Deep Azure Velvet', 'Table: Solid Dark Mahogany'],
+            'Comfortable reception seating lounge for guests, faculty, and visiting delegations.'
+          )}
+        >
+          <mesh position={[-4.5, 0.35, -2]} material={matBlueVelvet}>
+            <boxGeometry args={[2.2, 0.7, 1.0]} />
+          </mesh>
+          <mesh position={[-4.5, 0.25, -0.8]} material={matWoodDark}>
+            <boxGeometry args={[1.4, 0.4, 0.8]} />
+          </mesh>
+          <mesh position={[4.5, 0.35, -2]} material={matBlueVelvet}>
+            <boxGeometry args={[2.2, 0.7, 1.0]} />
+          </mesh>
+          <mesh position={[4.5, 0.25, -0.8]} material={matWoodDark}>
+            <boxGeometry args={[1.4, 0.4, 0.8]} />
+          </mesh>
+        </group>
 
         {/* Directory Touch Kiosk Screen */}
-        <mesh position={[0, 0.9, -3.8]} material={matBlackMetal}>
-          <boxGeometry args={[0.8, 1.8, 0.15]} />
-        </mesh>
-        <mesh position={[0, 1.2, -3.72]} material={matScreenGlow}>
-          <boxGeometry args={[0.7, 1.0, 0.02]} />
-        </mesh>
+        <group
+          onClick={(e) => handleObjectClick(
+            e,
+            'Wayfinding Interactive 3D Kiosk',
+            'Smart Building Tech',
+            ['Display: 55" 4K Capacitive Touch', 'OS: VoluCad SmartCity OS', 'Network: 10Gbps Fiber Uplink'],
+            'Interactive wayfinding directory allowing visitors to search room numbers, faculty offices, and emergency escape routes.'
+          )}
+        >
+          <mesh position={[0, 0.9, -3.8]} material={matBlackMetal}>
+            <boxGeometry args={[0.8, 1.8, 0.15]} />
+          </mesh>
+          <mesh position={[0, 1.2, -3.72]} material={matScreenGlow}>
+            <boxGeometry args={[0.7, 1.0, 0.02]} />
+          </mesh>
+        </group>
       </group>
     );
   }

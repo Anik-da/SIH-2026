@@ -45,15 +45,15 @@ export function BuildingGameDemo({ onOpenGISGlobe, onOpenPropertyPassport, onBac
   const triggerRandomEmergency = useCallback(() => {
     const floorIds = ['G', 'F1', 'F2', 'F3', 'F4', 'F5'];
     const randomFloor = floorIds[Math.floor(Math.random() * floorIds.length)];
-    const types: EmergencyType[] = ['fire', 'gas_leak', 'structural_alert'];
+    const types: ('FIRE' | 'ELECTRICAL' | 'GAS')[] = ['FIRE', 'ELECTRICAL', 'GAS'];
     const randomType = types[Math.floor(Math.random() * types.length)];
     
     setEmergency({
-      active: true,
+      isActive: true,
       floorId: randomFloor,
       type: randomType,
-      message: `CRITICAL ALERT: ${randomType.toUpperCase().replace('_', ' ')} detected on Floor ${randomFloor}! Initiate Emergency Evacuation!`,
-      timestamp: Date.now(),
+      floorName: `Floor ${randomFloor}`,
+      description: `CRITICAL ALERT: ${randomType} HAZARD detected on Floor ${randomFloor}! Initiate Evacuation!`,
     });
   }, []);
 

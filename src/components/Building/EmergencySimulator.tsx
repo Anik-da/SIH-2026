@@ -13,7 +13,7 @@ export interface EmergencyState {
 }
 
 interface Emergency3DViewProps {
-  emergency: EmergencyState;
+  emergency?: EmergencyState | null;
   currentFloorId: string;
 }
 
@@ -31,7 +31,7 @@ export function Emergency3DView({ emergency, currentFloorId }: Emergency3DViewPr
     }
   });
 
-  if (!emergency.isActive || emergency.floorId !== currentFloorId) return null;
+  if (!emergency || !emergency.isActive || emergency.floorId !== currentFloorId) return null;
 
   return (
     <group position={[0, 0, 0]}>
@@ -95,14 +95,14 @@ export function Emergency3DView({ emergency, currentFloorId }: Emergency3DViewPr
 }
 
 interface EmergencyHUDProps {
-  emergency: EmergencyState;
+  emergency?: EmergencyState | null;
   onEvacuate: () => void;
   onDismiss: () => void;
   onTriggerRandom: () => void;
 }
 
 export function EmergencyHUDBanner({ emergency, onEvacuate, onDismiss, onTriggerRandom }: EmergencyHUDProps) {
-  if (!emergency.isActive) {
+  if (!emergency || !emergency.isActive) {
     return (
       <div className="absolute top-20 right-4 z-20">
         <button
