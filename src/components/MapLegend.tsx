@@ -1,4 +1,5 @@
-import { Info } from 'lucide-react';
+import React, { useState } from 'react';
+import { Info, ChevronUp } from 'lucide-react';
 
 interface LegendItem {
   label: string;
@@ -15,20 +16,39 @@ const LEGEND_ITEMS: LegendItem[] = [
 ];
 
 export default function MapLegend() {
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
-    <div className="pointer-events-auto w-56 rounded-xl border border-slate-700/60 bg-slate-900/80 backdrop-blur-md shadow-2xl">
-      <div className="flex items-center gap-2 border-b border-slate-700/60 px-4 py-3">
-        <Info className="h-4 w-4 text-cyan-400" />
-        <h3 className="text-sm font-semibold tracking-wide text-slate-100">Legend</h3>
-      </div>
-      <div className="space-y-2 p-3">
-        {LEGEND_ITEMS.map((item) => (
-          <div key={item.label} className="flex items-center gap-3">
-            <LegendSwatch item={item} />
-            <span className="text-sm text-slate-300">{item.label}</span>
-          </div>
-        ))}
-      </div>
+    <div
+      style={{ backgroundColor: '#090d16' }}
+      className="pointer-events-auto rounded-xl border border-slate-700 bg-slate-950/95 backdrop-blur-md shadow-2xl transition-all duration-200"
+    >
+      <button
+        type="button"
+        onClick={() => setIsOpen((prev) => !prev)}
+        className="flex items-center justify-between gap-3 px-3 py-2 text-xs font-semibold tracking-wide text-slate-200 hover:text-cyan-300 transition-colors w-full cursor-pointer"
+      >
+        <div className="flex items-center gap-1.5">
+          <Info className="h-3.5 w-3.5 text-cyan-400" />
+          <span>Legend</span>
+        </div>
+        <ChevronUp
+          className={`h-3.5 w-3.5 text-slate-400 transition-transform duration-200 ${
+            isOpen ? 'rotate-180 text-cyan-300' : ''
+          }`}
+        />
+      </button>
+
+      {isOpen && (
+        <div className="space-y-1.5 p-3 pt-1 border-t border-slate-800 w-52 animate-in fade-in duration-150">
+          {LEGEND_ITEMS.map((item) => (
+            <div key={item.label} className="flex items-center gap-2.5">
+              <LegendSwatch item={item} />
+              <span className="text-xs text-slate-300">{item.label}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

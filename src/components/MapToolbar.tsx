@@ -70,44 +70,44 @@ export default function MapToolbar({
   ];
 
   return (
-    <div className="pointer-events-auto flex flex-col gap-1.5 rounded-xl border border-slate-700/60 bg-slate-900/80 p-2 backdrop-blur-md shadow-2xl relative">
+    <div className="pointer-events-auto flex flex-col gap-1 rounded-xl border border-slate-700/60 bg-slate-900/90 p-1.5 backdrop-blur-md shadow-2xl relative">
       {buttons.map((btn) => (
         <button
           key={btn.label}
           onClick={btn.onClick}
           title={btn.label}
-          className={`group relative flex h-10 w-10 items-center justify-center rounded-lg transition-all duration-200 ${
+          className={`group relative flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-200 ${
             btn.active
               ? 'bg-cyan-500/20 text-cyan-300 ring-1 ring-cyan-400/50'
               : 'text-slate-300 hover:bg-slate-700/50 hover:text-cyan-300'
           }`}
         >
-          <btn.icon className="h-5 w-5" />
-          <span className="pointer-events-none absolute left-12 top-1/2 -translate-y-1/2 whitespace-nowrap rounded-md bg-slate-800 px-2 py-1 text-xs font-medium text-slate-100 opacity-0 shadow-lg transition-opacity duration-200 group-hover:opacity-100">
+          <btn.icon className="h-4 w-4" />
+          <span className="pointer-events-none absolute left-10 top-1/2 -translate-y-1/2 whitespace-nowrap rounded-md bg-slate-800 px-2 py-1 text-xs font-medium text-slate-100 opacity-0 shadow-lg transition-opacity duration-200 group-hover:opacity-100 z-50">
             {btn.label}
           </span>
         </button>
       ))}
 
       {/* God's Eye View Optics Sensor Mode Selector */}
-      <div className="relative border-t border-slate-700/60 pt-1.5">
+      <div className="relative border-t border-slate-700/60 pt-1">
         <button
           onClick={() => setShowOpticsMenu((prev) => !prev)}
           title={`God's Eye Optics Sensor: ${activeSensorMode}`}
-          className={`group relative flex h-10 w-10 items-center justify-center rounded-lg transition-all duration-200 ${
+          className={`group relative flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-200 ${
             activeSensorMode !== 'NORMAL'
               ? 'bg-amber-500/25 text-amber-300 ring-1 ring-amber-400/60 shadow-[0_0_12px_rgba(245,158,11,0.35)]'
               : 'text-slate-300 hover:bg-slate-700/50 hover:text-amber-300'
           }`}
         >
-          <Sparkles className="h-5 w-5 animate-pulse" />
-          <span className="pointer-events-none absolute left-12 top-1/2 -translate-y-1/2 whitespace-nowrap rounded-md bg-slate-800 px-2 py-1 text-xs font-medium text-slate-100 opacity-0 shadow-lg transition-opacity duration-200 group-hover:opacity-100">
+          <Sparkles className="h-4 w-4 animate-pulse" />
+          <span className="pointer-events-none absolute left-10 top-1/2 -translate-y-1/2 whitespace-nowrap rounded-md bg-slate-800 px-2 py-1 text-xs font-medium text-slate-100 opacity-0 shadow-lg transition-opacity duration-200 group-hover:opacity-100 z-50">
             Optics Sensor: {activeSensorMode}
           </span>
         </button>
 
         {showOpticsMenu && (
-          <div className="absolute left-14 bottom-0 z-50 w-52 rounded-xl border border-slate-700/80 bg-slate-900/95 p-1.5 shadow-2xl backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150">
+          <div className="absolute left-11 bottom-0 z-50 w-52 rounded-xl border border-slate-700/80 bg-slate-900/95 p-1.5 shadow-2xl backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150">
             <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800 mb-1 flex items-center gap-1.5">
               <Sparkles className="h-3 w-3 text-amber-400" /> God's Eye Optics
             </div>
@@ -118,13 +118,13 @@ export default function MapToolbar({
                   if (onSelectSensorMode) onSelectSensorMode(s.mode);
                   setShowOpticsMenu(false);
                 }}
-                className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-all ${
+                className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all ${
                   activeSensorMode === s.mode
                     ? 'bg-amber-500/20 text-amber-300 font-semibold ring-1 ring-amber-500/40'
                     : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
                 }`}
               >
-                <s.icon className={`h-4 w-4 ${s.color}`} />
+                <s.icon className={`h-3.5 w-3.5 ${s.color}`} />
                 <span>{s.label}</span>
               </button>
             ))}
@@ -133,14 +133,14 @@ export default function MapToolbar({
       </div>
 
       {/* 2D / 3D toggle — separate pill */}
-      <div className="border-t border-slate-700/60 pt-1.5">
+      <div className="border-t border-slate-700/60 pt-1">
         <button
           onClick={onToggle2D3D}
           title={is3D ? 'Switch to 2D' : 'Switch to 3D'}
-          className="group relative flex h-10 w-10 items-center justify-center rounded-lg text-slate-300 transition-all duration-200 hover:bg-slate-700/50 hover:text-cyan-300"
+          className="group relative flex h-8 w-8 items-center justify-center rounded-lg text-slate-300 transition-all duration-200 hover:bg-slate-700/50 hover:text-cyan-300"
         >
-          {is3D ? <Box className="h-5 w-5" /> : <Map className="h-5 w-5" />}
-          <span className="pointer-events-none absolute left-12 top-1/2 -translate-y-1/2 whitespace-nowrap rounded-md bg-slate-800 px-2 py-1 text-xs font-medium text-slate-100 opacity-0 shadow-lg transition-opacity duration-200 group-hover:opacity-100">
+          {is3D ? <Box className="h-4 w-4" /> : <Map className="h-4 w-4" />}
+          <span className="pointer-events-none absolute left-10 top-1/2 -translate-y-1/2 whitespace-nowrap rounded-md bg-slate-800 px-2 py-1 text-xs font-medium text-slate-100 opacity-0 shadow-lg transition-opacity duration-200 group-hover:opacity-100 z-50">
             {is3D ? '3D Mode' : '2D Mode'}
           </span>
         </button>
