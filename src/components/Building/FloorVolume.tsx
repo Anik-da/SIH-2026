@@ -93,17 +93,17 @@ export function FloorVolume({
       {/* Exterior walls / Parapet Railings */}
       <mesh position={[-width / 2 + wallThickness / 2, wallH / 2, 0]}>
         <boxGeometry args={[wallThickness, wallH, depth]} />
-        <meshStandardMaterial color={wallColor} roughness={0.5} transparent opacity={hasDimming ? 0.4 : 0.85} />
+        <meshStandardMaterial color={wallColor} roughness={0.5} side={THREE.DoubleSide} transparent={hasDimming} opacity={hasDimming ? 0.4 : 1.0} />
       </mesh>
       <mesh position={[width / 2 - wallThickness / 2, wallH / 2, 0]}>
         <boxGeometry args={[wallThickness, wallH, depth]} />
-        <meshStandardMaterial color={wallColor} roughness={0.5} transparent opacity={hasDimming ? 0.4 : 0.85} />
+        <meshStandardMaterial color={wallColor} roughness={0.5} side={THREE.DoubleSide} transparent={hasDimming} opacity={hasDimming ? 0.4 : 1.0} />
       </mesh>
 
       {/* Back wall */}
       <mesh position={[0, wallH / 2, -depth / 2 + wallThickness / 2]}>
         <boxGeometry args={[width, wallH, wallThickness]} />
-        <meshStandardMaterial color={wallColor} roughness={0.5} transparent opacity={hasDimming ? 0.4 : 0.85} />
+        <meshStandardMaterial color={wallColor} roughness={0.5} side={THREE.DoubleSide} transparent={hasDimming} opacity={hasDimming ? 0.4 : 1.0} />
       </mesh>
 
       {/* Front wall */}
@@ -111,21 +111,21 @@ export function FloorVolume({
         <>
           <mesh position={[-width / 4 - 1, wallH / 2, depth / 2 - wallThickness / 2]}>
             <boxGeometry args={[width / 2 - 2, wallH, wallThickness]} />
-            <meshStandardMaterial color={wallColor} roughness={0.5} transparent opacity={hasDimming ? 0.4 : 0.85} />
+            <meshStandardMaterial color={wallColor} roughness={0.5} side={THREE.DoubleSide} transparent={hasDimming} opacity={hasDimming ? 0.4 : 1.0} />
           </mesh>
           <mesh position={[width / 4 + 1, wallH / 2, depth / 2 - wallThickness / 2]}>
             <boxGeometry args={[width / 2 - 2, wallH, wallThickness]} />
-            <meshStandardMaterial color={wallColor} roughness={0.5} transparent opacity={hasDimming ? 0.4 : 0.85} />
+            <meshStandardMaterial color={wallColor} roughness={0.5} side={THREE.DoubleSide} transparent={hasDimming} opacity={hasDimming ? 0.4 : 1.0} />
           </mesh>
           <mesh position={[0, wallH - 0.5, depth / 2 - wallThickness / 2]}>
             <boxGeometry args={[2, 0.5, wallThickness]} />
-            <meshStandardMaterial color={wallColor} roughness={0.5} transparent opacity={hasDimming ? 0.4 : 0.85} />
+            <meshStandardMaterial color={wallColor} roughness={0.5} side={THREE.DoubleSide} transparent={hasDimming} opacity={hasDimming ? 0.4 : 1.0} />
           </mesh>
         </>
       ) : (
         <mesh position={[0, wallH / 2, depth / 2 - wallThickness / 2]}>
           <boxGeometry args={[width, wallH, wallThickness]} />
-          <meshStandardMaterial color={wallColor} roughness={0.5} transparent opacity={hasDimming ? 0.4 : 0.85} />
+          <meshStandardMaterial color={wallColor} roughness={0.5} side={THREE.DoubleSide} transparent={hasDimming} opacity={hasDimming ? 0.4 : 1.0} />
         </mesh>
       )}
 

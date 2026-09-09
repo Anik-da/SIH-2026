@@ -8,7 +8,7 @@ dns.setServers(['8.8.8.8', '1.1.1.1']);
 
 dotenv.config();
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://anikda9945_db_user:vFXtQ79Ws5bvtHCj@cluster0.rnjbssz.mongodb.net/volucad?retryWrites=true&w=majority';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/volucad';
 const MONGODB_DATABASE = process.env.MONGODB_DATABASE || 'volucad';
 
 async function seedAtlas() {
