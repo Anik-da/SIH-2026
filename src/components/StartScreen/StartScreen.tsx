@@ -149,13 +149,6 @@ export function StartScreen({ onEnter, onOpenGIS, onBackToHome }: StartScreenPro
 
       {/* Content */}
       <div className="relative z-10 flex h-full flex-col items-center justify-center px-6">
-        <div className="mb-2 flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-cyan-400/30 bg-cyan-400/10">
-            <Building2 className="h-7 w-7 text-cyan-400" />
-          </div>
-          <span className="text-sm font-medium tracking-[0.3em] text-cyan-400/80">SIH 2026</span>
-        </div>
-
         <h1 className="text-5xl font-bold tracking-tight text-white sm:text-6xl md:text-7xl">
           VOLU-CAD <span className="text-cyan-400">3D</span>
         </h1>

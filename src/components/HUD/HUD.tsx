@@ -91,66 +91,12 @@ export function HUD({
         </div>
       </div>
 
-      {/* Bottom Left: Interactive D-Pad Navigation Overlay */}
-      <div className="absolute bottom-5 left-5 z-20 flex flex-col items-center gap-1 bg-slate-900/85 p-3 rounded-2xl border border-cyan-500/40 backdrop-blur-md shadow-2xl">
-        <div className="text-[10px] font-bold text-cyan-300 tracking-wider">ROOM CONTROLS</div>
-        <button
-          onMouseDown={() => onMoveForward?.(true)}
-          onMouseUp={() => onMoveForward?.(false)}
-          onTouchStart={() => onMoveForward?.(true)}
-          onTouchEnd={() => onMoveForward?.(false)}
-          className="w-10 h-10 rounded-xl bg-slate-800 border border-cyan-400/50 text-cyan-300 font-bold hover:bg-cyan-600 hover:text-white transition-all active:scale-95 flex items-center justify-center shadow-md select-none"
-          title="Walk Forward (W / ⬆️)"
-        >
-          ⬆️
-        </button>
-        <div className="flex gap-2">
-          <button
-            onMouseDown={() => onMoveLeft?.(true)}
-            onMouseUp={() => onMoveLeft?.(false)}
-            onTouchStart={() => onMoveLeft?.(true)}
-            onTouchEnd={() => onMoveLeft?.(false)}
-            className="w-10 h-10 rounded-xl bg-slate-800 border border-cyan-400/50 text-cyan-300 font-bold hover:bg-cyan-600 hover:text-white transition-all active:scale-95 flex items-center justify-center shadow-md select-none"
-            title="Walk Left (A / ⬅️)"
-          >
-            ⬅️
-          </button>
-          <button
-            onClick={() => onInteractClick?.()}
-            className="w-10 h-10 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 border border-amber-300 text-white font-extrabold hover:brightness-110 transition-all active:scale-95 flex items-center justify-center shadow-lg shadow-amber-900/50 select-none"
-            title="Interact / Inspect (E)"
-          >
-            🖐️
-          </button>
-          <button
-            onMouseDown={() => onMoveRight?.(true)}
-            onMouseUp={() => onMoveRight?.(false)}
-            onTouchStart={() => onMoveRight?.(true)}
-            onTouchEnd={() => onMoveRight?.(false)}
-            className="w-10 h-10 rounded-xl bg-slate-800 border border-cyan-400/50 text-cyan-300 font-bold hover:bg-cyan-600 hover:text-white transition-all active:scale-95 flex items-center justify-center shadow-md select-none"
-            title="Walk Right (D / ➡️)"
-          >
-            ➡️
-          </button>
-        </div>
-        <button
-          onMouseDown={() => onMoveBackward?.(true)}
-          onMouseUp={() => onMoveBackward?.(false)}
-          onTouchStart={() => onMoveBackward?.(true)}
-          onTouchEnd={() => onMoveBackward?.(false)}
-          className="w-10 h-10 rounded-xl bg-slate-800 border border-cyan-400/50 text-cyan-300 font-bold hover:bg-cyan-600 hover:text-white transition-all active:scale-95 flex items-center justify-center shadow-md select-none"
-          title="Walk Backward (S / ⬇️)"
-        >
-          ⬇️
-        </button>
-      </div>
-
       {/* Bottom Center: Keyboard hint */}
       <div className="pointer-events-none absolute bottom-4 left-1/2 z-10 -translate-x-1/2">
         <div className="flex items-center gap-4 rounded-lg border border-slate-700/50 bg-slate-900/70 px-5 py-2 backdrop-blur-md">
-          <span className="text-xs text-slate-300"><kbd className="font-mono text-cyan-300">WASD / D-Pad</kbd> Move</span>
+          <span className="text-xs text-slate-300"><kbd className="font-mono text-cyan-300">WASD / Arrow Keys</kbd> Move</span>
           <span className="text-xs text-slate-300"><kbd className="font-mono text-cyan-300">Mouse Drag</kbd> Look 360°</span>
-          <span className="text-xs text-slate-300"><kbd className="font-mono text-cyan-300">E / 🖐️</kbd> Interact</span>
+          <span className="text-xs text-slate-300"><kbd className="font-mono text-cyan-300">E</kbd> Interact</span>
           <span className="text-xs text-slate-300"><kbd className="font-mono text-cyan-300">Space</kbd> Jump</span>
         </div>
       </div>
