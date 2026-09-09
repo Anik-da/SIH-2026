@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, MapPin, Crosshair, X, Loader2, Navigation, Building2 } from 'lucide-react';
+import { Search, MapPin, Crosshair, X, Loader2, Navigation, Building2, ChevronDown } from 'lucide-react';
 
 interface LocationSearchResult {
   place_id: number;
@@ -49,15 +49,29 @@ export const LocationSearchBar: React.FC<Props> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Close on outside click
+  // Close on outside click or Escape key
   useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
+    function handleClickOutside(e: Event) {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setIsOpen(false);
       }
     }
+
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        setIsOpen(false);
+      }
+    }
+
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('pointerdown', handleClickOutside);
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('pointerdown', handleClickOutside);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
   // Real-time geocoding query with debounce
@@ -185,22 +199,39 @@ export const LocationSearchBar: React.FC<Props> = ({
 
         {query && !isLoading && (
           <button
-            onClick={() => {
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
               setQuery('');
               setResults([]);
+              setIsOpen(false);
             }}
-            className="text-slate-400 hover:text-white p-0.5 rounded-full hover:bg-slate-800 transition"
+            title="Clear and close"
+            className="text-slate-400 hover:text-white p-0.5 rounded-full hover:bg-slate-800 transition cursor-pointer"
           >
-            <X className="h-3 w-3" />
+            <X className="h-3.5 w-3.5" />
           </button>
         )}
+
+        {/* Dropdown Toggle Button */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsOpen((prev) => !prev);
+          }}
+          title={isOpen ? 'Close suggestions' : 'Open suggestions'}
+          className="text-slate-400 hover:text-cyan-300 p-0.5 rounded-md hover:bg-slate-800/80 transition cursor-pointer"
+        >
+          <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${isOpen ? 'rotate-180 text-cyan-400' : ''}`} />
+        </button>
 
         {/* Live GPS Fix Trigger Button */}
         <button
           onClick={handleDetectLiveLocation}
           disabled={isLocating}
           title="Detect my live GPS location with high accuracy"
-          className="flex items-center gap-1 rounded-xl border border-emerald-500/50 bg-emerald-500/15 px-2 py-1 text-[10px] font-bold text-emerald-300 hover:bg-emerald-500/25 transition active:scale-95 disabled:opacity-50 shrink-0 ml-1"
+          className="flex items-center gap-1 rounded-xl border border-emerald-500/50 bg-emerald-500/15 px-2 py-1 text-[10px] font-bold text-emerald-300 hover:bg-emerald-500/25 transition active:scale-95 disabled:opacity-50 shrink-0 ml-1 cursor-pointer"
         >
           <Crosshair className={`h-3 w-3 text-emerald-400 ${isLocating ? 'animate-spin' : ''}`} />
           <span className="hidden sm:inline">{isLocating ? 'Locating...' : 'GPS'}</span>
@@ -228,8 +259,18 @@ export const LocationSearchBar: React.FC<Props> = ({
           {/* Real-time search matches */}
           {results.length > 0 && (
             <div className="space-y-1 mb-2">
-              <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800">
-                Search Results ({results.length})
+              <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800 flex items-center justify-between">
+                <span>Search Results ({results.length})</span>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsOpen(false);
+                  }}
+                  className="text-slate-400 hover:text-white p-0.5 rounded hover:bg-slate-800 transition cursor-pointer text-[10px]"
+                >
+                  <X className="h-3 w-3" />
+                </button>
               </div>
               {results.map((r) => {
                 const parts = r.display_name.split(',');
@@ -239,7 +280,7 @@ export const LocationSearchBar: React.FC<Props> = ({
                   <button
                     key={r.place_id}
                     onClick={() => handleSelect(parseFloat(r.lat), parseFloat(r.lon), r.display_name)}
-                    className="flex w-full items-start gap-2.5 rounded-xl p-2 text-left hover:bg-cyan-500/15 transition-all group"
+                    className="flex w-full items-start gap-2.5 rounded-xl p-2 text-left hover:bg-cyan-500/15 transition-all group cursor-pointer"
                   >
                     <MapPin className="h-4 w-4 text-cyan-400 mt-0.5 shrink-0 group-hover:scale-110 transition-transform" />
                     <div className="min-w-0 flex-1">
@@ -257,9 +298,23 @@ export const LocationSearchBar: React.FC<Props> = ({
 
           {/* Quick Hubs Preset */}
           <div>
-            <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800 flex items-center justify-between">
-              <span>National Cadastral Hubs</span>
-              <span className="text-[9px] text-cyan-400 lowercase">1-click teleport</span>
+            <div className="px-2 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800 flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <span>National Cadastral Hubs</span>
+                <span className="text-[9px] text-cyan-400 lowercase font-normal">(1-click teleport)</span>
+              </div>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsOpen(false);
+                }}
+                className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-slate-800 hover:bg-red-500/20 text-slate-300 hover:text-red-300 border border-slate-700/60 transition cursor-pointer text-[10px] font-bold"
+                title="Close suggestion panel"
+              >
+                <span>Close</span>
+                <X className="h-3 w-3" />
+              </button>
             </div>
             <div className="grid grid-cols-1 gap-1 mt-1">
               {QUICK_PRESETS.map((p) => (
