@@ -12,6 +12,7 @@ import {
   Box,
   Flame,
   CheckCircle2,
+  Building2,
 } from 'lucide-react';
 import type { User } from '../../firebase';
 
@@ -19,9 +20,10 @@ interface Props {
   user: User | null;
   onLaunchApp: () => void;
   onOpenLogin: () => void;
+  onOpen3DBuilding?: () => void;
 }
 
-export const LandingPage: React.FC<Props> = ({ user, onLaunchApp, onOpenLogin }) => {
+export const LandingPage: React.FC<Props> = ({ user, onLaunchApp, onOpenLogin, onOpen3DBuilding }) => {
   return (
     <div className="min-h-screen w-full overflow-x-hidden bg-slate-950 text-slate-100 selection:bg-cyan-500 selection:text-slate-950 font-sans">
       {/* Background Glow Accents */}
@@ -45,7 +47,17 @@ export const LandingPage: React.FC<Props> = ({ user, onLaunchApp, onOpenLogin })
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          {onOpen3DBuilding && (
+            <button
+              onClick={onOpen3DBuilding}
+              className="flex items-center gap-1.5 rounded-xl border border-cyan-500/40 bg-cyan-500/10 px-3 py-2 text-xs font-bold text-cyan-300 transition-all hover:bg-cyan-500/20"
+            >
+              <Building2 className="h-4 w-4" />
+              <span>3D Building</span>
+            </button>
+          )}
+
           <button
             onClick={onOpenLogin}
             className="hidden items-center gap-2 text-xs font-semibold text-slate-300 hover:text-cyan-400 sm:flex"
@@ -93,6 +105,16 @@ export const LandingPage: React.FC<Props> = ({ user, onLaunchApp, onOpenLogin })
             Launch 3D GIS Globe Platform
             <ArrowRight className="h-5 w-5" />
           </button>
+
+          {onOpen3DBuilding && (
+            <button
+              onClick={onOpen3DBuilding}
+              className="flex items-center gap-2 rounded-2xl border border-cyan-500/40 bg-slate-900/90 px-7 py-4 text-sm font-bold text-cyan-300 transition-all hover:bg-cyan-500/10 hover:border-cyan-400 w-full sm:w-auto justify-center shadow-lg shadow-cyan-950/40"
+            >
+              <Building2 className="h-4 w-4 text-cyan-400" />
+              <span>3D Building Explorer</span>
+            </button>
+          )}
 
           <button
             onClick={onOpenLogin}

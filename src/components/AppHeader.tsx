@@ -20,6 +20,7 @@ import {
   Eye,
   Zap,
   Box,
+  Building2,
   X,
 } from 'lucide-react';
 import type { UserRole, ExplodeState } from '../types/cadastral';
@@ -55,6 +56,7 @@ interface Props {
   onOpenStackExplorer?: () => void;
   isRescueModeActive?: boolean;
   onToggleRescueMode?: () => void;
+  onOpen3DBuilding?: () => void;
 }
 
 export default function AppHeader({
@@ -86,6 +88,7 @@ export default function AppHeader({
   onOpenStackExplorer,
   isRescueModeActive = false,
   onToggleRescueMode,
+  onOpen3DBuilding,
 }: Props) {
   const { isDemoMode, toggleDemoMode } = useDataProvider();
   const [isToolsDropdownOpen, setIsToolsDropdownOpen] = useState(false);
@@ -185,6 +188,18 @@ export default function AppHeader({
           </button>
         )}
 
+        {/* 3D Property Building Explorer */}
+        {onOpen3DBuilding && (
+          <button
+            onClick={onOpen3DBuilding}
+            className="flex items-center gap-1.5 rounded-xl border border-cyan-400/50 bg-gradient-to-r from-cyan-950/80 to-blue-950/80 px-2.5 py-1.5 text-xs font-bold text-cyan-300 transition-all hover:scale-105 hover:border-cyan-400 hover:from-cyan-900/90 hover:to-blue-900/90 hover:text-cyan-100 shadow-md shadow-cyan-950/40 active:scale-95 shrink-0"
+            title="Switch to 3D Building Experience"
+          >
+            <Building2 className="h-3.5 w-3.5 text-cyan-400 animate-pulse" />
+            <span>3D Building</span>
+          </button>
+        )}
+
         {/* "More Tools & Cadastral Views" Dropdown */}
         <div className="relative shrink-0" ref={dropdownRef}>
           <button
@@ -223,6 +238,21 @@ export default function AppHeader({
                   <X className="h-3.5 w-3.5" />
                 </button>
               </div>
+
+              {onOpen3DBuilding && (
+                <button
+                  onClick={() => { onOpen3DBuilding(); setIsToolsDropdownOpen(false); }}
+                  className="flex w-full items-center gap-3 rounded-xl p-2 text-left text-xs bg-slate-900/90 hover:bg-slate-800 border border-slate-800 hover:border-cyan-500/40 transition-all group"
+                >
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-cyan-500/15 text-cyan-400 group-hover:bg-cyan-500/25 transition-colors">
+                    <Building2 className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <div className="font-bold text-slate-100 group-hover:text-cyan-300">3D Building Explorer</div>
+                    <div className="text-[11px] text-slate-400 group-hover:text-slate-300">First-person 3D vertical property exploration</div>
+                  </div>
+                </button>
+              )}
 
               {onOpenBlueprint && (
                 <button

@@ -17,11 +17,13 @@ import {
   Sparkles,
   Zap,
   Database,
+  Building2,
 } from 'lucide-react';
 
 export type PageId =
   | 'landing'
   | 'login'
+  | '3d_building'
   | 'globe'
   | 'data_sources'
   | 'search'
@@ -72,6 +74,15 @@ const PAGES: PageItem[] = [
     description: 'Secure Split-Screen Login for Cadastral Surveyors & Admins',
     icon: UserCheck,
     color: 'text-emerald-400',
+  },
+  {
+    id: '3d_building',
+    title: '3D Building Explorer',
+    category: 'Core Navigation',
+    description: 'First-person interactive vertical property exploration, elevator & unit inspect',
+    icon: Building2,
+    badge: '3D Module',
+    color: 'text-cyan-400',
   },
   {
     id: 'globe',

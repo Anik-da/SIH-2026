@@ -12,7 +12,10 @@
     "typecheck": "tsc --noEmit -p tsconfig.app.json"
   },
   "dependencies": {
+    "@react-three/drei": "^9.122.0",
+    "@react-three/fiber": "^8.18.0",
     "@supabase/supabase-js": "^2.57.4",
+    "@types/three": "^0.169.0",
     "cesium": "^1.144.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
@@ -23,7 +26,8 @@
     "mongodb": "^7.6.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "satellite.js": "^4.1.4"
+    "satellite.js": "^4.1.4",
+    "three": "^0.169.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",

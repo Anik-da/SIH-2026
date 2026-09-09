@@ -44,6 +44,8 @@ import { AuthModal } from './components/auth/AuthModal';
 
 import { LandingPage } from './components/landing/LandingPage';
 import { LoginPage } from './components/landing/LoginPage';
+import { BuildingGameDemo } from './components/BuildingGame/BuildingGameDemo';
+import type { PropertyContext } from './types';
 import GeoJsonImporterModal from './components/cadastral/GeoJsonImporterModal';
 
 import { buildingApiClient } from './services/api/buildingApiClient';
@@ -71,8 +73,8 @@ function App() {
   const measureEntityRef = useRef<Entity | null>(null);
   const measurePointsRef = useRef<Cartesian3[]>([]);
 
-  // Navigation View State ('landing' | 'login' | 'app')
-  const [viewMode, setViewMode] = useState<'landing' | 'login' | 'app'>('landing');
+  // Navigation View State ('landing' | 'login' | '3d-building' | 'app')
+  const [viewMode, setViewMode] = useState<'landing' | 'login' | '3d-building' | 'app'>('landing');
 
   // Base GIS State
   const [activeSensorMode, setActiveSensorMode] = useState<SensorMode>('NORMAL');
@@ -616,6 +618,7 @@ function App() {
         user={authUser}
         onLaunchApp={() => setViewMode('app')}
         onOpenLogin={() => setViewMode('login')}
+        onOpen3DBuilding={() => setViewMode('3d-building')}
       />
     );
   }
@@ -626,7 +629,38 @@ function App() {
       <LoginPage
         user={authUser}
         onBackToLanding={() => setViewMode('landing')}
-        onLaunchApp={() => setViewMode('app')}
+        onLaunchApp={() => setViewMode('3d-building')}
+      />
+    );
+  }
+
+  // Render Bolt-integrated 3D Building Experience
+  if (viewMode === '3d-building') {
+    return (
+      <BuildingGameDemo
+        onOpenGISGlobe={(context) => {
+          if (context && context.floorId) {
+            const matchedFloor = demoBuilding.floors.find(
+              (f) =>
+                f.shortLabel.toLowerCase() === context.floorId.toLowerCase() ||
+                f.floorNumber === context.floorNumber
+            );
+            if (matchedFloor) {
+              setSelectedFloorId(matchedFloor.id);
+              const viewer = viewerRef.current;
+              if (viewer) {
+                setTimeout(() => {
+                  flyToFloor(viewer, demoBuilding, matchedFloor, explodeState === 'exploded' ? 1 : 0);
+                }, 500);
+              }
+            }
+          }
+          setViewMode('app');
+        }}
+        onOpenPropertyPassport={() => {
+          setIsPassportOpen(true);
+        }}
+        onBackToHome={() => setViewMode('landing')}
       />
     );
   }
@@ -664,6 +698,7 @@ function App() {
         onOpenStackExplorer={() => setIsStackExplorerOpen(true)}
         isRescueModeActive={isRescueModeActive}
         onToggleRescueMode={() => setIsRescueModeActive((prev) => !prev)}
+        onOpen3DBuilding={() => setViewMode('3d-building')}
       />
 
       {/* Main 3D GIS & Cadastral Area */}
