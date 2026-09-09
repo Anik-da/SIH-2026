@@ -1,6 +1,6 @@
 import React from 'react';
 import type { VerticalProperty } from '../../types/cadastral';
-import { statusForProperty } from '../../data/colors';
+import { statusForProperty, STATUS_COLORS } from '../../data/colors';
 import {
   Layers,
   Box,

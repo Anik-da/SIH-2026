@@ -755,7 +755,7 @@ function App() {
                     <span>Focus Floor 03</span>
                   </button>
                   <button
-                    onClick={() => setIsEmergencyPlanningOpen(true)}
+                    onClick={() => setIsEmergencyOpen(true)}
                     className="flex items-center gap-1.5 rounded-xl border border-red-500/50 bg-red-950/40 px-3 py-1.5 text-xs font-bold text-red-200 hover:bg-red-900/60 transition-all"
                   >
                     <ShieldAlert className="h-3.5 w-3.5" />

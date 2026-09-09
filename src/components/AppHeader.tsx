@@ -19,6 +19,7 @@ import {
   PlusCircle,
   Eye,
   Zap,
+  Box,
 } from 'lucide-react';
 import type { UserRole, ExplodeState } from '../types/cadastral';
 import type { User } from '../firebase';
