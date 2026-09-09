@@ -1,5 +1,5 @@
 import { Canvas } from '@react-three/fiber';
-import { Environment } from '@react-three/drei';
+import { Environment, Sky } from '@react-three/drei';
 import { Building } from '@/components/Building/Building';
 import { PlayerController } from '@/components/Player/PlayerController';
 import { Emergency3DView, type EmergencyState } from '@/components/Building/EmergencySimulator';
@@ -26,25 +26,39 @@ interface GameSceneProps {
 }
 
 function SceneContent(props: GameSceneProps) {
+  const isTerrace = props.currentFloorId === 'TERRACE' || props.currentFloorId === 'F11';
+  const bgSkyColor = isTerrace ? '#38bdf8' : '#0f172a';
+  const fogColor = isTerrace ? '#7dd3fc' : '#0f172a';
+
   return (
     <>
-      <color attach="background" args={['#0f172a']} />
-      <fog attach="fog" args={['#0f172a', 30, 90]} />
+      <color attach="background" args={[bgSkyColor]} />
+      <fog attach="fog" args={[fogColor, isTerrace ? 40 : 30, isTerrace ? 180 : 90]} />
 
-      <ambientLight intensity={1.1} />
+      {/* Realistic 3D Sky Dome with Sun and Atmospheric Scattering */}
+      <Sky
+        distance={450000}
+        sunPosition={[100, isTerrace ? 80 : 40, 100]}
+        inclination={0.5}
+        azimuth={0.25}
+        rayleigh={isTerrace ? 0.8 : 0.4}
+        turbidity={8}
+      />
+
+      <ambientLight intensity={isTerrace ? 1.5 : 1.1} color={isTerrace ? '#f0f9ff' : '#ffffff'} />
       <directionalLight
-        position={[20, 35, 20]}
-        intensity={1.5}
+        position={[20, 45, 20]}
+        intensity={isTerrace ? 2.0 : 1.5}
         color="#fff7ed"
         castShadow
         shadow-mapSize={[1024, 1024]}
-        shadow-camera-far={70}
+        shadow-camera-far={90}
         shadow-camera-left={-35}
         shadow-camera-right={35}
         shadow-camera-top={35}
         shadow-camera-bottom={-35}
       />
-      <hemisphereLight args={['#f8fafc', '#334155', 0.8]} />
+      <hemisphereLight args={[isTerrace ? '#38bdf8' : '#f8fafc', '#334155', isTerrace ? 1.0 : 0.8]} />
 
       <Building
         floors={building.floors}
