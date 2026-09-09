@@ -643,22 +643,21 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
         if (onStatusUpdate) onStatusUpdate({ ...currentStatus });
       };
 
-      if (HAS_TOKEN) {
-        try {
-          viewer = new Viewer(containerRef.current, {
-            baseLayerPicker: false,
-            geocoder: false,
-            homeButton: false,
-            sceneModePicker: false,
-            navigationHelpButton: false,
-            animation: false,
-            timeline: false,
-            fullscreenButton: false,
-            infoBox: false,
-            selectionIndicator: true,
-            terrain: Terrain.fromWorldTerrain(),
-            baseLayer: false as unknown as undefined,
-          });
+      try {
+        viewer = new Viewer(containerRef.current, {
+          baseLayerPicker: false,
+          geocoder: false,
+          homeButton: false,
+          sceneModePicker: false,
+          navigationHelpButton: false,
+          animation: false,
+          timeline: false,
+          fullscreenButton: false,
+          infoBox: false,
+          selectionIndicator: true,
+          terrain: HAS_TOKEN ? Terrain.fromWorldTerrain() : undefined,
+          baseLayer: false as unknown as undefined,
+        });
 
 
           // Optimize WebGL resolution scale for high-DPI screens to guarantee silky 60 FPS
@@ -1027,15 +1026,6 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
             lastError: `Cesium Viewer Error: ${err.message || String(err)}`,
           });
         }
-      } else {
-        viewer = createDemoViewer(containerRef.current);
-        setDemoMode(true);
-        updateStatus({
-          photorealisticStatus: 'NOT_CONFIGURED',
-          osmStatus: 'NOT_CONFIGURED',
-          lastError: '3D CITY DATA NOT CONFIGURED: VITE_CESIUM_ION_TOKEN is required',
-        });
-      }
 
       viewerRef.current = viewer;
 
