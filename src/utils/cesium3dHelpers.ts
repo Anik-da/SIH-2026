@@ -69,9 +69,9 @@ export function getGroundElevation(viewer?: Cesium.Viewer, lon = 77.50426, lat =
       return height;
     }
   }
-  // Known ground elevation for Bengaluru / Sapthagiri campus region (~913.5m WGS84)
+  // Known exact ground elevation for Bengaluru / Sapthagiri campus region (~908.5m WGS84)
   if (Math.abs(lat - 13.067) < 0.2 && Math.abs(lon - 77.504) < 0.2) {
-    return 913.5;
+    return 908.5;
   }
   return 0.0;
 }

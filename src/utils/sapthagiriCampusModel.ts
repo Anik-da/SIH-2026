@@ -61,8 +61,8 @@ export function renderSapthagiriCampusModel(
     const centerLat = SAPTHAGIRI_COORDS.lat;
     const centerLon = SAPTHAGIRI_COORDS.lon;
 
-    // Ground elevation: flush directly on top of terrain ground surface
-    const baseElev = getGroundElevation(viewer, centerLon, centerLat) + 2.5;
+    // Ground elevation: flush directly on top of terrain ground surface (0.1m offset to prevent surface z-fighting)
+    const baseElev = getGroundElevation(viewer, centerLon, centerLat) + 0.1;
 
     // Degree conversion constants around Bengaluru (lat ~13.0675Â°)
     const LAT_M = 111320;
