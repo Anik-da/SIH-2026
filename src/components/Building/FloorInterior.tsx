@@ -1,14 +1,17 @@
 import { useMemo } from 'react';
 import * as THREE from 'three';
+import { Html } from '@react-three/drei';
 import type { FloorData } from '@/types';
+import type { InspectedObjectData } from './ObjectInspectionModal';
 import { FLOOR_HEIGHT } from '@/data/constants';
 
 interface FloorInteriorProps {
   floor: FloorData;
   hasDimming?: boolean;
+  onSelectObject?: (info: InspectedObjectData) => void;
 }
 
-export function FloorInterior({ floor, hasDimming = false }: FloorInteriorProps) {
+export function FloorInterior({ floor, hasDimming = false, onSelectObject }: FloorInteriorProps) {
   const opacity = hasDimming ? 0.3 : 1;
   const fid = floor.floorId.toUpperCase();
   const fType = floor.floorType;

@@ -7,6 +7,8 @@ import { BUILDING_DIMENSIONS, FLOOR_HEIGHT } from '@/data/constants';
 import { PropertyVolume } from './PropertyVolume';
 import { FloorInterior } from './FloorInterior';
 
+import type { InspectedObjectData } from './ObjectInspectionModal';
+
 interface FloorVolumeProps {
   floor: FloorData;
   floorIndex: number;
@@ -17,6 +19,7 @@ interface FloorVolumeProps {
   floorProperties: PropertyData[];
   onSelectProperty: (prop: PropertyData) => void;
   isCurrentFloor: boolean;
+  onSelectObject?: (info: InspectedObjectData) => void;
 }
 
 export function FloorVolume({
@@ -29,6 +32,7 @@ export function FloorVolume({
   floorProperties,
   onSelectProperty,
   isCurrentFloor,
+  onSelectObject,
 }: FloorVolumeProps) {
   const groupRef = useRef<THREE.Group>(null);
   const targetY = useRef(floor.zMin);
@@ -150,7 +154,7 @@ export function FloorVolume({
       )}
 
       {/* Interior Floor Simulation Details & Furniture */}
-      <FloorInterior floor={floor} hasDimming={hasDimming} />
+      <FloorInterior floor={floor} hasDimming={hasDimming} onSelectObject={onSelectObject} />
 
       {/* Floor outline highlight if current floor */}
       {isCurrentFloor && (

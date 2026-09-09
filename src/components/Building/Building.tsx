@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import type { FloorData, PropertyData } from '@/types';
 import { FloorVolume } from './FloorVolume';
 import { BUILDING_DIMENSIONS } from '@/data/constants';
+import type { InspectedObjectData } from './ObjectInspectionModal';
 
 interface BuildingProps {
   floors: FloorData[];
@@ -13,6 +14,7 @@ interface BuildingProps {
   isolated: boolean;
   currentFloorId: string;
   onSelectProperty: (prop: PropertyData) => void;
+  onSelectObject?: (info: InspectedObjectData) => void;
 }
 
 export function Building({
@@ -24,6 +26,7 @@ export function Building({
   isolated,
   currentFloorId,
   onSelectProperty,
+  onSelectObject,
 }: BuildingProps) {
   const { width, depth } = BUILDING_DIMENSIONS;
 
@@ -70,6 +73,7 @@ export function Building({
           floorProperties={propertiesByFloor[floor.floorId] ?? []}
           onSelectProperty={onSelectProperty}
           isCurrentFloor={currentFloorId === floor.floorId}
+          onSelectObject={onSelectObject}
         />
       ))}
 

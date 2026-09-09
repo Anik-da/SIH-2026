@@ -2,6 +2,8 @@ import { Canvas } from '@react-three/fiber';
 import { Environment } from '@react-three/drei';
 import { Building } from '@/components/Building/Building';
 import { PlayerController } from '@/components/Player/PlayerController';
+import { Emergency3DView, type EmergencyState } from '@/components/Building/EmergencySimulator';
+import type { InspectedObjectData } from '@/components/Building/ObjectInspectionModal';
 import { building, properties } from '@/data/buildingData';
 import { PLAYER_HEIGHT } from '@/data/constants';
 import type { PropertyData } from '@/types';
@@ -19,6 +21,8 @@ interface GameSceneProps {
   onElevatorArrive: () => void;
   onPlayerPosition: (pos: [number, number, number]) => void;
   playerActive: boolean;
+  onSelectObject?: (info: InspectedObjectData) => void;
+  emergency?: EmergencyState | null;
 }
 
 function SceneContent(props: GameSceneProps) {
@@ -51,7 +55,10 @@ function SceneContent(props: GameSceneProps) {
         isolated={props.isolated}
         currentFloorId={props.currentFloorId}
         onSelectProperty={props.onSelectProperty}
+        onSelectObject={props.onSelectObject}
       />
+
+      <Emergency3DView emergency={props.emergency} currentFloorId={props.currentFloorId} />
 
       <PlayerController
         enabled={props.playerActive}

@@ -8,6 +8,8 @@ import { ElevatorPanel } from '@/components/Elevator/ElevatorPanel';
 import { GISTransition } from '@/components/Transition/GISTransition';
 import { InteractionPrompt } from '@/components/HUD/InteractionPrompt';
 import { ArrivalNotification } from '@/components/HUD/ArrivalNotification';
+import { ObjectInspectionModal, type InspectedObjectData } from '@/components/Building/ObjectInspectionModal';
+import { EmergencyHUDBanner, type EmergencyState, type EmergencyType } from '@/components/Building/EmergencySimulator';
 import { useGameState } from '@/hooks/useGameState';
 import { building, properties } from '@/data/buildingData';
 import { FLOOR_NUMBER_MAP, FLOOR_HEIGHT, BUILDING_DIMENSIONS } from '@/data/constants';
@@ -34,9 +36,46 @@ export function BuildingGameDemo({ onOpenGISGlobe, onOpenPropertyPassport, onBac
   const [enteredBuilding, setEnteredBuilding] = useState(true);
   const [playerPos, setPlayerPos] = useState<[number, number, number]>([0, 1.7, 4]);
   const [nearProperty, setNearProperty] = useState<PropertyData | null>(null);
+  const [inspectedObject, setInspectedObject] = useState<InspectedObjectData | null>(null);
+  const [emergency, setEmergency] = useState<EmergencyState | null>(null);
 
   const game = useGameState();
   const { setControlState } = usePlayerControls();
+
+  const triggerRandomEmergency = useCallback(() => {
+    const floorIds = ['G', 'F1', 'F2', 'F3', 'F4', 'F5'];
+    const randomFloor = floorIds[Math.floor(Math.random() * floorIds.length)];
+    const types: EmergencyType[] = ['fire', 'gas_leak', 'structural_alert'];
+    const randomType = types[Math.floor(Math.random() * types.length)];
+    
+    setEmergency({
+      active: true,
+      floorId: randomFloor,
+      type: randomType,
+      message: `CRITICAL ALERT: ${randomType.toUpperCase().replace('_', ' ')} detected on Floor ${randomFloor}! Initiate Emergency Evacuation!`,
+      timestamp: Date.now(),
+    });
+  }, []);
+
+  // Periodic random emergency trigger (every 75 seconds)
+  useEffect(() => {
+    if (phase !== 'playing') return;
+    const interval = setInterval(() => {
+      // 60% chance to trigger random emergency periodically
+      if (Math.random() < 0.6) {
+        triggerRandomEmergency();
+      }
+    }, 75000);
+    return () => clearInterval(interval);
+  }, [phase, triggerRandomEmergency]);
+
+  const handleEvacuate = useCallback(() => {
+    if (!emergency) return;
+    const floorNum = FLOOR_NUMBER_MAP[emergency.floorId] ?? 0;
+    const targetY = floorNum * FLOOR_HEIGHT;
+    setTargetFloorY(targetY);
+    game.setCurrentFloorId(emergency.floorId);
+  }, [emergency, game]);
 
   const handleEnter = useCallback(() => {
     setPhase('entering');
@@ -214,6 +253,8 @@ export function BuildingGameDemo({ onOpenGISGlobe, onOpenPropertyPassport, onBac
         onElevatorArrive={handleElevatorArrive}
         onPlayerPosition={handlePlayerPosition}
         playerActive={phase === 'playing'}
+        onSelectObject={(objData) => setInspectedObject(objData)}
+        emergency={emergency}
       />
 
       {/* HUD */}
@@ -242,6 +283,22 @@ export function BuildingGameDemo({ onOpenGISGlobe, onOpenPropertyPassport, onBac
             currentFloorId={game.currentFloorId}
             onSelectFloor={handleSelectFloor}
           />
+
+          {/* Emergency HUD Banner & Simulation Controls */}
+          <EmergencyHUDBanner
+            emergency={emergency}
+            onEvacuate={handleEvacuate}
+            onDismiss={() => setEmergency(null)}
+            onTriggerRandom={triggerRandomEmergency}
+          />
+
+          {/* Object Inspection Modal */}
+          {inspectedObject && (
+            <ObjectInspectionModal
+              objectData={inspectedObject}
+              onClose={() => setInspectedObject(null)}
+            />
+          )}
 
           {/* Property Panel */}
           {game.showPropertyPanel && game.selectedProperty && (
@@ -286,7 +343,7 @@ export function BuildingGameDemo({ onOpenGISGlobe, onOpenPropertyPassport, onBac
             <div className="pointer-events-none absolute left-1/2 top-[65%] z-10 -translate-x-1/2">
               <div className="rounded-lg border border-cyan-400/40 bg-slate-900/85 px-6 py-3 text-center backdrop-blur-md">
                 <div className="text-sm font-medium text-cyan-300">BUILDING MODE — PROPERTY EXPLORATION</div>
-                <div className="mt-1 text-xs text-slate-400">Find the elevator at the back, or walk to a property unit and press <kbd className="rounded bg-cyan-500/20 px-1.5 py-0.5 font-mono text-xs text-cyan-300">E</kbd> to inspect</div>
+                <div className="mt-1 text-xs text-slate-400 font-mono">Walk to any furniture/object & click to inspect details | Press <kbd className="rounded bg-cyan-500/20 px-1 py-0.5 text-cyan-300">E</kbd> for elevator/property</div>
               </div>
             </div>
           )}
