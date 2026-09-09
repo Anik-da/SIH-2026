@@ -619,9 +619,9 @@ function App() {
     return (
       <LandingPage
         user={authUser}
-        onLaunchApp={() => setViewMode(authUser ? '3d-building' : 'login')}
+        onLaunchApp={() => setViewMode('login')}
         onOpenLogin={() => setViewMode('login')}
-        onOpen3DBuilding={() => setViewMode(authUser ? '3d-building' : 'login')}
+        onOpen3DBuilding={() => setViewMode('login')}
       />
     );
   }
