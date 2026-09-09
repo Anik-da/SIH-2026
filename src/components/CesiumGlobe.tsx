@@ -965,9 +965,10 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
           // STEP 7: Sapthagiri NPS University Initial Location Fly-to
           const bldgLon = building ? building.center.lon : SAPTHAGIRI_COORDS.lon;
           const bldgLat = building ? building.center.lat : SAPTHAGIRI_COORDS.lat;
+          const bldgElev = getGroundElevation(viewer, bldgLon, bldgLat);
 
           viewer.camera.setView({
-            destination: Cartesian3.fromDegrees(bldgLon, bldgLat - 0.0012, 140),
+            destination: Cartesian3.fromDegrees(bldgLon, bldgLat - 0.0012, bldgElev + 140),
             orientation: {
               heading: CesiumMath.toRadians(25), // 25° Heading looking directly at the +25° front facade
               pitch: CesiumMath.toRadians(-22),   // -22° Pitch for realistic eye-level perspective

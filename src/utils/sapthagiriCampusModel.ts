@@ -1,4 +1,4 @@
-﻿import { getGroundElevation } from './cesium3dHelpers';
+import { getGroundElevation } from './cesium3dHelpers';
 import {
   Cartesian3,
   Color,
@@ -61,8 +61,8 @@ export function renderSapthagiriCampusModel(
     const centerLat = SAPTHAGIRI_COORDS.lat;
     const centerLon = SAPTHAGIRI_COORDS.lon;
 
-    // Ground elevation: flush directly with the terrain ground at 0.0m
-    const baseElev = getGroundElevation(viewer, centerLon, centerLat);
+    // Ground elevation: flush directly on top of terrain ground surface
+    const baseElev = getGroundElevation(viewer, centerLon, centerLat) + 2.5;
 
     // Degree conversion constants around Bengaluru (lat ~13.0675Â°)
     const LAT_M = 111320;
