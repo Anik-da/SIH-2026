@@ -8,6 +8,7 @@ import {
   HorizontalOrigin,
   VerticalOrigin,
   Cartographic,
+  DistanceDisplayCondition,
 } from 'cesium';
 
 /**
@@ -157,6 +158,7 @@ export function renderSapthagiriCampusModel(
         horizontalOrigin: HorizontalOrigin.CENTER,
         verticalOrigin: VerticalOrigin.BOTTOM,
         disableDepthTestDistance: Number.POSITIVE_INFINITY,
+        distanceDisplayCondition: new DistanceDisplayCondition(0, 4500),
       },
     });
 
@@ -257,6 +259,7 @@ export function renderSapthagiriCampusModel(
             outlineColor: outlineColor,
             outlineWidth: isRescueModeActive && (f === 3 || f === 4) ? 4 : isSelectedFloor ? 3 : 1.5,
             shadows: ShadowMode.ENABLED,
+            distanceDisplayCondition: new DistanceDisplayCondition(0, 6000),
           },
         });
       });

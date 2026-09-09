@@ -93,6 +93,7 @@ function renderPreloadedSapthagiriBuildings(viewer: Viewer) {
         outlineColor: Color.fromCssColorString('#0284c7').withAlpha(0.6),
         outlineWidth: 1.2,
         shadows: ShadowMode.ENABLED,
+        distanceDisplayCondition: new DistanceDisplayCondition(0, 3500),
       },
     });
   });
@@ -125,6 +126,7 @@ function renderCityBuildings(viewer: Viewer) {
         outlineColor: Color.fromCssColorString('#0284c7'),
         outlineWidth: 1.5,
         shadows: ShadowMode.ENABLED,
+        distanceDisplayCondition: new DistanceDisplayCondition(0, 5000),
       },
     });
   });
@@ -134,34 +136,35 @@ function renderCityBuildings(viewer: Viewer) {
 function loadViewport3DBuildings(viewer: Viewer) {
   if (viewer.isDestroyed()) return;
 
-  let cLat = 12.9716;
-  let cLon = 77.5946;
+  let cLat = 13.06746;
+  let cLon = 77.50426;
 
-  const rect = viewer.camera.computeViewRectangle(viewer.scene.globe.ellipsoid);
-  if (rect) {
-    cLat = CesiumMath.toDegrees((rect.south + rect.north) / 2);
-    cLon = CesiumMath.toDegrees((rect.west + rect.east) / 2);
-  } else {
-    const centerCartesian = viewer.camera.pickEllipsoid(
-      new Cartesian3(viewer.canvas.clientWidth / 2, viewer.canvas.clientHeight / 2, 0),
-      viewer.scene.globe.ellipsoid
-    );
-    if (centerCartesian) {
-      const carto = Cartographic.fromCartesian(centerCartesian);
+  // Exact ground focal point picked at screen center (resilient to camera tilt looking at horizon)
+  try {
+    const canvas = viewer.scene.canvas;
+    const centerRay = viewer.camera.getPickRay(new Cartesian2(canvas.clientWidth / 2, canvas.clientHeight / 2));
+    if (centerRay) {
+      const targetCartesian = viewer.scene.globe.pick(centerRay, viewer.scene);
+      if (targetCartesian) {
+        const targetCarto = Cartographic.fromCartesian(targetCartesian);
+        cLat = CesiumMath.toDegrees(targetCarto.latitude);
+        cLon = CesiumMath.toDegrees(targetCarto.longitude);
+      }
+    }
+  } catch (_) {}
+
+  // Fallback to camera position if focal ray misses globe
+  if (isNaN(cLat) || isNaN(cLon) || (cLat === 13.06746 && cLon === 77.50426)) {
+    const carto = viewer.camera.positionCartographic;
+    if (carto) {
       cLat = CesiumMath.toDegrees(carto.latitude);
       cLon = CesiumMath.toDegrees(carto.longitude);
-    } else {
-      const carto = viewer.camera.positionCartographic;
-      if (carto) {
-        cLat = CesiumMath.toDegrees(carto.latitude);
-        cLon = CesiumMath.toDegrees(carto.longitude);
-      }
     }
   }
 
-  // If viewing near Sapthagiri campus (< 2.5km), ensure preloaded buildings are active and return
+  // If viewing near Sapthagiri campus (< 2.0km), ensure preloaded buildings are active and return
   const distToSapthagiri = Math.hypot(cLat - SAPTHAGIRI_COORDS.lat, cLon - SAPTHAGIRI_COORDS.lon);
-  if (distToSapthagiri < 0.025) {
+  if (distToSapthagiri < 0.018) {
     renderPreloadedSapthagiriBuildings(viewer);
     return;
   }
@@ -233,6 +236,7 @@ function loadViewport3DBuildings(viewer: Viewer) {
                 outlineColor: Color.fromCssColorString('#0284c7'),
                 outlineWidth: 1.2,
                 shadows: ShadowMode.ENABLED,
+                distanceDisplayCondition: new DistanceDisplayCondition(0, 4500),
               },
             });
           } catch (_) {}
