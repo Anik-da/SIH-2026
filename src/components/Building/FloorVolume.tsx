@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import type { FloorData, PropertyData } from '@/types';
 import { BUILDING_DIMENSIONS, FLOOR_HEIGHT } from '@/data/constants';
 import { PropertyVolume } from './PropertyVolume';
+import { FloorInterior } from './FloorInterior';
 
 interface FloorVolumeProps {
   floor: FloorData;
@@ -50,8 +51,17 @@ export function FloorVolume({
 
   const { width, depth, wallThickness } = BUILDING_DIMENSIONS;
 
-  const wallColor = isBasement ? '#1e293b' : isTerrace ? '#334155' : '#475569';
-  const floorColor = isBasement ? '#1e293b' : isTerrace ? '#334155' : '#64748b';
+  // Bright, inviting architectural colors
+  const wallColor = isBasement ? '#334155' : isTerrace ? '#475569' : '#f8fafc';
+  const floorColor = isBasement
+    ? '#1e293b'
+    : isTerrace
+    ? '#334155'
+    : floor.floorType === 'ground'
+    ? '#fef3c7'
+    : floor.floorType === 'executive'
+    ? '#78350f'
+    : '#cbd5e1';
 
   const hasDimming = selectedProperty !== null && !isolated;
 
@@ -59,103 +69,88 @@ export function FloorVolume({
 
   return (
     <group ref={groupRef}>
+      {/* Interior Ambient Floor Light */}
+      {!isTerrace && (
+        <pointLight position={[0, FLOOR_HEIGHT - 0.4, 0]} intensity={1.4} distance={14} color="#fef08a" />
+      )}
+
       {/* Floor slab */}
       <mesh receiveShadow position={[0, 0, 0]}>
         <boxGeometry args={[width, 0.15, depth]} />
-        <meshStandardMaterial color={floorColor} roughness={0.8} transparent opacity={floorOpacity} />
+        <meshStandardMaterial color={floorColor} roughness={0.6} transparent opacity={floorOpacity} />
       </mesh>
 
       {/* Ceiling slab (skip terrace) */}
       {!isTerrace && (
         <mesh position={[0, FLOOR_HEIGHT, 0]}>
           <boxGeometry args={[width, 0.15, depth]} />
-          <meshStandardMaterial color={floorColor} roughness={0.8} transparent opacity={underground && floor.floorId === 'G' ? 0.15 : 1} />
+          <meshStandardMaterial color="#f8fafc" roughness={0.5} transparent opacity={underground && floor.floorId === 'G' ? 0.15 : 1} />
         </mesh>
       )}
 
-      {/* Exterior walls - front (with door opening) */}
+      {/* Exterior walls - front/back/sides */}
       <mesh position={[-width / 2 + wallThickness / 2, FLOOR_HEIGHT / 2, 0]}>
         <boxGeometry args={[wallThickness, FLOOR_HEIGHT - 0.15, depth]} />
-        <meshStandardMaterial color={wallColor} roughness={0.7} transparent opacity={hasDimming ? 0.4 : 0.95} />
+        <meshStandardMaterial color={wallColor} roughness={0.5} transparent opacity={hasDimming ? 0.4 : 0.85} />
       </mesh>
       <mesh position={[width / 2 - wallThickness / 2, FLOOR_HEIGHT / 2, 0]}>
         <boxGeometry args={[wallThickness, FLOOR_HEIGHT - 0.15, depth]} />
-        <meshStandardMaterial color={wallColor} roughness={0.7} transparent opacity={hasDimming ? 0.4 : 0.95} />
+        <meshStandardMaterial color={wallColor} roughness={0.5} transparent opacity={hasDimming ? 0.4 : 0.85} />
       </mesh>
+
       {/* Back wall */}
       <mesh position={[0, FLOOR_HEIGHT / 2, -depth / 2 + wallThickness / 2]}>
         <boxGeometry args={[width, FLOOR_HEIGHT - 0.15, wallThickness]} />
-        <meshStandardMaterial color={wallColor} roughness={0.7} transparent opacity={hasDimming ? 0.4 : 0.95} />
+        <meshStandardMaterial color={wallColor} roughness={0.5} transparent opacity={hasDimming ? 0.4 : 0.85} />
       </mesh>
-      {/* Front wall (with entrance on ground) */}
+
+      {/* Front wall */}
       {floor.floorType === 'ground' ? (
         <>
           <mesh position={[-width / 4 - 1, FLOOR_HEIGHT / 2, depth / 2 - wallThickness / 2]}>
             <boxGeometry args={[width / 2 - 2, FLOOR_HEIGHT - 0.15, wallThickness]} />
-            <meshStandardMaterial color={wallColor} roughness={0.7} transparent opacity={hasDimming ? 0.4 : 0.95} />
+            <meshStandardMaterial color={wallColor} roughness={0.5} transparent opacity={hasDimming ? 0.4 : 0.85} />
           </mesh>
           <mesh position={[width / 4 + 1, FLOOR_HEIGHT / 2, depth / 2 - wallThickness / 2]}>
             <boxGeometry args={[width / 2 - 2, FLOOR_HEIGHT - 0.15, wallThickness]} />
-            <meshStandardMaterial color={wallColor} roughness={0.7} transparent opacity={hasDimming ? 0.4 : 0.95} />
+            <meshStandardMaterial color={wallColor} roughness={0.5} transparent opacity={hasDimming ? 0.4 : 0.85} />
           </mesh>
-          {/* Door header */}
           <mesh position={[0, FLOOR_HEIGHT - 0.5, depth / 2 - wallThickness / 2]}>
             <boxGeometry args={[2, 0.5, wallThickness]} />
-            <meshStandardMaterial color={wallColor} roughness={0.7} transparent opacity={hasDimming ? 0.4 : 0.95} />
+            <meshStandardMaterial color={wallColor} roughness={0.5} transparent opacity={hasDimming ? 0.4 : 0.85} />
           </mesh>
         </>
       ) : (
         <mesh position={[0, FLOOR_HEIGHT / 2, depth / 2 - wallThickness / 2]}>
           <boxGeometry args={[width, FLOOR_HEIGHT - 0.15, wallThickness]} />
-          <meshStandardMaterial color={wallColor} roughness={0.7} transparent opacity={hasDimming ? 0.4 : 0.95} />
+          <meshStandardMaterial color={wallColor} roughness={0.5} transparent opacity={hasDimming ? 0.4 : 0.85} />
         </mesh>
       )}
 
-      {/* Windows on side walls */}
+      {/* Architectural Glass Windows */}
       {!isBasement && !isTerrace && (
         <>
           <mesh position={[-width / 2 + wallThickness / 2, FLOOR_HEIGHT / 2, -depth / 4]}>
-            <boxGeometry args={[wallThickness, 1.2, 2]} />
-            <meshStandardMaterial color="#0c4a6e" roughness={0.1} metalness={0.8} transparent opacity={hasDimming ? 0.2 : 0.6} />
+            <boxGeometry args={[wallThickness, 1.4, 2.2]} />
+            <meshStandardMaterial color="#38bdf8" roughness={0.1} metalness={0.9} transparent opacity={0.45} />
           </mesh>
           <mesh position={[-width / 2 + wallThickness / 2, FLOOR_HEIGHT / 2, depth / 4]}>
-            <boxGeometry args={[wallThickness, 1.2, 2]} />
-            <meshStandardMaterial color="#0c4a6e" roughness={0.1} metalness={0.8} transparent opacity={hasDimming ? 0.2 : 0.6} />
+            <boxGeometry args={[wallThickness, 1.4, 2.2]} />
+            <meshStandardMaterial color="#38bdf8" roughness={0.1} metalness={0.9} transparent opacity={0.45} />
           </mesh>
           <mesh position={[width / 2 - wallThickness / 2, FLOOR_HEIGHT / 2, -depth / 4]}>
-            <boxGeometry args={[wallThickness, 1.2, 2]} />
-            <meshStandardMaterial color="#0c4a6e" roughness={0.1} metalness={0.8} transparent opacity={hasDimming ? 0.2 : 0.6} />
+            <boxGeometry args={[wallThickness, 1.4, 2.2]} />
+            <meshStandardMaterial color="#38bdf8" roughness={0.1} metalness={0.9} transparent opacity={0.45} />
           </mesh>
           <mesh position={[width / 2 - wallThickness / 2, FLOOR_HEIGHT / 2, depth / 4]}>
-            <boxGeometry args={[wallThickness, 1.2, 2]} />
-            <meshStandardMaterial color="#0c4a6e" roughness={0.1} metalness={0.8} transparent opacity={hasDimming ? 0.2 : 0.6} />
+            <boxGeometry args={[wallThickness, 1.4, 2.2]} />
+            <meshStandardMaterial color="#38bdf8" roughness={0.1} metalness={0.9} transparent opacity={0.45} />
           </mesh>
         </>
       )}
 
-      {/* Corridor walls */}
-      <mesh position={[-1.5, FLOOR_HEIGHT / 2, 0]}>
-        <boxGeometry args={[0.15, FLOOR_HEIGHT - 0.15, depth - 0.4]} />
-        <meshStandardMaterial color="#334155" roughness={0.7} transparent opacity={hasDimming ? 0.2 : 0.7} />
-      </mesh>
-      <mesh position={[1.5, FLOOR_HEIGHT / 2, 0]}>
-        <boxGeometry args={[0.15, FLOOR_HEIGHT - 0.15, depth - 0.4]} />
-        <meshStandardMaterial color="#334155" roughness={0.7} transparent opacity={hasDimming ? 0.2 : 0.7} />
-      </mesh>
-
-      {/* Elevator shaft (back area) */}
-      <mesh position={[0, FLOOR_HEIGHT / 2, -depth / 2 + 1.5]}>
-        <boxGeometry args={[2.5, FLOOR_HEIGHT - 0.15, 0.15]} />
-        <meshStandardMaterial color="#1e293b" roughness={0.6} transparent opacity={hasDimming ? 0.3 : 0.9} />
-      </mesh>
-      <mesh position={[-1.25, FLOOR_HEIGHT / 2, -depth / 2 + 2.5]}>
-        <boxGeometry args={[0.15, FLOOR_HEIGHT - 0.15, 2]} />
-        <meshStandardMaterial color="#1e293b" roughness={0.6} transparent opacity={hasDimming ? 0.3 : 0.9} />
-      </mesh>
-      <mesh position={[1.25, FLOOR_HEIGHT / 2, -depth / 2 + 2.5]}>
-        <boxGeometry args={[0.15, FLOOR_HEIGHT - 0.15, 2]} />
-        <meshStandardMaterial color="#1e293b" roughness={0.6} transparent opacity={hasDimming ? 0.3 : 0.9} />
-      </mesh>
+      {/* Interior Floor Simulation Details & Furniture */}
+      <FloorInterior floor={floor} hasDimming={hasDimming} />
 
       {/* Floor outline highlight if current floor */}
       {isCurrentFloor && (
@@ -189,20 +184,6 @@ export function FloorVolume({
           onSelect={onSelectProperty}
         />
       ))}
-
-      {/* Simple furniture indicators for residential floors */}
-      {!isBasement && !isTerrace && floor.floorType === 'residential' && (
-        <>
-          <mesh position={[-5, 0.4, -3]}>
-            <boxGeometry args={[1.5, 0.8, 0.8]} />
-            <meshStandardMaterial color="#78716c" roughness={0.8} transparent opacity={hasDimming ? 0.15 : 0.5} />
-          </mesh>
-          <mesh position={[5, 0.4, -3]}>
-            <boxGeometry args={[1.5, 0.8, 0.8]} />
-            <meshStandardMaterial color="#78716c" roughness={0.8} transparent opacity={hasDimming ? 0.15 : 0.5} />
-          </mesh>
-        </>
-      )}
     </group>
   );
 }

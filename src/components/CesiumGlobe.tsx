@@ -45,6 +45,7 @@ import {
   makeFloorLabel,
   colorFromRgba,
   flyToBuilding,
+  getGroundElevation,
 } from '../utils/cesium3dHelpers';
 import { STATUS_COLORS, SELECTED_COLOR, UNDERGROUND_COLOR, PARCEL_COLOR } from '../data/colors';
 import { SURROUNDING_CITY_BUILDINGS, footprint } from '../data/cadastralDemoData';
@@ -87,7 +88,9 @@ function renderPreloadedSapthagiriBuildings(viewer: Viewer) {
       polygon: {
         hierarchy: new PolygonHierarchy(Cartesian3.fromDegreesArray(b.coords)),
         height: 0,
+        heightReference: HeightReference.CLAMP_TO_GROUND,
         extrudedHeight: b.height,
+        extrudedHeightReference: HeightReference.RELATIVE_TO_GROUND,
         material: matColor,
         outline: true,
         outlineColor: Color.fromCssColorString('#0284c7').withAlpha(0.6),
@@ -120,7 +123,9 @@ function renderCityBuildings(viewer: Viewer) {
       polygon: {
         hierarchy: new PolygonHierarchy(Cartesian3.fromDegreesArray(coords)),
         height: 0,
+        heightReference: HeightReference.CLAMP_TO_GROUND,
         extrudedHeight: b.height,
+        extrudedHeightReference: HeightReference.RELATIVE_TO_GROUND,
         material: Color.fromCssColorString(b.propertyType === 'Commercial' ? '#0284c7' : '#38bdf8').withAlpha(0.9),
         outline: true,
         outlineColor: Color.fromCssColorString('#0284c7'),
@@ -230,7 +235,9 @@ function loadViewport3DBuildings(viewer: Viewer) {
               polygon: {
                 hierarchy: new PolygonHierarchy(Cartesian3.fromDegreesArray(coordsFlat)),
                 height: 0,
+                heightReference: HeightReference.CLAMP_TO_GROUND,
                 extrudedHeight: tagHeight,
+                extrudedHeightReference: HeightReference.RELATIVE_TO_GROUND,
                 material: matColor,
                 outline: true,
                 outlineColor: Color.fromCssColorString('#0284c7'),
@@ -649,7 +656,7 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
             fullscreenButton: false,
             infoBox: false,
             selectionIndicator: true,
-            terrainProvider: new EllipsoidTerrainProvider(),
+            terrain: Terrain.fromWorldTerrain(),
             baseLayer: false as unknown as undefined,
           });
 
@@ -845,12 +852,8 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
             // Check and sync tileset mode for current camera view
             updateTilesetForCurrentLocation();
 
-            // Render local detailed BIM structures
+            // Render local detailed BIM structures (Sapthagiri NPS University Campus 3D Model)
             if (!viewer.isDestroyed()) {
-              renderPreloadedSapthagiriBuildings(viewer);
-              renderCityBuildings(viewer);
-              loadViewport3DBuildings(viewer);
-              // Render Sapthagiri NPS University Grand Neoclassical Campus 3D Model
               try {
                 renderSapthagiriCampusModel(viewer, selectedFloorId, explodeState === 'exploded' ? 1.2 : 0, isRescueModeActive);
               } catch (e) {
@@ -863,18 +866,9 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
                   updateTilesetForCurrentLocation();
                 }
               });
-              let moveEndTimer: any = null;
               viewer.camera.moveEnd.addEventListener(() => {
                 if (!viewer.isDestroyed()) {
                   updateTilesetForCurrentLocation();
-                  if (!isCameraInNewYork()) {
-                    clearTimeout(moveEndTimer);
-                    moveEndTimer = setTimeout(() => {
-                      if (!viewer.isDestroyed()) {
-                        loadViewport3DBuildings(viewer);
-                      }
-                    }, 400);
-                  }
                 }
               });
             }
@@ -887,8 +881,8 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
           if (viewer.scene.skyAtmosphere) viewer.scene.skyAtmosphere.show = true;
           viewer.scene.fog.enabled = true;
 
-          // Depth test disabled against terrain to prevent ground-level buildings, parcels and floors from clipping
-          viewer.scene.globe.depthTestAgainstTerrain = false;
+          // Depth test enabled against terrain so buildings render at correct altitude on real terrain
+          viewer.scene.globe.depthTestAgainstTerrain = true;
 
           // =========================================================================
           // 360-DEGREE ROTATION & ORBIT CONTROLLER CONFIGURATION (BUTTERY SMOOTH)
@@ -946,9 +940,10 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
           ];
 
           PLACE_LABELS.forEach((place) => {
+            const pElev = getGroundElevation(viewer, place.lon, place.lat);
             viewer.entities.add({
               id: `place-label-${place.name}`,
-              position: Cartesian3.fromDegrees(place.lon, place.lat, place.height),
+              position: Cartesian3.fromDegrees(place.lon, place.lat, pElev + place.height),
               label: new LabelGraphics({
                 text: place.name,
                 font: 'bold 13px Inter, sans-serif',
@@ -1025,8 +1020,8 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
 
       viewerRef.current = viewer;
 
-      // Keep depthTestAgainstTerrain disabled so all 3D floors and models remain visible
-      viewer.scene.globe.depthTestAgainstTerrain = false;
+      // Enable depthTestAgainstTerrain so 3D buildings sit properly on terrain surface
+      viewer.scene.globe.depthTestAgainstTerrain = true;
 
       // Coordinate tracking via mouse movement
       const handler = new ScreenSpaceEventHandler(viewer.scene.canvas);
@@ -1282,7 +1277,8 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
       }
 
       // Fallback for other standard building parcels
-      const parcelPositions = footprintToCartesian(building.footprint, 0);
+      const bElev = getGroundElevation(viewer, building.center.lon, building.center.lat);
+      const parcelPositions = footprintToCartesian(building.footprint, bElev);
       viewer.entities.add({
         id: 'parcel-outline',
         polygon: {
@@ -1291,6 +1287,7 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
           outline: true,
           outlineColor: Color.fromCssColorString('#38bdf8'),
           outlineWidth: 2,
+          perPositionHeight: true,
         },
       });
 
@@ -1301,8 +1298,8 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
 
         const { zMin, zMax } = computeExplodedZ(floor, explodeFactor);
         const positions = [
-          ...footprintToCartesian(building.footprint, zMin),
-          ...footprintToCartesian(building.footprint, zMax),
+          ...footprintToCartesian(building.footprint, bElev + zMin),
+          ...footprintToCartesian(building.footprint, bElev + zMax),
         ];
 
         const isSelected = selectedFloorId === floor.id;
@@ -1403,14 +1400,13 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
                 feature.properties?.height ||
                 (feature.properties?.['building:levels'] ? feature.properties['building:levels'] * 3.5 : 22);
 
+              const geoElev = getGroundElevation(viewer, flatCoords[0], flatCoords[1]);
               viewer.entities.add({
                 id: `custom-geojson-3d-${idx}`,
                 polygon: {
                   hierarchy: new PolygonHierarchy(Cartesian3.fromDegreesArray(flatCoords)),
-                  height: 0,
-                  extrudedHeight: tagHeight,
-                  heightReference: HeightReference.CLAMP_TO_GROUND,
-                  extrudedHeightReference: HeightReference.RELATIVE_TO_GROUND,
+                  height: geoElev,
+                  extrudedHeight: geoElev + tagHeight,
                   material: Color.fromCssColorString('#0284c7').withAlpha(0.92),
                   outline: true,
                   outlineColor: Color.fromCssColorString('#38bdf8'),
@@ -1443,14 +1439,13 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
           [b.lon - hw, b.lat + hd],
         ];
 
+        const userElev = getGroundElevation(viewer, b.lon, b.lat);
         viewer.entities.add({
           id: `user-created-building-${b.id}`,
           polygon: {
-            hierarchy: new PolygonHierarchy(footprintToCartesian(itemFootprint, 0)),
-            height: 0,
-            extrudedHeight: b.height,
-            heightReference: HeightReference.CLAMP_TO_GROUND,
-            extrudedHeightReference: HeightReference.RELATIVE_TO_GROUND,
+            hierarchy: new PolygonHierarchy(footprintToCartesian(itemFootprint, userElev)),
+            height: userElev,
+            extrudedHeight: userElev + b.height,
             material: Color.fromCssColorString('#0284c7').withAlpha(0.95),
             outline: true,
             outlineColor: Color.fromCssColorString('#38bdf8'),

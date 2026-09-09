@@ -1,3 +1,4 @@
+﻿import { getGroundElevation } from './cesium3dHelpers';
 import {
   Cartesian3,
   Color,
@@ -9,13 +10,14 @@ import {
   VerticalOrigin,
   Cartographic,
   DistanceDisplayCondition,
+  HeightReference,
 } from 'cesium';
 
 /**
- * Sapthagiri NPS University Campus — 3D Neoclassical Architectural Palace
+ * Sapthagiri NPS University Campus â€” 3D Neoclassical Architectural Palace
  * Precise location: #14/5, Chikkasandra, Hesaraghatta Main Road, Bengaluru
- * Real Coordinates: 13.06745° N, 77.50440° E (Anchored directly to campus foundation footprint)
- * Orientation: Rotated -15° to face Hesaraghatta Main Road directly.
+ * Real Coordinates: 13.06745Â° N, 77.50440Â° E (Anchored directly to campus foundation footprint)
+ * Orientation: Rotated -15Â° to face Hesaraghatta Main Road directly.
  * 
  * 3 DISTINCT BUILDINGS (12 FLOORS EACH, 43.2m height):
  * 1. West Building (Block A): School of Engineering & Technology (32m x 38m)
@@ -35,7 +37,7 @@ export const SAPTHAGIRI_COORDS = {
   elevation: 0.0,
 };
 
-// Alignment angle: +25° rotation to face Hesaraghatta Main Road directly
+// Alignment angle: +25Â° rotation to face Hesaraghatta Main Road directly
 const ROTATION_DEG = 25;
 const ROT_RAD = (ROTATION_DEG * Math.PI) / 180;
 const cosR = Math.cos(ROT_RAD);
@@ -60,9 +62,9 @@ export function renderSapthagiriCampusModel(
     const centerLon = SAPTHAGIRI_COORDS.lon;
 
     // Ground elevation: flush directly with the terrain ground at 0.0m
-    const baseElev = 0.0;
+    const baseElev = getGroundElevation(viewer, centerLon, centerLat);
 
-    // Degree conversion constants around Bengaluru (lat ~13.0675°)
+    // Degree conversion constants around Bengaluru (lat ~13.0675Â°)
     const LAT_M = 111320;
     const LON_M = 111320 * Math.cos((centerLat * Math.PI) / 180);
 
@@ -112,7 +114,7 @@ export function renderSapthagiriCampusModel(
     const cSelectedFloor = Color.fromCssColorString('#0284c7');
 
     // =========================================================================
-    // 1. Campus Ground Plaza & Manicured Lawns (Rotated -15° facing the road)
+    // 1. Campus Ground Plaza & Manicured Lawns (Rotated -15Â° facing the road)
     // =========================================================================
     const lawnCoords = makeBoxCoords(0, 0, 185, 110);
     viewer.entities.add({
@@ -147,7 +149,7 @@ export function renderSapthagiriCampusModel(
       id: 'sapthagiri-marker-badge',
       position: Cartesian3.fromDegrees(centerLon, centerLat - 0.0003, baseElev + 68),
       label: {
-        text: '🏛️ SAPTHAGIRI NPS UNIVERSITY\nMain Academic Palace & Senate Complex (12 Floors)',
+        text: 'ðŸ›ï¸ SAPTHAGIRI NPS UNIVERSITY\nMain Academic Palace & Senate Complex (12 Floors)',
         font: 'bold 13px Inter, system-ui, sans-serif',
         fillColor: Color.WHITE,
         outlineColor: Color.fromCssColorString('#0f172a'),
@@ -249,7 +251,7 @@ export function renderSapthagiriCampusModel(
         const boxCoords = makeBoxCoords(bld.cx, bld.cy, bld.width, bld.depth);
         viewer.entities.add({
           id: `sapthagiri-${bld.id}-floor-${f}`,
-          name: `Sapthagiri NPS University — ${bld.name} Floor ${f}`,
+          name: `Sapthagiri NPS University â€” ${bld.name} Floor ${f}`,
           polygon: {
             hierarchy: new PolygonHierarchy(Cartesian3.fromDegreesArray(boxCoords)),
             height: zMin,
@@ -270,7 +272,7 @@ export function renderSapthagiriCampusModel(
           id: `sapthagiri-selected-floor-label-${f}`,
           position: Cartesian3.fromDegrees(centerLon, centerLat, zMax + 3),
           label: {
-            text: `Sapthagiri NPS University • Floor ${f} of 12 • Z:${((f - 1) * floorHeight).toFixed(1)}m-${(f * floorHeight).toFixed(1)}m`,
+            text: `Sapthagiri NPS University â€¢ Floor ${f} of 12 â€¢ Z:${((f - 1) * floorHeight).toFixed(1)}m-${(f * floorHeight).toFixed(1)}m`,
             font: 'bold 12px Inter, sans-serif',
             fillColor: Color.WHITE,
             outlineColor: Color.fromCssColorString('#0284c7'),
@@ -640,7 +642,7 @@ export function renderSapthagiriCampusModel(
         id: 'sapthagiri-rescue-incident-badge',
         position: Cartesian3.fromDegrees(centerLon, centerLat, baseElev + 3 * floorHeight + 14),
         label: {
-          text: '🚨 ACTIVE FIRE INCIDENT — FLOOR 03 (LAB)\n⚠️ 14 OCCUPANTS DETECTED • TEMP 420°C\n✅ EVACUATE VIA STAIRWELL B (CLEAR)',
+          text: 'ðŸš¨ ACTIVE FIRE INCIDENT â€” FLOOR 03 (LAB)\nâš ï¸ 14 OCCUPANTS DETECTED â€¢ TEMP 420Â°C\nâœ… EVACUATE VIA STAIRWELL B (CLEAR)',
           font: 'bold 12px Inter, sans-serif',
           fillColor: Color.WHITE,
           outlineColor: Color.fromCssColorString('#7f1d1d'),
@@ -674,7 +676,7 @@ export function renderSapthagiriCampusModel(
         id: 'sapthagiri-rescue-staging-badge',
         position: Cartesian3.fromDegrees(centerLon, centerLat - 0.00035, baseElev + 6),
         label: {
-          text: '🚒 INCIDENT COMMAND & TRIAGE STAGING POST',
+          text: 'ðŸš’ INCIDENT COMMAND & TRIAGE STAGING POST',
           font: 'bold 11px Inter, sans-serif',
           fillColor: Color.WHITE,
           outlineColor: Color.fromCssColorString('#b91c1c'),
@@ -707,7 +709,7 @@ export function renderSapthagiriCampusModel(
     }
 
     console.log(
-      `🏛️ Sapthagiri NPS University (3 Distinct 12-storey Buildings) anchored at 13.06746°N, 77.50426°E (Elevation: ${baseElev.toFixed(1)}m, RescueMode: ${isRescueModeActive})!`
+      `ðŸ›ï¸ Sapthagiri NPS University (3 Distinct 12-storey Buildings) anchored at 13.06746Â°N, 77.50426Â°E (Elevation: ${baseElev.toFixed(1)}m, RescueMode: ${isRescueModeActive})!`
     );
   } catch (err) {
     console.error('Failed to render Sapthagiri Campus Model:', err);

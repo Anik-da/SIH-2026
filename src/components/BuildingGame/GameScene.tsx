@@ -24,22 +24,23 @@ interface GameSceneProps {
 function SceneContent(props: GameSceneProps) {
   return (
     <>
-      <color attach="background" args={['#0a0f1e']} />
-      <fog attach="fog" args={['#0a0f1e', 25, 80]} />
+      <color attach="background" args={['#0f172a']} />
+      <fog attach="fog" args={['#0f172a', 30, 90]} />
 
-      <ambientLight intensity={0.35} />
+      <ambientLight intensity={1.1} />
       <directionalLight
-        position={[15, 30, 15]}
-        intensity={0.8}
+        position={[20, 35, 20]}
+        intensity={1.5}
+        color="#fff7ed"
         castShadow
         shadow-mapSize={[1024, 1024]}
-        shadow-camera-far={60}
-        shadow-camera-left={-30}
-        shadow-camera-right={30}
-        shadow-camera-top={30}
-        shadow-camera-bottom={-30}
+        shadow-camera-far={70}
+        shadow-camera-left={-35}
+        shadow-camera-right={35}
+        shadow-camera-top={35}
+        shadow-camera-bottom={-35}
       />
-      <hemisphereLight args={['#1e3a5f', '#0f172a', 0.3]} />
+      <hemisphereLight args={['#f8fafc', '#334155', 0.8]} />
 
       <Building
         floors={building.floors}
@@ -61,7 +62,7 @@ function SceneContent(props: GameSceneProps) {
         onPlayerPosition={props.onPlayerPosition}
       />
 
-      <Environment preset="night" />
+      <Environment preset="city" />
     </>
   );
 }
