@@ -123,7 +123,7 @@ export const LocationSearchBar: React.FC<Props> = ({
     onSelectLocation(lat, lon, height, name);
   };
 
-  // High-accuracy live geolocation with reverse geocoding
+  // High-accuracy live geolocation with resilient fallback
   const handleDetectLiveLocation = () => {
     if (!navigator.geolocation) {
       alert('Geolocation is not supported by your browser.');
@@ -131,50 +131,64 @@ export const LocationSearchBar: React.FC<Props> = ({
     }
 
     setIsLocating(true);
-    setLocationStatus('Acquiring high-precision GPS satellite fix...');
+    setLocationStatus('Acquiring live GPS satellite fix...');
 
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        setIsLocating(false);
-        const { latitude, longitude, accuracy } = pos.coords;
-        const accuracyText = accuracy < 100 ? `±${Math.round(accuracy)}m (High Accuracy)` : `±${Math.round(accuracy)}m (Network/Wi-Fi)`;
+    const tryGetPosition = (highAccuracy: boolean) => {
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          setIsLocating(false);
+          const { latitude, longitude, accuracy } = pos.coords;
+          const accuracyText = accuracy < 100 ? `±${Math.round(accuracy)}m (High Accuracy)` : `±${Math.round(accuracy)}m (Network Fix)`;
 
-        try {
-          // Reverse geocode to get exact neighborhood name
-          const revUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`;
-          const res = await fetch(revUrl);
-          if (res.ok) {
-            const revData = await res.json();
-            const placeName =
-              revData.address?.suburb ||
-              revData.address?.neighbourhood ||
-              revData.address?.road ||
-              revData.address?.city ||
-              'Live Location';
-            setQuery(placeName);
-            setLocationStatus(`📍 Live GPS: ${placeName} (${accuracyText})`);
-            onSelectLocation(latitude, longitude, 550, revData.display_name);
-            setTimeout(() => setLocationStatus(null), 6000);
+          // 1. Teleport camera immediately to user's exact live location
+          setQuery(`${latitude.toFixed(4)}°, ${longitude.toFixed(4)}°`);
+          setLocationStatus(`📍 Live Location Fixed (${accuracyText})`);
+          onSelectLocation(latitude, longitude, 650, 'My Live Location');
+          setTimeout(() => setLocationStatus(null), 6000);
+
+          // 2. Asynchronously reverse-geocode in the background for local place name
+          try {
+            const revUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=16&addressdetails=1`;
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 2000);
+            const res = await fetch(revUrl, { signal: controller.signal });
+            clearTimeout(timeoutId);
+            if (res.ok) {
+              const revData = await res.json();
+              const placeName =
+                revData.address?.suburb ||
+                revData.address?.neighbourhood ||
+                revData.address?.road ||
+                revData.address?.city ||
+                revData.display_name?.split(',')[0] ||
+                '';
+              if (placeName) {
+                setQuery(placeName);
+                setLocationStatus(`📍 Live GPS: ${placeName} (${accuracyText})`);
+              }
+            }
+          } catch {
+            // keep raw coords
+          }
+        },
+        (err) => {
+          if (highAccuracy) {
+            // Instant fallback to standard network Wi-Fi geolocation (fast on Windows desktop/laptops)
+            tryGetPosition(false);
             return;
           }
-        } catch {
-          // Fallback to raw coords
-        }
+          setIsLocating(false);
+          console.warn('Geolocation failed:', err.message);
+          setLocationStatus('⚠️ GPS permission blocked or unavailable. Showing Bengaluru Hub.');
+          onSelectLocation(12.9716, 77.5946, 800, 'Bengaluru Central');
+          setQuery('Bengaluru Central');
+          setTimeout(() => setLocationStatus(null), 6000);
+        },
+        { enableHighAccuracy: highAccuracy, timeout: highAccuracy ? 3500 : 7000, maximumAge: 60000 }
+      );
+    };
 
-        setQuery(`${latitude.toFixed(4)}°, ${longitude.toFixed(4)}°`);
-        setLocationStatus(`📍 Live GPS Coordinates (${accuracyText})`);
-        onSelectLocation(latitude, longitude, 550, 'Live GPS Position');
-        setTimeout(() => setLocationStatus(null), 6000);
-      },
-      (err) => {
-        setIsLocating(false);
-        console.warn('Geolocation failed:', err.message);
-        setLocationStatus('⚠️ GPS fix timed out. Defaulted to Bengaluru Central.');
-        onSelectLocation(12.9716, 77.5946, 800, 'Bengaluru Central');
-        setTimeout(() => setLocationStatus(null), 6000);
-      },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-    );
+    tryGetPosition(true);
   };
 
   return (

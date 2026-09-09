@@ -480,20 +480,22 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
         // Add visual target pin on the ground
         viewer.entities.add({
           id: 'searched-location-pin',
-          position: Cartesian3.fromDegrees(lon, lat, 15),
+          position: Cartesian3.fromDegrees(lon, lat, 5),
           point: {
-            pixelSize: 12,
+            pixelSize: 14,
             color: Color.fromCssColorString('#06b6d4'),
             outlineColor: Color.WHITE,
-            outlineWidth: 2,
+            outlineWidth: 3,
+            disableDepthTestDistance: Number.POSITIVE_INFINITY,
           },
           label: {
             text: labelText ? `📍 ${labelText.split(',')[0]}` : '📍 Searched Location',
             font: 'bold 12px Inter, system-ui, sans-serif',
             fillColor: Color.WHITE,
             showBackground: true,
-            backgroundColor: Color.fromCssColorString('#0f172a').withAlpha(0.85),
-            pixelOffset: new Cartesian2(0, -25),
+            backgroundColor: Color.fromCssColorString('#0f172a').withAlpha(0.9),
+            pixelOffset: new Cartesian2(0, -28),
+            disableDepthTestDistance: Number.POSITIVE_INFINITY,
           },
         });
 
@@ -592,7 +594,7 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
             fullscreenButton: false,
             infoBox: false,
             selectionIndicator: true,
-            terrain: Terrain.fromWorldTerrain({ requestVertexNormals: true }),
+            terrainProvider: new EllipsoidTerrainProvider(),
             baseLayer: false as unknown as undefined,
           });
 
@@ -885,10 +887,8 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
           const bldgLon = building ? building.center.lon : SAPTHAGIRI_COORDS.lon;
           const bldgLat = building ? building.center.lat : SAPTHAGIRI_COORDS.lat;
 
-          const elev = SAPTHAGIRI_COORDS.elevation; // 892m MSL ground elevation
-
           viewer.camera.setView({
-            destination: Cartesian3.fromDegrees(bldgLon, bldgLat - 0.0012, elev + 140),
+            destination: Cartesian3.fromDegrees(bldgLon, bldgLat - 0.0012, 140),
             orientation: {
               heading: CesiumMath.toRadians(25), // 25° Heading looking directly at the +25° front facade
               pitch: CesiumMath.toRadians(-22),   // -22° Pitch for realistic eye-level perspective
