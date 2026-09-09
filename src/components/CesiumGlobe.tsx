@@ -599,6 +599,16 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
           });
 
 
+          // Optimize WebGL resolution scale for high-DPI screens to guarantee silky 60 FPS
+          viewer.useBrowserRecommendedResolution = false;
+          viewer.resolutionScale = Math.min(window.devicePixelRatio || 1, 1.25);
+
+          // Configure Globe tile caching and progressive preloading for zero-stutter pan & zoom
+          viewer.scene.globe.tileCacheSize = 300;
+          viewer.scene.globe.preloadAncestors = true;
+          viewer.scene.globe.preloadSiblings = true;
+          viewer.scene.globe.loadingDescendantLimit = 20;
+
           // Prevent render loop exceptions from killing WebGL and showing a blank screen
           viewer.scene.renderError.addEventListener((_scene: any, error: any) => {
             console.error('Cesium Render Error caught (auto-recovering render loop):', error);
@@ -698,22 +708,28 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
             let osmBuildings: any = null;
             let photorealisticTileset: any = null;
 
+            let lastNotifiedMode = '';
             const updateTilesetForCurrentLocation = () => {
               if (viewer.isDestroyed()) return;
               const inNYC = isCameraInNewYork();
+              const newMode = inNYC ? 'PHOTOREALISTIC' : 'OSM_3D';
 
-              if (photorealisticTileset) {
+              if (photorealisticTileset && photorealisticTileset.show !== inNYC) {
                 photorealisticTileset.show = inNYC;
               }
-              if (osmBuildings) {
+              if (osmBuildings && osmBuildings.show !== !inNYC) {
                 osmBuildings.show = !inNYC;
               }
 
-              updateStatus({
-                photorealisticStatus: inNYC ? 'LOADED' : 'IDLE',
-                osmStatus: inNYC ? 'IDLE' : 'LOADED',
-                activeMode: inNYC ? 'PHOTOREALISTIC' : 'OSM_3D',
-              });
+              // Only trigger parent React re-renders if active mode actually transitioned
+              if (newMode !== lastNotifiedMode) {
+                lastNotifiedMode = newMode;
+                updateStatus({
+                  photorealisticStatus: inNYC ? 'LOADED' : 'IDLE',
+                  osmStatus: inNYC ? 'IDLE' : 'LOADED',
+                  activeMode: newMode as any,
+                });
+              }
             };
 
             // A. Google Photorealistic 3D Tiles (Activated ONLY for New York)
@@ -721,6 +737,7 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
               photorealisticTileset = await createGooglePhotorealistic3DTileset();
               if (!viewer.isDestroyed()) {
                 photorealisticTileset.show = false; // Default false for Indian Cadastral Hub
+                photorealisticTileset.maximumScreenSpaceError = 16;
                 photorealisticTileset.tileFailed?.addEventListener?.((tileErr: any) => {
                   console.warn('Photorealistic 3D Tile load error suppressed:', tileErr);
                 });
@@ -738,7 +755,8 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
                 osmBuildings.tileFailed?.addEventListener?.((tileErr: any) => {
                   console.warn('OSM 3D Tile load error suppressed:', tileErr);
                 });
-                osmBuildings.maximumScreenSpaceError = 4; // High LOD crisp solid 3D structures
+                osmBuildings.maximumScreenSpaceError = 16; // Optimal 60fps LOD balancing crisp geometry and low GPU memory
+                osmBuildings.preloadWhenHidden = false;
                 osmBuildings.style = new Cesium3DTileStyle({
                   color: {
                     conditions: [
@@ -772,7 +790,7 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
             // Check and sync tileset mode for current camera view
             updateTilesetForCurrentLocation();
 
-            // Real OpenStreetMap 2D Footprint Extrusions for detailed local structures
+            // Render local detailed BIM structures
             if (!viewer.isDestroyed()) {
               loadViewport3DBuildings(viewer);
               // Render Sapthagiri NPS University Grand Neoclassical Campus 3D Model
@@ -781,18 +799,11 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
               } catch (e) {
                 console.warn('Sapthagiri Campus Render Exception:', e);
               }
-              viewer.camera.percentageChanged = 0.05;
+              // Throttle camera change checks to avoid main-thread drag hitches
+              viewer.camera.percentageChanged = 0.25;
               viewer.camera.changed.addEventListener(() => {
                 if (!viewer.isDestroyed()) {
                   updateTilesetForCurrentLocation();
-                }
-              });
-              viewer.camera.moveEnd.addEventListener(() => {
-                if (!viewer.isDestroyed()) {
-                  updateTilesetForCurrentLocation();
-                  if (!isCameraInNewYork()) {
-                    loadViewport3DBuildings(viewer);
-                  }
                 }
               });
             }
@@ -809,7 +820,7 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
           viewer.scene.globe.depthTestAgainstTerrain = true;
 
           // =========================================================================
-          // 360-DEGREE ROTATION & ORBIT CONTROLLER CONFIGURATION
+          // 360-DEGREE ROTATION & ORBIT CONTROLLER CONFIGURATION (BUTTERY SMOOTH)
           // =========================================================================
           const controller = viewer.scene.screenSpaceCameraController;
           controller.enableRotate = true;
@@ -817,11 +828,13 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
           controller.enableLook = true;
           controller.enableZoom = true;
           controller.enableCollisionDetection = false;
-          controller.minimumZoomDistance = 15;
+          controller.minimumZoomDistance = 8;
           controller.maximumZoomDistance = 35_000_000;
-          controller.inertiaSpin = 0.88;
-          controller.inertiaTranslate = 0.88;
-          controller.inertiaZoom = 0.8;
+          controller.inertiaSpin = 0.72; // Smooth momentum without floaty overshooting
+          controller.inertiaTranslate = 0.72; // Silky pan response
+          controller.inertiaZoom = 0.65; // Precise, controlled zoom
+          controller.maximumMovementRatio = 0.15; // Smooth camera deceleration
+          controller.zoomFactor = 2.8; // Gradual, continuous wheel zoom (prevents violent jumps)
 
           // 1. ZOOM: Restrict strictly to Mouse Wheel and Pinch!
           // (CRITICAL: Default Cesium maps Right-Click Drag to Zoom, which makes users feel they can "only drag on front and back"!)
