@@ -253,7 +253,7 @@ export function EmergencyHUDBanner({ emergency, currentFloorId, onEvacuate, onDi
 
   if (!emergency || !emergency.isActive) {
     return (
-      <div className="absolute top-20 right-4 z-20">
+      <div className="absolute top-[140px] right-4 z-20">
         <button
           onClick={onTriggerRandom}
           className="flex items-center gap-2 rounded-xl border border-red-500/60 bg-gradient-to-r from-red-950/90 via-red-900/80 to-amber-950/90 px-4 py-2.5 text-xs font-black text-red-200 backdrop-blur-md shadow-xl transition-all hover:scale-105 hover:border-red-400 active:scale-95 ring-1 ring-red-500/40"
