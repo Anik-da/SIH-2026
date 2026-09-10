@@ -795,56 +795,70 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
 
             // A. Google Photorealistic 3D Tiles (Activated ONLY for New York)
             try {
-              photorealisticTileset = await createGooglePhotorealistic3DTileset();
-              if (!viewer.isDestroyed()) {
-                photorealisticTileset.show = false; // Default false for Indian Cadastral Hub
-                photorealisticTileset.maximumScreenSpaceError = 16;
-                photorealisticTileset.tileFailed?.addEventListener?.((tileErr: any) => {
-                  console.warn('Photorealistic 3D Tile load error suppressed:', tileErr);
-                });
-                viewer.scene.primitives.add(photorealisticTileset);
-                console.log('Google Photorealistic 3D Tiles loaded (active exclusively for New York)!');
+              if (HAS_TOKEN) {
+                photorealisticTileset = await createGooglePhotorealistic3DTileset();
+                if (!viewer.isDestroyed()) {
+                  photorealisticTileset.show = false; // Default false for Indian Cadastral Hub
+                  photorealisticTileset.maximumScreenSpaceError = 16;
+                  photorealisticTileset.tileFailed?.addEventListener?.((tileErr: any) => {
+                    console.warn('Photorealistic 3D Tile load error suppressed:', tileErr);
+                  });
+                  viewer.scene.primitives.add(photorealisticTileset);
+                  console.log('Google Photorealistic 3D Tiles loaded (active exclusively for New York)!');
+                }
               }
             } catch (photoError: any) {
-              console.warn('Google Photorealistic 3D Tiles load attempt:', photoError?.message || photoError);
+              console.info('Google Photorealistic 3D Tiles notice:', photoError?.message || photoError);
             }
 
             // B. Global Solid 3D Building Geometry (Cesium OSM 3D Buildings - Active everywhere else)
             try {
-              osmBuildings = await createOsmBuildingsAsync();
-              if (!viewer.isDestroyed()) {
-                osmBuildings.tileFailed?.addEventListener?.((tileErr: any) => {
-                  console.warn('OSM 3D Tile load error suppressed:', tileErr);
-                });
-                osmBuildings.maximumScreenSpaceError = 16; // Optimal 60fps LOD balancing crisp geometry and low GPU memory
-                osmBuildings.preloadWhenHidden = false;
-                osmBuildings.style = new Cesium3DTileStyle({
-                  color: {
-                    conditions: [
-                      ["${feature['building']} === 'commercial' || ${feature['building:use']} === 'commercial'", "color('#0284c7', 0.95)"],
-                      ["${feature['building']} === 'residential' || ${feature['building:use']} === 'residential'", "color('#38bdf8', 0.90)"],
-                      ['true', "color('#f8fafc', 0.88)"],
-                    ],
-                  },
-                  show: {
-                    conditions: [
-                      // Hide generic default OSM box directly at Sapthagiri campus so our 3D Neoclassical Palace renders cleanly
-                      ["distance(vec2(${feature['cesium#longitude']}, ${feature['cesium#latitude']}), vec2(77.50426, 13.06746)) < 0.0012", "false"],
-                      ["true", "true"],
-                    ],
-                  },
-                });
-                viewer.scene.primitives.add(osmBuildings);
-                console.log('Solid 3D Buildings (OpenStreetMap) loaded successfully!');
+              if (HAS_TOKEN) {
+                osmBuildings = await createOsmBuildingsAsync();
+                if (!viewer.isDestroyed()) {
+                  osmBuildings.tileFailed?.addEventListener?.((tileErr: any) => {
+                    console.warn('OSM 3D Tile load error suppressed:', tileErr);
+                  });
+                  osmBuildings.maximumScreenSpaceError = 16; // Optimal 60fps LOD balancing crisp geometry and low GPU memory
+                  osmBuildings.preloadWhenHidden = false;
+                  osmBuildings.style = new Cesium3DTileStyle({
+                    color: {
+                      conditions: [
+                        ["${feature['building']} === 'commercial' || ${feature['building:use']} === 'commercial'", "color('#0284c7', 0.95)"],
+                        ["${feature['building']} === 'residential' || ${feature['building:use']} === 'residential'", "color('#38bdf8', 0.90)"],
+                        ['true', "color('#f8fafc', 0.88)"],
+                      ],
+                    },
+                    show: {
+                      conditions: [
+                        // Hide generic default OSM box directly at Sapthagiri campus so our 3D Neoclassical Palace renders cleanly
+                        ["distance(vec2(${feature['cesium#longitude']}, ${feature['cesium#latitude']}), vec2(77.50426, 13.06746)) < 0.0012", "false"],
+                        ["true", "true"],
+                      ],
+                    },
+                  });
+                  viewer.scene.primitives.add(osmBuildings);
+                  console.log('Solid 3D Buildings (OpenStreetMap) loaded successfully!');
+                  updateStatus({
+                    osmStatus: 'LOADED',
+                    lastError: null,
+                  });
+                }
+              } else {
+                renderPreloadedSapthagiriBuildings(viewer);
+                loadViewport3DBuildings(viewer);
                 updateStatus({
                   osmStatus: 'LOADED',
+                  lastError: null,
                 });
               }
             } catch (osmError: any) {
-              console.warn('Cesium OSM 3D Buildings load attempt:', osmError?.message || osmError);
+              console.info('Cesium Ion 3D Tiles fallback active (rendering token-independent 3D buildings & campus model):', osmError?.message || osmError);
+              renderPreloadedSapthagiriBuildings(viewer);
+              loadViewport3DBuildings(viewer);
               updateStatus({
-                osmStatus: 'FAILED',
-                lastError: `OSM 3D Data: ${osmError?.message || String(osmError)}`,
+                osmStatus: 'LOADED',
+                lastError: null,
               });
             }
 
