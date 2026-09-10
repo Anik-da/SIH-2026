@@ -575,13 +575,13 @@ export const SEED_BUILDINGS = [
 export function computeDeterministic3DUlpin(baseId, floorNumber) {
   // Deterministic 14-char alphanumeric base derived from building / parcel / ULPIN
   let hash = 0;
-  const str = String(baseId || 'VOLUCAD-DEMO-BLR');
+  const str = String(baseId || 'COSMOPLOT-DEMO-BLR');
   for (let i = 0; i < str.length; i++) {
     hash = ((hash << 5) - hash) + str.charCodeAt(i);
     hash |= 0;
   }
   const positiveHash = Math.abs(hash).toString(36).toUpperCase().padStart(8, '0');
-  const basePrefix = (str.replace(/[^A-Z0-9]/gi, '').toUpperCase() + 'VOLUCADIN2026').slice(0, 6);
+  const basePrefix = (str.replace(/[^A-Z0-9]/gi, '').toUpperCase() + 'COSMOPLOTIN2026').slice(0, 6);
   const base14 = (basePrefix + positiveHash + '90').slice(0, 14).padEnd(14, '0');
 
   // 4-character vertical suffix: A001..A999 (above ground) or B001..B999 (basement)
@@ -820,10 +820,10 @@ export const SEED_PROPERTY_PASSPORTS = [
     zMin: 9.0,
     zMax: 12.0,
     volume: 1860,
-    source: "VOLU-CAD 3D Cadastre Extension",
+    source: "COSMOPLOT 3D Cadastre Extension",
     authority: "Survey of India / Karnataka Revenue Department (Prototype)",
     qrIdentifier: "12A34B56C78D90-A003",
-    qrVerificationUrl: "https://volucad.gov.in/verify/12A34B56C78D90-A003",
+    qrVerificationUrl: "https://cosmoplot.gov.in/verify/12A34B56C78D90-A003",
     issuedAt: "2026-09-08T10:00:00.000Z",
     createdAt: "2026-09-08T10:00:00.000Z",
     updatedAt: "2026-09-08T10:00:00.000Z"

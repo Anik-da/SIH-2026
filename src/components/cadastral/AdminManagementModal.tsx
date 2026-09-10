@@ -246,7 +246,7 @@ export const AdminManagementModal: React.FC<AdminManagementModalProps> = ({
                 <div className="flex items-center justify-between mb-3">
                   <div>
                     <h3 className="text-xs font-bold text-slate-200 uppercase tracking-wider">MongoDB Atlas Cadastral Data Store</h3>
-                    <p className="text-xs text-slate-400">Database: <span className="font-mono text-cyan-400">volucad</span> &bull; Collection: <span className="font-mono text-cyan-400">buildings</span> (20+ bengaluru Cesium 3D features persistent)</p>
+                    <p className="text-xs text-slate-400">Database: <span className="font-mono text-cyan-400">cosmoplot</span> &bull; Collection: <span className="font-mono text-cyan-400">buildings</span> (20+ bengaluru Cesium 3D features persistent)</p>
                   </div>
                   <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
                     CACHE-FIRST PERSISTENT
@@ -396,7 +396,7 @@ export const AdminManagementModal: React.FC<AdminManagementModalProps> = ({
         {/* Footer */}
         <div className="px-6 py-4 border-t border-slate-800 bg-slate-950/80 flex items-center justify-between">
           <span className="text-xs text-slate-500">
-            VOLU-CAD 3D Admin Console — SIH 2026
+            COSMOPLOT 3D Admin Console — SIH 2026
           </span>
           <button
             onClick={onClose}

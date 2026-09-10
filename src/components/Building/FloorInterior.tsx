@@ -131,7 +131,7 @@ export function FloorInterior({ floor, hasDimming = false, onSelectObject }: Flo
             e,
             'Wayfinding Interactive 3D Kiosk',
             'Smart Building Tech',
-            ['Display: 55" 4K Capacitive Touch', 'OS: VoluCad SmartCity OS', 'Network: 10Gbps Fiber Uplink'],
+            ['Display: 55" 4K Capacitive Touch', 'OS: Cosmoplot SmartCity OS', 'Network: 10Gbps Fiber Uplink'],
             'Interactive wayfinding directory allowing visitors to search room numbers, faculty offices, and emergency escape routes.'
           )}
         >

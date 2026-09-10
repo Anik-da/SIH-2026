@@ -286,7 +286,7 @@ class BuildingApiClient {
       ulpin: `ULPIN-IN-KA-2026-${Math.floor(10000 + Math.random() * 90000)}`,
       officialUlpin: 'NOT_AVAILABLE',
       dataSource: 'FLOORPLAN_EXTRUSION_DEMO',
-      sourceUrls: ['https://volucad.gov.in/cadastre/demo-extrusion'],
+      sourceUrls: ['https://cosmoplot.gov.in/cadastre/demo-extrusion'],
       sourceCollectedAt: new Date().toISOString(),
       confidence: 0.94,
       verificationStatus: 'PROTOTYPE_GENERATED',
@@ -341,7 +341,7 @@ class BuildingApiClient {
       zMin: floor03.zMin,
       zMax: floor03.zMax,
       volume: 1860,
-      source: 'VOLU-CAD 3D Floorplan Pipeline',
+      source: 'COSMOPLOT 3D Floorplan Pipeline',
       authority: 'Survey of India / Karnataka Revenue Cadastre (Prototype)',
       qrIdentifier: floor03.threeDUlpIn,
       qrVerificationUrl: typeof window !== 'undefined'
@@ -517,11 +517,11 @@ class BuildingApiClient {
       elevationExtent: 'Z: 9.0m to 12.0m (3.0m vertical height)',
       status: 'ACTIVE',
       verification: 'VERIFIED / PROTOTYPE',
-      source: 'VOLU-CAD 3D Cadastre Extension',
+      source: 'COSMOPLOT 3D Cadastre Extension',
       authority: 'National Cadastral Spatial Registry (Prototype)',
       verificationDate: new Date().toISOString().slice(0, 10),
       cryptographicSeal: '0x7F9A82B3C4D5E6F109A4B',
-      disclaimer: 'Official government ULPIN is stored separately if available. 19-character 3D ULPIN is derived under VOLU-CAD Prototype Extension.',
+      disclaimer: 'Official government ULPIN is stored separately if available. 19-character 3D ULPIN is derived under COSMOPLOT 3D Prototype Extension.',
     };
   }
 

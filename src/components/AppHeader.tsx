@@ -119,7 +119,7 @@ export default function AppHeader({
 
         <div className="leading-tight shrink-0">
           <div className="flex items-center gap-1.5 md:gap-2">
-            <h1 className="text-xs md:text-sm font-black tracking-wide text-white">VOLU-CAD 3D</h1>
+            <h1 className="text-xs md:text-sm font-black tracking-wide text-white">COSMOPLOT 3D</h1>
             <div
               title="Operational State: Strict Real Spatial Data Engine Active (OSM Overpass GIS + MongoDB Atlas)"
               className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-bold border border-emerald-500/40 bg-emerald-500/15 text-emerald-300 shadow-sm shadow-emerald-500/20 select-none shrink-0"

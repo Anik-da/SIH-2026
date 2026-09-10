@@ -25,7 +25,7 @@ app.use(express.json({ limit: '50mb' }));
 
 const PORT = process.env.PORT || 5000;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017';
-const MONGODB_DATABASE = process.env.MONGODB_DATABASE || 'volucad';
+const MONGODB_DATABASE = process.env.MONGODB_DATABASE || 'cosmoplot';
 
 let db = null;
 let client = null;
@@ -108,11 +108,11 @@ function initializeMemoryStore() {
     user: 'SYSTEM_BOOTSTRAP',
     userRole: 'ADMIN',
     action: 'SYSTEM_INITIALIZED',
-    objectId: 'VOLU-CAD-3D',
+    objectId: 'COSMOPLOT-3D',
     metadata: { buildings: memoryStore.buildings.size, parcels: memoryStore.parcels.size }
   });
 
-  console.log(`[VOLU-CAD Backend] Initialized in-memory cache with ${memoryStore.buildings.size} buildings, ${memoryStore.parcels.size} parcels, and ${memoryStore.disasterProfiles.size} disaster profiles.`);
+  console.log(`[COSMOPLOT Backend] Initialized in-memory cache with ${memoryStore.buildings.size} buildings, ${memoryStore.parcels.size} parcels, and ${memoryStore.disasterProfiles.size} disaster profiles.`);
 }
 
 initializeMemoryStore();
@@ -124,11 +124,11 @@ async function connectMongoDB() {
       client = new MongoClient(MONGODB_URI);
       await client.connect();
       db = client.db(MONGODB_DATABASE);
-      console.log(`[VOLU-CAD Backend] Successfully connected to MongoDB Atlas database: ${MONGODB_DATABASE}`);
+      console.log(`[COSMOPLOT Backend] Successfully connected to MongoDB Atlas database: ${MONGODB_DATABASE}`);
       await createIndexes();
       await seedDatabaseIfEmpty();
     } catch (err) {
-      console.warn(`[VOLU-CAD Backend] MongoDB Atlas connection warning: ${err.message}. Operating in high-speed persistent cache fallback mode.`);
+      console.warn(`[COSMOPLOT Backend] MongoDB Atlas connection warning: ${err.message}. Operating in high-speed persistent cache fallback mode.`);
     }
   }
 }
@@ -150,7 +150,7 @@ async function createIndexes() {
     await db.collection('propertyPassports').createIndex({ vpid: 1 });
     await db.collection('propertyPassports').createIndex({ threeDUlpIn: 1 });
   } catch (idxErr) {
-    console.warn('[VOLU-CAD Backend] Index creation note:', idxErr.message);
+    console.warn('[COSMOPLOT Backend] Index creation note:', idxErr.message);
   }
 }
 
@@ -160,7 +160,7 @@ async function seedDatabaseIfEmpty() {
     const buildingsCol = db.collection('buildings');
     const count = await buildingsCol.countDocuments();
     if (count === 0) {
-      console.log('[VOLU-CAD Backend] Seeding MongoDB with Bengaluru 3D Cadastral Records...');
+      console.log('[COSMOPLOT Backend] Seeding MongoDB with Bengaluru 3D Cadastral Records...');
       await buildingsCol.insertMany(SEED_BUILDINGS);
 
       const parcelsCol = db.collection('parcels');
@@ -185,10 +185,10 @@ async function seedDatabaseIfEmpty() {
       const conflictsCol = db.collection('validationConflicts');
       await conflictsCol.insertMany(SEED_VALIDATION_CONFLICTS);
 
-      console.log('[VOLU-CAD Backend] MongoDB seeding completed successfully.');
+      console.log('[COSMOPLOT Backend] MongoDB seeding completed successfully.');
     }
   } catch (seedErr) {
-    console.warn('[VOLU-CAD Backend] Seed error:', seedErr.message);
+    console.warn('[COSMOPLOT Backend] Seed error:', seedErr.message);
   }
 }
 
@@ -202,7 +202,7 @@ connectMongoDB();
 app.get('/api/health', (_req, res) => {
   res.json({
     status: 'ONLINE',
-    service: 'VOLU-CAD 3D Vertical Cadastre & ULPIN Intelligence API',
+    service: 'COSMOPLOT 3D Vertical Cadastre & ULPIN Intelligence API',
     mongoStatus: db ? 'CONNECTED' : 'CACHE_FALLBACK',
     database: MONGODB_DATABASE,
     totalBuildings: memoryStore.buildings.size,
@@ -460,7 +460,7 @@ app.post('/api/ulpin/generate', (req, res) => {
     floorNumber: fNum,
     format: '14-character base + hyphen + 4-character vertical suffix (19 chars total)',
     isOfficial: false,
-    disclaimer: 'VOLU-CAD 3D ULPIN / Vertical Extension — Prototype (Government 3D Extension Test Format)'
+    disclaimer: 'COSMOPLOT 3D ULPIN / Vertical Extension — Prototype (Government 3D Extension Test Format)'
   });
 });
 
@@ -529,7 +529,7 @@ app.post('/api/floorplans/generate-3d', async (req, res) => {
     ulpin: `ULPIN-IN-KA-2026-${Math.floor(10000 + Math.random() * 90000)}`,
     officialUlpin: 'NOT_AVAILABLE',
     dataSource: 'FLOORPLAN_EXTRUSION_DEMO',
-    sourceUrls: ['https://volucad.gov.in/cadastre/demo-extrusion'],
+    sourceUrls: ['https://cosmoplot.gov.in/cadastre/demo-extrusion'],
     sourceCollectedAt: new Date().toISOString(),
     confidence: 0.94,
     verificationStatus: 'PROTOTYPE_GENERATED',
@@ -588,10 +588,10 @@ app.post('/api/floorplans/generate-3d', async (req, res) => {
     zMin: floor03.zMin,
     zMax: floor03.zMax,
     volume: parseFloat((620 * floorHeight).toFixed(2)),
-    source: 'VOLU-CAD 3D Floorplan Pipeline',
+    source: 'COSMOPLOT 3D Floorplan Pipeline',
     authority: 'Survey of India / Karnataka Revenue Cadastre (Prototype)',
     qrIdentifier: floor03.threeDUlpIn,
-    qrVerificationUrl: `https://volucad.gov.in/verify/${floor03.threeDUlpIn}`,
+    qrVerificationUrl: `https://cosmoplot.gov.in/verify/${floor03.threeDUlpIn}`,
     issuedAt: new Date().toISOString(),
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
@@ -688,7 +688,7 @@ app.get('/api/passports/:id', async (req, res) => {
     zMin: 9.0,
     zMax: 12.0,
     volume: 1860,
-    source: 'VOLU-CAD 3D Vertical Cadastre',
+    source: 'COSMOPLOT 3D Vertical Cadastre',
     authority: 'Survey of India / Karnataka Revenue Department',
     qrIdentifier: computeDeterministic3DUlpin(bld.ulpin || bld.buildingId, 3),
     issuedAt: new Date().toISOString()
@@ -719,11 +719,11 @@ app.get('/api/verify/:id', async (req, res) => {
           elevationExtent: `Z: ${pp.zMin}m to ${pp.zMax}m (${pp.zMax - pp.zMin}m vertical height)`,
           status: pp.certificateStatus || 'ACTIVE',
           verification: pp.verificationStatus || 'VERIFIED / PROTOTYPE',
-          source: pp.source || 'VOLU-CAD 3D Cadastre Extension',
+          source: pp.source || 'COSMOPLOT 3D Cadastre Extension',
           authority: pp.authority || 'National Cadastral Spatial Registry (Prototype)',
           verificationDate: pp.issuedAt || new Date().toISOString(),
           cryptographicSeal: '0x7F9A82B3C4D5E6F109A4B',
-          disclaimer: 'Official government ULPIN is stored separately if available. 19-character 3D ULPIN is derived under VOLU-CAD Prototype Extension.'
+          disclaimer: 'Official government ULPIN is stored separately if available. 19-character 3D ULPIN is derived under COSMOPLOT 3D Prototype Extension.'
         });
       }
     } catch (err) {
@@ -743,7 +743,7 @@ app.get('/api/verify/:id', async (req, res) => {
     zMax: 12.0,
     certificateStatus: 'ACTIVE',
     verificationStatus: 'VERIFIED_PROTOTYPE',
-    source: 'VOLU-CAD 3D Cadastre Extension',
+    source: 'COSMOPLOT 3D Cadastre Extension',
     issuedAt: new Date().toISOString()
   };
 
@@ -759,11 +759,11 @@ app.get('/api/verify/:id', async (req, res) => {
     elevationExtent: `Z: ${target.zMin}m to ${target.zMax}m (${target.zMax - target.zMin}m vertical height)`,
     status: target.certificateStatus || 'ACTIVE',
     verification: target.verificationStatus || 'VERIFIED / PROTOTYPE',
-    source: target.source || 'VOLU-CAD 3D Cadastre Extension',
+    source: target.source || 'COSMOPLOT 3D Cadastre Extension',
     authority: 'National Cadastral Spatial Registry (Prototype)',
     verificationDate: target.issuedAt || new Date().toISOString(),
     cryptographicSeal: '0x7F9A82B3C4D5E6F109A4B',
-    disclaimer: 'Official government ULPIN is stored separately if available. 19-character 3D ULPIN is derived under VOLU-CAD Prototype Extension.'
+    disclaimer: 'Official government ULPIN is stored separately if available. 19-character 3D ULPIN is derived under COSMOPLOT 3D Prototype Extension.'
   });
 });
 
@@ -772,7 +772,7 @@ app.post('/api/buildings/:buildingId/discover', async (req, res) => {
   const { buildingId } = req.params;
   const { cesiumFeatureId, lat, lon } = req.body || {};
 
-  console.log(`[VOLU-CAD Backend] Executing public data discovery pipeline for Building: ${buildingId}`);
+  console.log(`[COSMOPLOT Backend] Executing public data discovery pipeline for Building: ${buildingId}`);
 
   const newDoc = {
     buildingId: buildingId.startsWith('BLDG-') ? buildingId : `BLDG-BLR-${Math.floor(100 + Math.random() * 900)}`,
@@ -912,6 +912,6 @@ app.post('/api/seed', async (_req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 VOLU-CAD 3D Building Intelligence Server listening on port ${PORT}`);
+  console.log(`🚀 COSMOPLOT 3D Building Intelligence Server listening on port ${PORT}`);
 });
 

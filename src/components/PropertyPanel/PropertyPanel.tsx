@@ -49,7 +49,7 @@ export function PropertyPanel({
             <DataRow label="3D ULPIN" value={threeDUlpin} mono highlight />
           </div>
           <p className="mt-1.5 text-[9px] leading-relaxed text-slate-500">
-            VOLU-CAD prototype 3D ULPIN / vertical extension — not the official Government of India ULPIN format.
+            COSMOPLOT 3D prototype 3D ULPIN / vertical extension — not the official Government of India ULPIN format.
           </p>
         </section>
 

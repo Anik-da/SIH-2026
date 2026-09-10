@@ -150,7 +150,7 @@ export function StartScreen({ onEnter, onOpenGIS, onBackToHome }: StartScreenPro
       {/* Content */}
       <div className="relative z-10 flex h-full flex-col items-center justify-center px-6">
         <h1 className="text-5xl font-bold tracking-tight text-white sm:text-6xl md:text-7xl">
-          VOLU-CAD <span className="text-cyan-400">3D</span>
+          COSMOPLOT <span className="text-cyan-400">3D</span>
         </h1>
         <p className="mt-3 text-lg font-medium tracking-wider text-slate-300 sm:text-xl">
           Vertical Property Explorer

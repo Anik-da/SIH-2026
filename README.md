@@ -158,7 +158,7 @@ VITE_CESIUM_ION_TOKEN=your_cesium_ion_token_here
 # Backend API Configuration
 PORT=5000
 MONGODB_URI=your_mongodb_atlas_connection_string
-MONGODB_DATABASE=volucad
+MONGODB_DATABASE=cosmoplot
 ```
 
 > ⚠️ **Security Notice**: All sensitive credentials and API keys are stored securely in environment variables (`.env`) and are **never** committed to public version control.

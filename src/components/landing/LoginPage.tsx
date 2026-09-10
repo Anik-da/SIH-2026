@@ -103,7 +103,7 @@ export const LoginPage: React.FC<Props> = ({ user, onBackToLanding, onLaunchApp 
             <Globe2 className="h-8 w-8 text-slate-950" />
           </div>
           <h1 className="text-3xl font-black tracking-tight text-white md:text-5xl leading-tight">
-            VOLU-CAD 3D <br />
+            COSMOPLOT 3D <br />
             <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
               Officer Portal
             </span>
@@ -126,7 +126,7 @@ export const LoginPage: React.FC<Props> = ({ user, onBackToLanding, onLaunchApp 
 
         {/* Bottom Footer info */}
         <div className="relative z-10 text-[11px] text-slate-500">
-          VOLU-CAD 3D Spatial System
+          COSMOPLOT 3D Spatial System
         </div>
       </div>
 

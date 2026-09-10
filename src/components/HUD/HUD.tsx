@@ -57,7 +57,7 @@ export function HUD({
         <div className="flex items-center gap-2.5 rounded-lg border border-slate-700/50 bg-slate-900/70 px-4 py-2 backdrop-blur-md">
           <Building2 className="h-5 w-5 text-cyan-400" />
           <div>
-            <div className="text-sm font-bold tracking-wide text-white">VOLU-CAD 3D</div>
+            <div className="text-sm font-bold tracking-wide text-white">COSMOPLOT 3D</div>
             <div className="text-[10px] tracking-wider text-slate-400">
               {enteredBuilding ? 'PROPERTY EXPLORER' : 'EXTERIOR VIEW'}
             </div>

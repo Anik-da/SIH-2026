@@ -41,7 +41,7 @@ export const LandingPage: React.FC<Props> = ({ user, onLaunchApp, onOpenLogin, o
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-base font-black tracking-wider text-white">VOLU-CAD 3D</span>
+              <span className="text-base font-black tracking-wider text-white">COSMOPLOT 3D</span>
             </div>
             <p className="text-[11px] text-slate-400">3D ULPIN &amp; Vertical Cadastral Mapping</p>
           </div>
@@ -213,9 +213,9 @@ export const LandingPage: React.FC<Props> = ({ user, onLaunchApp, onOpenLogin, o
         <div className="mx-auto max-w-6xl flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <Globe2 className="h-4 w-4 text-cyan-400" />
-            <span className="font-bold text-slate-300">VOLU-CAD 3D</span>
+            <span className="font-bold text-slate-300">COSMOPLOT 3D</span>
           </div>
-          <p>© 2026 VOLU-CAD 3D System. All Rights Reserved.</p>
+          <p>© 2026 COSMOPLOT 3D System. All Rights Reserved.</p>
         </div>
       </footer>
     </div>

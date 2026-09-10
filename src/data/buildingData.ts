@@ -102,7 +102,7 @@ function buildProperties(): PropertyData[] {
 
 export const building: BuildingData = {
   buildingId: BUILDING_ID,
-  name: 'VOLU-CAD Demonstration Building',
+  name: 'COSMOPLOT 3D Demonstration Building',
   floorCount: 7,
   basementCount: 1,
   buildingHeight: FLOOR_HEIGHT * 8,

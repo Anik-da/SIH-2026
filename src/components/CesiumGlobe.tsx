@@ -1168,7 +1168,7 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
               const bLat = building?.center.lat || lat;
               const bLon = building?.center.lon || lon;
               onSelectBuildingFeature?.({
-                name: building?.name || 'VOLU-CAD Vertical Structure',
+                name: building?.name || 'COSMOPLOT 3D Vertical Structure',
                 ulpin: building?.ulpin || 'Not available from source',
                 lat: bLat,
                 lon: bLon,

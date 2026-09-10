@@ -122,7 +122,7 @@ export const PropertyPassportModal: React.FC<Props> = ({
               <div className="flex items-center justify-between">
                 <div>
                   <span className="text-[10px] uppercase font-bold text-cyan-400 block tracking-wider">
-                    VOLU-CAD 3D ULPIN / Vertical Extension — Prototype
+                    COSMOPLOT 3D ULPIN / Vertical Extension — Prototype
                   </span>
                   <p className="font-mono text-base font-black text-white tracking-widest mt-0.5">
                     {threeDUlpIn}

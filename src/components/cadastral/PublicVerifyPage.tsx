@@ -83,7 +83,7 @@ export const PublicVerifyPage: React.FC<PublicVerifyPageProps> = ({
               </div>
             </div>
             <span className="text-[10px] font-mono font-bold text-emerald-300 bg-emerald-500/20 px-3 py-1.5 rounded-xl border border-emerald-500/40">
-              Verified by VOLU-CAD
+              Verified by COSMOPLOT 3D
             </span>
           </div>
 
@@ -128,7 +128,7 @@ export const PublicVerifyPage: React.FC<PublicVerifyPageProps> = ({
 
           </div>
 
-          {/* Distinction Banner: Official vs VOLU-CAD Prototype */}
+          {/* Distinction Banner: Official vs COSMOPLOT 3D Prototype */}
           <div className="bg-slate-950/90 border border-slate-800 rounded-2xl p-4 space-y-2 text-xs text-slate-300">
             <div className="flex items-center justify-between border-b border-slate-800 pb-2">
               <span className="font-bold text-slate-200 flex items-center gap-1.5">
@@ -147,7 +147,7 @@ export const PublicVerifyPage: React.FC<PublicVerifyPageProps> = ({
               </div>
               <div>
                 <span className="text-slate-500 block">3D Extension Method:</span>
-                <span className="font-semibold text-slate-200">VOLU-CAD Vertical Mesh Derivation</span>
+                <span className="font-semibold text-slate-200">COSMOPLOT 3D Vertical Mesh Derivation</span>
               </div>
             </div>
           </div>

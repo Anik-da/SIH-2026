@@ -90,7 +90,7 @@ export const AuthModal: React.FC<Props> = ({ isOpen, user, onClose }) => {
               </div>
               <div>
                 <h2 className="text-lg font-bold text-white">
-                  {user ? 'User Profile Account' : mode === 'login' ? 'Officer & User Portal' : 'Create VOLU-CAD Account'}
+                  {user ? 'User Profile Account' : mode === 'login' ? 'Officer & User Portal' : 'Create COSMOPLOT 3D Account'}
                 </h2>
                 <p className="text-xs text-slate-400">
                   {user ? 'Authenticated Session' : 'Firebase Authentication'}

@@ -79,7 +79,7 @@ export const BuildingInformationPanel: React.FC<BuildingInformationPanelProps> =
             <p className="font-semibold text-slate-200 mb-1 flex items-center gap-1.5">
               <Database className="w-4 h-4 text-cyan-400" /> Persistent Cache Status: NOT_INGESTED
             </p>
-            This 3D building geometry exists in Cesium 3D Tiles, but its structural metadata has not been ingested into the MongoDB <span className="text-cyan-400 font-mono">volucad</span> database yet.
+            This 3D building geometry exists in Cesium 3D Tiles, but its structural metadata has not been ingested into the MongoDB <span className="text-cyan-400 font-mono">cosmoplot</span> database yet.
           </div>
 
           <div className="bg-slate-950/60 p-3 rounded-xl border border-slate-800 text-xs space-y-1.5">

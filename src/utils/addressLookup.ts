@@ -39,7 +39,7 @@ export async function fetchLiveAddress(lat: number, lon: number): Promise<string
       `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`,
       {
         headers: {
-          'User-Agent': 'VOLU-CAD-3D-Cadastral-Platform/1.0',
+          'User-Agent': 'COSMOPLOT-3D-Cadastral-Platform/1.0',
         },
       }
     );

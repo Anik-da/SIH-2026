@@ -280,7 +280,7 @@ export class RealDataProvider implements IDataProvider {
     const url = `https://nominatim.openstreetmap.org/search?q=${cleanQuery}&format=json&limit=5&countrycodes=in`;
 
     try {
-      const res = await fetch(url, { headers: { 'User-Agent': 'VOLUCAD-3D-GIS/1.0' } });
+      const res = await fetch(url, { headers: { 'User-Agent': 'COSMOPLOT-3D-GIS/1.0' } });
       const data = await res.json();
 
       return data.map((item: any) => ({

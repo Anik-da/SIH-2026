@@ -63,7 +63,7 @@ const PAGES: PageItem[] = [
     id: 'landing',
     title: 'Landing Page & Hero Portal',
     category: 'Core Navigation',
-    description: 'VOLU-CAD 3D Platform Overview, Hero CTA, and Public Showcase',
+    description: 'COSMOPLOT 3D Platform Overview, Hero CTA, and Public Showcase',
     icon: Home,
     color: 'text-cyan-400',
   },

@@ -368,7 +368,7 @@ export const demoAuditLogs: AuditLogEntry[] = [
     userRole: 'ADMIN',
     action: 'SYSTEM_INITIALIZATION',
     targetId: 'SYSTEM',
-    details: 'VOLU-CAD 3D Cadastral Spatial Engine initialized with Cesium globe.',
+    details: 'COSMOPLOT 3D Cadastral Spatial Engine initialized with Cesium globe.',
   },
   {
     id: 'LOG-1093',

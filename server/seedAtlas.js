@@ -8,8 +8,8 @@ dns.setServers(['8.8.8.8', '1.1.1.1']);
 
 dotenv.config();
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/volucad';
-const MONGODB_DATABASE = process.env.MONGODB_DATABASE || 'volucad';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/cosmoplot';
+const MONGODB_DATABASE = process.env.MONGODB_DATABASE || 'cosmoplot';
 
 async function seedAtlas() {
   console.log('Connecting to MongoDB Atlas...');

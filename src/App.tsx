@@ -963,7 +963,7 @@ function App() {
         {/* Bottom-right: System Info */}
         <div className="pointer-events-none absolute bottom-4 right-4 z-10 max-w-xs text-right">
           <p className="text-[10px] text-slate-500">
-            VOLU-CAD 3D Vertical Cadastre System.
+            COSMOPLOT 3D Vertical Cadastre System.
             <br />
             Active Zone: {DEMO_AREA.name}
           </p>
@@ -1163,7 +1163,7 @@ function App() {
               timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
               userRole: userRole,
               action: evtName,
-              targetId: 'VOLU-CAD-3D',
+              targetId: 'COSMOPLOT-3D',
               details: `Simulated live change stream broadcast: ${evtName}`,
             },
             ...prev,
