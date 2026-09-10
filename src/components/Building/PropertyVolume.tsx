@@ -1,8 +1,5 @@
-import { useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
 import { Edges, Html } from '@react-three/drei';
 import type { ThreeEvent } from '@react-three/fiber';
-import * as THREE from 'three';
 import type { PropertyData } from '@/types';
 import { generateThreeDUlpin } from '@/utils/idUtils';
 
@@ -11,8 +8,8 @@ interface PropertyVolumeProps {
   isSelected: boolean;
   isDimmed: boolean;
   isIsolated: boolean;
-  exploded: boolean;
-  floorIndex: number;
+  exploded?: boolean;
+  floorIndex?: number;
   onSelect: (prop: PropertyData) => void;
 }
 
@@ -21,37 +18,23 @@ export function PropertyVolume({
   isSelected,
   isDimmed,
   isIsolated,
-  exploded,
-  floorIndex,
   onSelect,
 }: PropertyVolumeProps) {
-  const meshRef = useRef<THREE.Mesh>(null);
-  const targetY = useRef(property.position[1]);
-  const currentY = useRef(property.position[1]);
-
-  useFrame((_, delta) => {
-    if (!meshRef.current) return;
-    const lerp = 1 - Math.pow(0.001, delta);
-    if (exploded) {
-      targetY.current = property.position[1] + floorIndex * 2.5;
-    } else {
-      targetY.current = property.position[1];
-    }
-    currentY.current += (targetY.current - currentY.current) * lerp;
-    meshRef.current.position.y = currentY.current;
-  });
-
   if (isIsolated && !isSelected) return null;
 
-  const opacity = isDimmed ? 0.15 : isSelected ? 0.35 : 0.25;
-  const color = isSelected ? '#38bdf8' : property.propertyType === 'Residential' ? '#475569' : property.propertyType === 'Commercial' ? '#64748b' : '#334155';
+  const color = isSelected
+    ? '#38bdf8'
+    : property.propertyType === 'Residential'
+    ? '#475569'
+    : property.propertyType === 'Commercial'
+    ? '#64748b'
+    : '#334155';
   const emissive = isSelected ? '#0ea5e9' : '#000000';
   const emissiveIntensity = isSelected ? 0.5 : 0;
 
   return (
-    <group position={[property.position[0], 0, property.position[2]]}>
+    <group position={[property.position[0], 0.02, property.position[2]]}>
       <mesh
-        ref={meshRef}
         onClick={(e: ThreeEvent<MouseEvent>) => {
           e.stopPropagation();
           onSelect(property);
@@ -80,3 +63,4 @@ export function PropertyVolume({
     </group>
   );
 }
+
