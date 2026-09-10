@@ -1,13 +1,10 @@
 <div align="center">
 
-# 🌐 3D ULPIN — Vertical Property Mapping & Volumetric Cadastre Platform
+# 🌐 COSMOPLOT 3D — Vertical Property Mapping & Volumetric Cadastre Platform
 ### High-Precision 3D GIS Building Explorer, Subsurface Cadastre & Geo-Spatial Digital Passports
-**Smart India Hackathon 2026 — Problem Statement SIH26011**
 
 [![Live Application](https://img.shields.io/badge/Live%20Demo-propertymap--system.web.app-0284c7?style=for-the-badge&logo=firebase)](https://propertymap-system.web.app)
 [![GitHub Repository](https://img.shields.io/badge/GitHub-3D--ULPIN--Vertical--Property--Mapping-181717?style=for-the-badge&logo=github)](https://github.com/Meghna6111/3D-ULPIN-Vertical-Property-Mapping)
-[![Smart India Hackathon 2026](https://img.shields.io/badge/SIH-2026-orange.svg?style=for-the-badge&logo=hackaday)](https://sih.gov.in/)
-[![Problem Statement](https://img.shields.io/badge/Problem%20Statement-SIH26011-blue.svg?style=for-the-badge)](https://sih.gov.in/)
 [![React](https://img.shields.io/badge/React-18.x-61DAFB?style=for-the-badge&logo=react)](https://reactjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
 [![CesiumJS](https://img.shields.io/badge/CesiumJS-3D_GIS-6B90B5?style=for-the-badge)](https://cesium.com/)

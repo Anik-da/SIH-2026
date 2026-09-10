@@ -268,14 +268,14 @@ export const LoginPage: React.FC<Props> = ({ user, onBackToLanding, onLaunchApp 
                 <div className="mt-2 flex gap-2">
                   <button
                     type="button"
-                    onClick={() => handleDemoLogin('surveyor@sih2026.gov.in')}
+                    onClick={() => handleDemoLogin('surveyor@cosmoplot.gov.in')}
                     className="flex-1 rounded-lg border border-slate-800 bg-slate-950 py-1.5 text-[10px] text-cyan-400 font-medium hover:bg-slate-800"
                   >
                     Survey Officer
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleDemoLogin('admin@sih2026.gov.in')}
+                    onClick={() => handleDemoLogin('admin@cosmoplot.gov.in')}
                     className="flex-1 rounded-lg border border-slate-800 bg-slate-950 py-1.5 text-[10px] text-purple-400 font-medium hover:bg-slate-800"
                   >
                     System Admin

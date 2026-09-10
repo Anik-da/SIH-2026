@@ -145,7 +145,7 @@ export default function AppHeader({
             <Sparkles className="h-3.5 w-3.5 text-emerald-300 animate-pulse" />
             <span>Floorplan → 3D</span>
             <span className="rounded bg-emerald-400/20 px-1 py-0.2 text-[8px] font-black text-emerald-300 uppercase">
-              SIH MVP
+              3D STUDIO
             </span>
           </button>
         )}

@@ -99,7 +99,7 @@ const PAGES: PageItem[] = [
     category: 'Cadastral Tools',
     description: 'Bhuvan / ISRO, BBMP e-Aasthi & 13-Stage Geospatial Ingestion Pipeline',
     icon: Database,
-    badge: 'SIH26011',
+    badge: 'Geospatial',
     color: 'text-amber-400',
   },
   {
@@ -152,7 +152,7 @@ const PAGES: PageItem[] = [
     category: 'Cadastral Tools',
     description: 'Upload 2D image, detect boundary contour, stack 3D floors & issue 3D ULPINs',
     icon: Sparkles,
-    badge: 'SIH26011 MVP',
+    badge: '3D Studio',
     color: 'text-teal-300',
   },
   {

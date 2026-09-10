@@ -133,7 +133,7 @@ export default function GeoJsonImporterModal({ isOpen, onClose, onImportGeoJson 
               <h2 className="text-lg font-bold text-white flex items-center gap-2">
                 India National 3D GIS & GeoJSON Database Importer
                 <span className="text-xs px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-normal">
-                  SIH 2026 Engine
+                  3D Spatial Engine
                 </span>
               </h2>
               <p className="text-xs text-slate-400">

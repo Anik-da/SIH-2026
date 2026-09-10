@@ -272,7 +272,7 @@ export const FloorplanTo3DModal: React.FC<Props> = ({
               <div className="flex items-center gap-2">
                 <h2 className="text-lg font-black text-white">FLOORPLAN → 3D VOLUMETRIC EXTENSION STUDIO</h2>
                 <span className="rounded-md bg-cyan-500/10 px-2 py-0.5 text-[10px] font-bold text-cyan-300 border border-cyan-500/30">
-                  SIH26011 MVP Pipeline
+                  3D Cadastre Pipeline
                 </span>
               </div>
               <p className="text-xs text-slate-400">

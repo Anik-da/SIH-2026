@@ -346,7 +346,7 @@ export const AdminManagementModal: React.FC<AdminManagementModalProps> = ({
                   <span className="font-bold text-slate-200">Real-Time Simulation Engine</span>
                   <span className="px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-400 font-bold text-[10px]">READY</span>
                 </div>
-                <p className="text-slate-400 text-[11px]">Simulating WebSockets / MongoDB Change Streams for SIH demo.</p>
+                <p className="text-slate-400 text-[11px]">Simulating WebSockets / MongoDB Change Streams for live platform demo.</p>
               </div>
             </div>
           )}
@@ -356,7 +356,7 @@ export const AdminManagementModal: React.FC<AdminManagementModalProps> = ({
               <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-4">
                 <h3 className="text-xs font-bold text-slate-200 uppercase tracking-wider mb-2">Simulate Real-Time System Updates</h3>
                 <p className="text-xs text-slate-400 mb-4">
-                  Trigger live events to demonstrate automated WebSocket / Change Stream broadcast behavior to SIH evaluators.
+                  Trigger live events to demonstrate automated WebSocket / Change Stream broadcast behavior to system administrators.
                 </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -396,7 +396,7 @@ export const AdminManagementModal: React.FC<AdminManagementModalProps> = ({
         {/* Footer */}
         <div className="px-6 py-4 border-t border-slate-800 bg-slate-950/80 flex items-center justify-between">
           <span className="text-xs text-slate-500">
-            COSMOPLOT 3D Admin Console — SIH 2026
+            COSMOPLOT 3D Admin Console
           </span>
           <button
             onClick={onClose}
