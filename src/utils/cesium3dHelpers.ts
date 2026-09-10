@@ -64,7 +64,16 @@ export function makeFloorLabel(
 export function getGroundElevation(viewer?: Cesium.Viewer, lon = 77.50426, lat = 13.06746, radiusMeters = 0): number {
   const DEFAULT_BENGALURU_ELEVATION = 834.0;
   if (!viewer || viewer.isDestroyed() || !viewer.scene || !viewer.scene.globe) {
-    return DEFAULT_BENGALURU_ELEVATION;
+    return 0;
+  }
+
+  const isEllipsoid =
+    !viewer.terrainProvider ||
+    viewer.terrainProvider instanceof Cesium.EllipsoidTerrainProvider ||
+    viewer.terrainProvider.constructor?.name === 'EllipsoidTerrainProvider';
+
+  if (isEllipsoid) {
+    return 0;
   }
 
   if (radiusMeters <= 0) {
