@@ -1,8 +1,9 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import type { VerticalProperty } from '../../types/cadastral';
 import type { MongoBuildingDocument, MongoFloorDocument } from '../../types/mongodbBuilding';
-import { Shield, CheckCircle2, Building, Layers, Award, X, Printer, ExternalLink } from 'lucide-react';
+import { Shield, CheckCircle2, Building, Layers, Award, X, Printer, ExternalLink, Download, FileText, Loader2 } from 'lucide-react';
 import { computeDeterministic3DUlpin } from '../../../server/seedData.js';
+import { downloadDomElementAsPdf, generateNativeCertificatePdf } from '../../utils/exportCertificatePdf';
 
 interface Props {
   property?: VerticalProperty | null;
@@ -33,6 +34,9 @@ export const PropertyPassportModal: React.FC<Props> = ({
   onClose,
   onOpenPublicVerification,
 }) => {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
+
   // Always resolve a robust, realistic VerticalProperty so the passport never fails
   const prop: VerticalProperty = useMemo(() => {
     if (property) return property;
@@ -83,9 +87,55 @@ export const PropertyPassportModal: React.FC<Props> = ({
     ? `${window.location.origin}/verify/${threeDUlpIn}`
     : `https://propertymap-system.web.app/verify/${threeDUlpIn}`;
 
+  const handleDownloadPdf = async () => {
+    setIsExportingPdf(true);
+    try {
+      if (cardRef.current) {
+        await downloadDomElementAsPdf(cardRef.current, `3D_Cadastral_Passport_${threeDUlpIn}.pdf`);
+      } else {
+        generateNativeCertificatePdf({
+          threeDUlpIn,
+          vpid: prop.vpid,
+          ulpin: prop.ulpin,
+          buildingId: prop.buildingId,
+          buildingName: building?.name || 'Sapthagiri NPS University Tower',
+          floorLabel: prop.floorLabel,
+          floorNumber,
+          zMin: prop.zMin,
+          zMax: prop.zMax,
+          area: prop.area,
+          volume: prop.volume,
+          ownerName: prop.ownerName,
+          propertyType: prop.propertyType,
+          qrTargetUrl,
+        });
+      }
+    } catch (err) {
+      console.warn('DOM capture PDF error, executing native PDF generator fallback:', err);
+      generateNativeCertificatePdf({
+        threeDUlpIn,
+        vpid: prop.vpid,
+        ulpin: prop.ulpin,
+        buildingId: prop.buildingId,
+        buildingName: building?.name || 'Sapthagiri NPS University Tower',
+        floorLabel: prop.floorLabel,
+        floorNumber,
+        zMin: prop.zMin,
+        zMax: prop.zMax,
+        area: prop.area,
+        volume: prop.volume,
+        ownerName: prop.ownerName,
+        propertyType: prop.propertyType,
+        qrTargetUrl,
+      });
+    } finally {
+      setIsExportingPdf(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="animate-in zoom-in-95 relative w-full max-w-xl overflow-hidden rounded-3xl border border-slate-700 bg-slate-900 shadow-2xl">
+      <div ref={cardRef} className="animate-in zoom-in-95 relative w-full max-w-xl overflow-hidden rounded-3xl border border-slate-700 bg-slate-900 shadow-2xl">
         {/* Top Gold / Cyan Accent Banner */}
         <div className="h-2 w-full bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500" />
 
@@ -217,7 +267,7 @@ export const PropertyPassportModal: React.FC<Props> = ({
           </div>
 
           {/* Footer Actions */}
-          <div className="mt-6 flex items-center justify-between border-t border-slate-800 pt-4">
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-slate-800 pt-4">
             <button
               onClick={() => {
                 onClose();
@@ -230,14 +280,30 @@ export const PropertyPassportModal: React.FC<Props> = ({
 
             <div className="flex items-center gap-2">
               <button
-                onClick={() => window.print()}
-                className="flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-700 active:scale-95 transition"
+                onClick={handleDownloadPdf}
+                disabled={isExportingPdf}
+                className="flex items-center gap-2 rounded-xl bg-cyan-500 px-4 py-2 text-xs font-bold text-slate-950 hover:bg-cyan-400 active:scale-95 transition shadow-lg shadow-cyan-500/20 disabled:opacity-50"
               >
-                <Printer className="h-4 w-4" /> Print Passport
+                {isExportingPdf ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" /> Generating PDF...
+                  </>
+                ) : (
+                  <>
+                    <Download className="h-4 w-4" /> Download PDF Certificate
+                  </>
+                )}
+              </button>
+              <button
+                onClick={() => window.print()}
+                className="flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-xs font-semibold text-white hover:bg-slate-700 active:scale-95 transition"
+                title="Print Document"
+              >
+                <Printer className="h-4 w-4" /> Print
               </button>
               <button
                 onClick={onClose}
-                className="rounded-xl bg-slate-800 px-5 py-2 text-xs font-semibold text-white hover:bg-slate-700 active:scale-95 transition"
+                className="rounded-xl bg-slate-800 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-700 active:scale-95 transition"
               >
                 Close
               </button>

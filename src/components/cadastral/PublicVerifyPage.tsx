@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { ShieldCheck, CheckCircle2, QrCode, Lock, Globe, Layers, Box, ArrowLeft, Award, Sparkles, Building2, ExternalLink } from 'lucide-react';
+import React, { useEffect, useState, useRef } from 'react';
+import { ShieldCheck, CheckCircle2, QrCode, Lock, Globe, Layers, Box, ArrowLeft, Award, Sparkles, Building2, ExternalLink, Download, Printer, Loader2 } from 'lucide-react';
 import { buildingApiClient } from '../../services/api/buildingApiClient';
 import type { PublicVerificationResponse } from '../../types/mongodbBuilding';
+import { downloadDomElementAsPdf, generateNativeCertificatePdf } from '../../utils/exportCertificatePdf';
 
 interface PublicVerifyPageProps {
   vpid?: string;
@@ -15,8 +16,10 @@ export const PublicVerifyPage: React.FC<PublicVerifyPageProps> = ({
   onBack,
 }) => {
   const queryId = identifier || vpid || '12A34B56C78D90-A003';
+  const cardRef = useRef<HTMLDivElement>(null);
   const [cert, setCert] = useState<PublicVerificationResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -32,9 +35,44 @@ export const PublicVerifyPage: React.FC<PublicVerifyPageProps> = ({
     };
   }, [queryId]);
 
+  const handleDownloadPdf = async () => {
+    setIsExportingPdf(true);
+    const targetThreeDUlpin = cert?.threeDUlpIn || queryId;
+    try {
+      if (cardRef.current) {
+        await downloadDomElementAsPdf(cardRef.current, `3D_Cadastral_Certificate_${targetThreeDUlpin}.pdf`);
+      } else {
+        generateNativeCertificatePdf({
+          threeDUlpIn: targetThreeDUlpin,
+          vpid: cert?.vpid || vpid,
+          ulpin: cert?.officialUlpin !== 'NOT_AVAILABLE' ? cert?.officialUlpin : 'ULPIN-IN-KA-2026-89421',
+          buildingName: cert?.building || 'Sapthagiri NPS University Tower',
+          floorLabel: cert?.property || 'Floor 03',
+          ownerName: 'Karnataka State Cadastre Registry (Verified Title)',
+          verificationDate: cert?.verificationDate,
+          qrTargetUrl: typeof window !== 'undefined' ? window.location.href : `https://propertymap-system.web.app/verify/${targetThreeDUlpin}`,
+        });
+      }
+    } catch (err) {
+      console.warn('DOM capture PDF error, executing native PDF generator fallback:', err);
+      generateNativeCertificatePdf({
+        threeDUlpIn: targetThreeDUlpin,
+        vpid: cert?.vpid || vpid,
+        ulpin: cert?.officialUlpin !== 'NOT_AVAILABLE' ? cert?.officialUlpin : 'ULPIN-IN-KA-2026-89421',
+        buildingName: cert?.building || 'Sapthagiri NPS University Tower',
+        floorLabel: cert?.property || 'Floor 03',
+        ownerName: 'Karnataka State Cadastre Registry (Verified Title)',
+        verificationDate: cert?.verificationDate,
+        qrTargetUrl: typeof window !== 'undefined' ? window.location.href : `https://propertymap-system.web.app/verify/${targetThreeDUlpin}`,
+      });
+    } finally {
+      setIsExportingPdf(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center p-4 font-sans selection:bg-emerald-500 selection:text-slate-950">
-      <div className="w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl relative">
+      <div ref={cardRef} className="w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl relative">
         {/* Top Accent Gradient */}
         <div className="h-2.5 w-full bg-gradient-to-r from-emerald-500 via-cyan-500 to-blue-500" />
 
@@ -163,8 +201,8 @@ export const PublicVerifyPage: React.FC<PublicVerifyPageProps> = ({
             </div>
           </div>
 
-          {/* Footer QR Info */}
-          <div className="flex items-center justify-between border-t border-slate-800 pt-6">
+          {/* Footer QR Info & Download Actions */}
+          <div className="flex flex-wrap items-center justify-between gap-4 border-t border-slate-800 pt-6">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-white rounded-xl p-1 flex items-center justify-center text-slate-950 shadow-md">
                 <QrCode className="w-10 h-10" />
@@ -175,12 +213,29 @@ export const PublicVerifyPage: React.FC<PublicVerifyPageProps> = ({
               </div>
             </div>
 
-            <button
-              onClick={() => window.print()}
-              className="px-5 py-2.5 text-xs font-bold text-slate-950 bg-emerald-500 hover:bg-emerald-400 rounded-xl shadow-lg shadow-emerald-500/20 transition-all"
-            >
-              Print Certificate
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleDownloadPdf}
+                disabled={isExportingPdf}
+                className="flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-slate-950 bg-emerald-400 hover:bg-emerald-300 rounded-xl shadow-lg shadow-emerald-500/20 transition-all disabled:opacity-50"
+              >
+                {isExportingPdf ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" /> Generating PDF...
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-4 h-4" /> Download PDF Certificate
+                  </>
+                )}
+              </button>
+              <button
+                onClick={() => window.print()}
+                className="flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold text-slate-200 bg-slate-800 hover:bg-slate-700 rounded-xl border border-slate-700 transition"
+              >
+                <Printer className="w-4 h-4" /> Print
+              </button>
+            </div>
           </div>
 
         </div>
