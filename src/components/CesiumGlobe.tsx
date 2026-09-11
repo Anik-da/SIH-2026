@@ -619,6 +619,12 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
     useEffect(() => {
       if (!containerRef.current || viewerRef.current) return;
 
+      const handleWindowResize = () => {
+        if (viewerRef.current && !viewerRef.current.isDestroyed()) {
+          viewerRef.current.resize();
+        }
+      };
+
       let viewer: Viewer;
 
       const currentStatus: ThreeCityStatus = {
@@ -659,17 +665,11 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
           baseLayer: false as unknown as undefined,
         });
 
+        viewerRef.current = viewer;
 
-          viewerRef.current = viewer;
-
-          const handleWindowResize = () => {
-            if (viewer && !viewer.isDestroyed()) {
-              viewer.resize();
-            }
-          };
-          window.addEventListener('resize', handleWindowResize);
-          setTimeout(handleWindowResize, 100);
-          setTimeout(handleWindowResize, 500);
+        window.addEventListener('resize', handleWindowResize);
+        setTimeout(handleWindowResize, 100);
+        setTimeout(handleWindowResize, 500);
 
           // Optimize WebGL resolution scale for high-DPI screens to guarantee silky 60 FPS
           viewer.useBrowserRecommendedResolution = false;

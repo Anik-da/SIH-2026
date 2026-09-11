@@ -35,36 +35,22 @@ export const PublicVerifyPage: React.FC<PublicVerifyPageProps> = ({
     };
   }, [queryId]);
 
-  const handleDownloadPdf = async () => {
+  const handleDownloadPdf = () => {
     setIsExportingPdf(true);
     const targetThreeDUlpin = cert?.threeDUlpIn || queryId;
     try {
-      if (cardRef.current) {
-        await downloadDomElementAsPdf(cardRef.current, `3D_Cadastral_Certificate_${targetThreeDUlpin}.pdf`);
-      } else {
-        generateNativeCertificatePdf({
-          threeDUlpIn: targetThreeDUlpin,
-          vpid: cert?.vpid || vpid,
-          ulpin: cert?.officialUlpin !== 'NOT_AVAILABLE' ? cert?.officialUlpin : 'ULPIN-IN-KA-2026-89421',
-          buildingName: cert?.building || 'Sapthagiri NPS University Tower',
-          floorLabel: cert?.property || 'Floor 03',
-          ownerName: 'Karnataka State Cadastre Registry (Verified Title)',
-          verificationDate: cert?.verificationDate,
-          qrTargetUrl: typeof window !== 'undefined' ? window.location.href : `https://propertymap-system.web.app/verify/${targetThreeDUlpin}`,
-        });
-      }
-    } catch (err) {
-      console.warn('DOM capture PDF error, executing native PDF generator fallback:', err);
       generateNativeCertificatePdf({
         threeDUlpIn: targetThreeDUlpin,
         vpid: cert?.vpid || vpid,
-        ulpin: cert?.officialUlpin !== 'NOT_AVAILABLE' ? cert?.officialUlpin : 'ULPIN-IN-KA-2026-89421',
+        ulpin: (cert?.officialUlpin && cert.officialUlpin !== 'NOT_AVAILABLE') ? cert.officialUlpin : 'ULPIN-IN-KA-2026-89421',
         buildingName: cert?.building || 'Sapthagiri NPS University Tower',
         floorLabel: cert?.property || 'Floor 03',
         ownerName: 'Karnataka State Cadastre Registry (Verified Title)',
         verificationDate: cert?.verificationDate,
         qrTargetUrl: typeof window !== 'undefined' ? window.location.href : `https://propertymap-system.web.app/verify/${targetThreeDUlpin}`,
       });
+    } catch (err) {
+      console.error('PDF certificate export error:', err);
     } finally {
       setIsExportingPdf(false);
     }

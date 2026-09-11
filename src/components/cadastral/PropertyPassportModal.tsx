@@ -87,31 +87,9 @@ export const PropertyPassportModal: React.FC<Props> = ({
     ? `${window.location.origin}/verify/${threeDUlpIn}`
     : `https://propertymap-system.web.app/verify/${threeDUlpIn}`;
 
-  const handleDownloadPdf = async () => {
+  const handleDownloadPdf = () => {
     setIsExportingPdf(true);
     try {
-      if (cardRef.current) {
-        await downloadDomElementAsPdf(cardRef.current, `3D_Cadastral_Passport_${threeDUlpIn}.pdf`);
-      } else {
-        generateNativeCertificatePdf({
-          threeDUlpIn,
-          vpid: prop.vpid,
-          ulpin: prop.ulpin,
-          buildingId: prop.buildingId,
-          buildingName: building?.name || 'Sapthagiri NPS University Tower',
-          floorLabel: prop.floorLabel,
-          floorNumber,
-          zMin: prop.zMin,
-          zMax: prop.zMax,
-          area: prop.area,
-          volume: prop.volume,
-          ownerName: prop.ownerName,
-          propertyType: prop.propertyType,
-          qrTargetUrl,
-        });
-      }
-    } catch (err) {
-      console.warn('DOM capture PDF error, executing native PDF generator fallback:', err);
       generateNativeCertificatePdf({
         threeDUlpIn,
         vpid: prop.vpid,
@@ -128,6 +106,8 @@ export const PropertyPassportModal: React.FC<Props> = ({
         propertyType: prop.propertyType,
         qrTargetUrl,
       });
+    } catch (err) {
+      console.error('PDF export error:', err);
     } finally {
       setIsExportingPdf(false);
     }
