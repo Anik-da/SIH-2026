@@ -660,6 +660,17 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
         });
 
 
+          viewerRef.current = viewer;
+
+          const handleWindowResize = () => {
+            if (viewer && !viewer.isDestroyed()) {
+              viewer.resize();
+            }
+          };
+          window.addEventListener('resize', handleWindowResize);
+          setTimeout(handleWindowResize, 100);
+          setTimeout(handleWindowResize, 500);
+
           // Optimize WebGL resolution scale for high-DPI screens to guarantee silky 60 FPS
           viewer.useBrowserRecommendedResolution = false;
           viewer.resolutionScale = Math.min(window.devicePixelRatio || 1, 1.25);
@@ -1227,6 +1238,7 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(
 
       return () => {
         stopAutoRotate360();
+        window.removeEventListener('resize', handleWindowResize);
         handler.destroy();
         handlerRef.current = null;
         if (viewer && !viewer.isDestroyed()) {

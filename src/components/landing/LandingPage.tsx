@@ -22,9 +22,13 @@ interface Props {
   onLaunchApp: () => void;
   onOpenLogin: () => void;
   onOpen3DBuilding?: () => void;
+  onOpenGISGlobe?: () => void;
 }
 
-export const LandingPage: React.FC<Props> = ({ user, onLaunchApp, onOpenLogin, onOpen3DBuilding }) => {
+export const LandingPage: React.FC<Props> = ({ user, onLaunchApp, onOpenLogin, onOpen3DBuilding, onOpenGISGlobe }) => {
+  const handleLaunchGIS = onOpenGISGlobe || onLaunchApp;
+  const handleLaunch3DBuilding = onOpen3DBuilding || onLaunchApp;
+
   return (
     <div className="min-h-screen w-full overflow-x-hidden bg-slate-950 text-slate-100 selection:bg-cyan-500 selection:text-slate-950 font-sans">
       {/* Background Glow Accents */}
@@ -50,18 +54,25 @@ export const LandingPage: React.FC<Props> = ({ user, onLaunchApp, onOpenLogin, o
 
         <div className="flex items-center gap-3">
           <button
-            onClick={onOpen3DBuilding || onLaunchApp}
-            className="flex items-center gap-2 text-xs font-semibold text-slate-300 hover:text-cyan-400 sm:flex"
+            onClick={handleLaunchGIS}
+            className="flex items-center gap-2 text-xs font-semibold text-slate-300 hover:text-cyan-400 sm:flex transition-colors"
+          >
+            <Globe2 className="h-4 w-4 text-cyan-400" /> 3D GIS Globe
+          </button>
+
+          <button
+            onClick={handleLaunch3DBuilding}
+            className="flex items-center gap-2 text-xs font-semibold text-slate-300 hover:text-cyan-400 sm:flex transition-colors"
           >
             <Building2 className="h-4 w-4 text-cyan-400" /> 3D Building Explorer
           </button>
 
           {user ? (
             <button
-              onClick={onOpen3DBuilding || onLaunchApp}
+              onClick={handleLaunchGIS}
               className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-2 text-xs font-bold text-slate-950 shadow-lg shadow-cyan-500/20 transition-all hover:brightness-110"
             >
-              <span>Go to 3D Building</span>
+              <span>Go to 3D GIS Globe</span>
               <ArrowRight className="h-4 w-4" />
             </button>
           ) : (
@@ -91,12 +102,20 @@ export const LandingPage: React.FC<Props> = ({ user, onLaunchApp, onOpenLogin, o
           {/* Action Buttons */}
           <div className="relative z-10 mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <button
-              onClick={onOpen3DBuilding || onLaunchApp}
+              onClick={handleLaunchGIS}
               className="flex items-center gap-3 rounded-2xl bg-gradient-to-r from-cyan-400 via-cyan-500 to-blue-600 px-8 py-4 text-sm font-extrabold text-slate-950 shadow-2xl shadow-cyan-500/30 transition-all hover:brightness-110 active:scale-98 w-full sm:w-auto justify-center"
             >
-              <Building2 className="h-5 w-5" />
-              Launch 3D Building Explorer
+              <Globe2 className="h-5 w-5 text-slate-950" />
+              Launch 3D GIS Globe Viewer
               <ArrowRight className="h-5 w-5" />
+            </button>
+
+            <button
+              onClick={handleLaunch3DBuilding}
+              className="flex items-center gap-2.5 rounded-2xl border border-cyan-500/50 bg-slate-900/90 px-7 py-4 text-sm font-bold text-cyan-300 transition-all hover:bg-cyan-500/20 w-full sm:w-auto justify-center"
+            >
+              <Building2 className="h-4 w-4 text-cyan-400" />
+              3D Building Explorer
             </button>
 
             <button
