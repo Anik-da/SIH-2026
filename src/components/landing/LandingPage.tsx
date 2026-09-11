@@ -15,6 +15,7 @@ import {
   Building2,
 } from 'lucide-react';
 import type { User } from '../../firebase';
+import { OrbitalEarth } from './OrbitalEarth';
 
 interface Props {
   user: User | null;
@@ -75,56 +76,59 @@ export const LandingPage: React.FC<Props> = ({ user, onLaunchApp, onOpenLogin, o
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="relative z-10 mx-auto max-w-6xl px-6 pt-16 pb-20 text-center md:pt-24 md:pb-28">
-        <h1 className="text-4xl font-black tracking-tight text-white sm:text-6xl md:text-7xl leading-tight">
-          Next-Gen <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">3D Vertical Cadastre</span> &amp; Volumetric Mapping
-        </h1>
+      {/* Hero Section Container */}
+      <div className="relative w-full overflow-hidden">
+        <OrbitalEarth />
+        <section className="relative z-10 mx-auto max-w-6xl px-6 pt-16 pb-20 text-center md:pt-24 md:pb-28">
+          <h1 className="relative z-10 text-4xl font-black tracking-tight text-white sm:text-6xl md:text-7xl leading-tight">
+            Next-Gen <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">3D Vertical Cadastre</span> &amp; Volumetric Mapping
+          </h1>
 
-        <p className="mx-auto mt-6 max-w-2xl text-base text-slate-400 md:text-lg leading-relaxed">
-          Transforming traditional 2D land parcels into high-fidelity 3D volumetric property identifiers (VPID), subterranean infrastructure mapping, and automated spatial topology validation.
-        </p>
+          <p className="relative z-10 mx-auto mt-6 max-w-2xl text-base text-slate-400 md:text-lg leading-relaxed">
+            Transforming traditional 2D land parcels into high-fidelity 3D volumetric property identifiers (VPID), subterranean infrastructure mapping, and automated spatial topology validation.
+          </p>
 
-        {/* Action Buttons */}
-        <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <button
-            onClick={onOpen3DBuilding || onLaunchApp}
-            className="flex items-center gap-3 rounded-2xl bg-gradient-to-r from-cyan-400 via-cyan-500 to-blue-600 px-8 py-4 text-sm font-extrabold text-slate-950 shadow-2xl shadow-cyan-500/30 transition-all hover:brightness-110 active:scale-98 w-full sm:w-auto justify-center"
-          >
-            <Building2 className="h-5 w-5" />
-            Launch 3D Building Explorer
-            <ArrowRight className="h-5 w-5" />
-          </button>
+          {/* Action Buttons */}
+          <div className="relative z-10 mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <button
+              onClick={onOpen3DBuilding || onLaunchApp}
+              className="flex items-center gap-3 rounded-2xl bg-gradient-to-r from-cyan-400 via-cyan-500 to-blue-600 px-8 py-4 text-sm font-extrabold text-slate-950 shadow-2xl shadow-cyan-500/30 transition-all hover:brightness-110 active:scale-98 w-full sm:w-auto justify-center"
+            >
+              <Building2 className="h-5 w-5" />
+              Launch 3D Building Explorer
+              <ArrowRight className="h-5 w-5" />
+            </button>
 
-          <button
-            onClick={onOpenLogin}
-            className="flex items-center gap-2 rounded-2xl border border-slate-700 bg-slate-900/80 px-7 py-4 text-sm font-bold text-white transition-all hover:bg-slate-800 w-full sm:w-auto justify-center"
-          >
-            <Lock className="h-4 w-4 text-cyan-400" />
-            Survey Officer Login
-          </button>
-        </div>
+            <button
+              onClick={onOpenLogin}
+              className="flex items-center gap-2 rounded-2xl border border-slate-700 bg-slate-900/80 px-7 py-4 text-sm font-bold text-white transition-all hover:bg-slate-800 w-full sm:w-auto justify-center"
+            >
+              <Lock className="h-4 w-4 text-cyan-400" />
+              Survey Officer Login
+            </button>
+          </div>
 
-        {/* Live Metrics Showcase */}
-        <div className="mt-16 grid grid-cols-2 gap-4 rounded-3xl border border-slate-800 bg-slate-900/60 p-6 backdrop-blur-xl md:grid-cols-4">
-          <div className="p-2">
-            <span className="text-2xl font-black text-cyan-400 md:text-3xl">100%</span>
-            <p className="mt-1 text-xs text-slate-400">3D Volumetric Precision</p>
+          {/* Live Metrics Showcase */}
+          <div className="relative z-10 mt-16 grid grid-cols-2 gap-4 rounded-3xl border border-slate-800 bg-slate-900/60 p-6 backdrop-blur-xl md:grid-cols-4">
+            <div className="p-2">
+              <span className="text-2xl font-black text-cyan-400 md:text-3xl">100%</span>
+              <p className="mt-1 text-xs text-slate-400">3D Volumetric Precision</p>
+            </div>
+            <div className="p-2">
+              <span className="text-2xl font-black text-purple-400 md:text-3xl">Sub-Surface</span>
+              <p className="mt-1 text-xs text-slate-400">Underground Cadastre (Z &lt; 0m)</p>
+            </div>
+            <div className="p-2">
+              <span className="text-2xl font-black text-emerald-400 md:text-3xl">6 Rules</span>
+              <p className="mt-1 text-xs text-slate-400">Automated Spatial Validation</p>
+            </div>
+            <div className="p-2">
+              <span className="text-2xl font-black text-amber-400 md:text-3xl">ULPIN &amp; VPID</span>
+              <p className="mt-1 text-xs text-slate-400">Digital Passport Credentials</p>
+            </div>
           </div>
-          <div className="p-2">
-            <span className="text-2xl font-black text-purple-400 md:text-3xl">Sub-Surface</span>
-            <p className="mt-1 text-xs text-slate-400">Underground Cadastre (Z &lt; 0m)</p>
-          </div>
-          <div className="p-2">
-            <span className="text-2xl font-black text-emerald-400 md:text-3xl">6 Rules</span>
-            <p className="mt-1 text-xs text-slate-400">Automated Spatial Validation</p>
-          </div>
-          <div className="p-2">
-            <span className="text-2xl font-black text-amber-400 md:text-3xl">ULPIN &amp; VPID</span>
-            <p className="mt-1 text-xs text-slate-400">Digital Passport Credentials</p>
-          </div>
-        </div>
-      </section>
+        </section>
+      </div>
 
       {/* Core Feature Grid */}
       <section className="relative z-10 border-t border-slate-800 bg-slate-950/70 py-20 px-6 backdrop-blur-md md:px-12">
