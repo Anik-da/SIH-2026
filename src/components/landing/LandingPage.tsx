@@ -51,29 +51,31 @@ export const LandingPage: React.FC<Props> = ({ user, onLaunchApp, onOpenLogin, o
         </div>
 
         <div className="flex items-center gap-3">
-          <button
-            onClick={handleLaunch3DBuilding}
-            className="flex items-center gap-2 text-xs font-semibold text-slate-300 hover:text-cyan-400 sm:flex transition-colors"
-          >
-            <Building2 className="h-4 w-4 text-cyan-400" /> 3D Building Explorer
-          </button>
-
           {user ? (
             <button
               onClick={handleLaunch3DBuilding}
               className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-2 text-xs font-bold text-slate-950 shadow-lg shadow-cyan-500/20 transition-all hover:brightness-110"
             >
+              <Building2 className="h-4 w-4 text-slate-950" />
               <span>Go to 3D Building Explorer</span>
               <ArrowRight className="h-4 w-4" />
             </button>
           ) : (
-            <button
-              onClick={onOpenLogin}
-              className="flex items-center gap-2 rounded-xl border border-cyan-500/30 bg-cyan-500/10 px-4 py-2 text-xs font-bold text-cyan-300 transition-all hover:bg-cyan-500/20"
-            >
-              <UserCheck className="h-4 w-4" />
-              <span>Officer Sign In</span>
-            </button>
+            <>
+              <button
+                onClick={handleLaunch3DBuilding}
+                className="flex items-center gap-2 text-xs font-semibold text-slate-300 hover:text-cyan-400 sm:flex transition-colors"
+              >
+                <Building2 className="h-4 w-4 text-cyan-400" /> 3D Building Explorer
+              </button>
+              <button
+                onClick={onOpenLogin}
+                className="flex items-center gap-2 rounded-xl border border-cyan-500/30 bg-cyan-500/10 px-4 py-2 text-xs font-bold text-cyan-300 transition-all hover:bg-cyan-500/20"
+              >
+                <UserCheck className="h-4 w-4" />
+                <span>Officer Sign In</span>
+              </button>
+            </>
           )}
         </div>
       </header>
