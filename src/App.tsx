@@ -619,10 +619,9 @@ function App() {
     return (
       <LandingPage
         user={authUser}
-        onLaunchApp={() => setViewMode('app')}
+        onLaunchApp={() => setViewMode('3d-building')}
         onOpenLogin={() => setViewMode('login')}
         onOpen3DBuilding={() => setViewMode('3d-building')}
-        onOpenGISGlobe={() => setViewMode('app')}
       />
     );
   }
@@ -633,7 +632,7 @@ function App() {
       <LoginPage
         user={authUser}
         onBackToLanding={() => setViewMode('landing')}
-        onLaunchApp={() => setViewMode('app')}
+        onLaunchApp={() => setViewMode('3d-building')}
       />
     );
   }
